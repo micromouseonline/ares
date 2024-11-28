@@ -7,6 +7,8 @@
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <memory>
 #include <string>
 #include "application/core.h"
@@ -94,11 +96,21 @@ public:
 
   ~MazeManager() = default;
 
-  void LoadMazeFromFile(const std::string& filename)
-  {
-    (void)filename;
-    //
-  }
+  bool LoadMazeStringFromFile(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file) {
+        std::cerr << "Error: Could not open file " << filename << std::endl;
+        return false;
+    }
+
+    std::ostringstream ss;
+    ss << file.rdbuf(); // Read the file contents into the stringstream
+    mazeDataString = ss.str(); // Store it in the mazeData string
+
+    return true;
+}
+
+
 
   void LoadMazeFromString(const std::string& mazeData)
   {
@@ -362,6 +374,7 @@ private:
   sf::Color m_knownAbsentColor = (sf::Color::Black);
   sf::Color m_unknownColor = (sf::Color(128, 128, 128, 64));
   sf::Color m_virtualColor = (sf::Color::Blue);
+  std::string mazeDataString;
 };
 
 #endif  // MAZE_H
