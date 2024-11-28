@@ -1,16 +1,18 @@
-# SFML examples
+# ARES - An Autonomous Robot Emulation System
 
-A series of small SFML example programs to help me learn my way around.
+Ares is intended to be a way to simulate small autonomous robots on the PC. Specifically, it is meant for micromouse
+robots.
 
-The individual targets mostly illustrate a single feature.
+The simulation will allow the running of code from the actual hardware in the simulation with minimal changes.
 
-These are likely to change without warning and any or all of them may fail to build or run.
+An interesting feature will be that the robot code will execute as fast as the PC allows. This will allow a complete
+search of the maze, for example, to take place in a fraction of a second.
 
-Tha top level CMakeLists.txt file should include any additions. Have a look for how this is done.
+The robot state is recorded at the loop frequency - typically every millisecond - and replayed by the simulator at what
+ever speed is required. It will thus be possible to single-step back and forward through an entire run.
 
-Take care that the working directory of the compiled executable can see the assets as a sub-directory.
-
-No idea if this builds in Windows. Let me know. Make a pull request to offer changes for building in windows if needed.
+By using a common logging system in both the hardware and the simulation, logs produced by the real robot running in a
+maze can also be replayed and single stepped in the simulation.
 
 ---
 
@@ -81,4 +83,3 @@ Help me out here. I do not have a Mac.
 
 This is not the place to go through the entire business of configuring and building the examples. I will try and find
 some good tutorials on Youtube. Or you could find some and get the links included in this document.
-
