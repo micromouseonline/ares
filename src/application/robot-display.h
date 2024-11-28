@@ -10,7 +10,6 @@
 #include <mutex>
 #include <optional>
 #include "application/event_observer.h"
-#include "behaviour/robot-control.h"
 #include "robot/robot.h"
 #include "utils/thread-safe-queue.h"
 
@@ -45,24 +44,28 @@
  *
  */
 
-class RobotDisplay : IEventObserver {
- public:
-  static void Draw(sf::RenderWindow& window, const sf::Vector2f& pose, float orientation) {
+class RobotDisplay : IEventObserver
+{
+public:
+  static void Draw(sf::RenderWindow& window, const sf::Vector2f& pose, float orientation)
+  {
     // Draw the robot as a circle
     sf::CircleShape robotShape(ROBOT_RADIUS);
-    robotShape.setOrigin(ROBOT_RADIUS, ROBOT_RADIUS);  // Center the circle at its position
+    robotShape.setOrigin(ROBOT_RADIUS, ROBOT_RADIUS); // Center the circle at its position
     robotShape.setPosition(pose);
-    robotShape.setFillColor(sf::Color::Blue);  // Robot body color
+    robotShape.setFillColor(sf::Color::Blue); // Robot body color
 
     // Draw the robot's heading as a line
     orientation *= 3.141592f / 180.0f;
     sf::VertexArray headingLine(sf::Lines, 2);
     headingLine[0].position = pose;
-    headingLine[0].color = sf::Color::Red;  // Line starting point color
+    headingLine[0].color = sf::Color::Red; // Line starting point color
 
     // Calculate the heading endpoint
-    headingLine[1].position = {pose.x + HEADING_LINE_LENGTH * std::cos(orientation), pose.y + HEADING_LINE_LENGTH * std::sin(orientation)};
-    headingLine[1].color = sf::Color::Red;  // Line endpoint color
+    headingLine[1].position = {
+      pose.x + HEADING_LINE_LENGTH * std::cos(orientation), pose.y + HEADING_LINE_LENGTH * std::sin(orientation)
+    };
+    headingLine[1].color = sf::Color::Red; // Line endpoint color
 
     // Render the robot
     window.draw(robotShape);
@@ -71,11 +74,11 @@ class RobotDisplay : IEventObserver {
     window.draw(headingLine);
   };
 
- private:
-  static constexpr float ROBOT_RADIUS = 35.0f;         // Radius of the robot visualization
-  static constexpr float HEADING_LINE_LENGTH = 50.0f;  // Length of the heading line
+private:
+  static constexpr float ROBOT_RADIUS = 35.0f; // Radius of the robot visualization
+  static constexpr float HEADING_LINE_LENGTH = 50.0f; // Length of the heading line
 
- public:
+public:
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////

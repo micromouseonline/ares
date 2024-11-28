@@ -48,10 +48,10 @@
 #include <SFML/Graphics.hpp>
 #include "robot/sensor-data.h"
 
-class RobotControl
+class Behaviour
 {
 public:
-  RobotControl() : m_linearVelocity(0.0f), m_angularVelocity(0.0f), m_center(0.0f, 0.0f), m_radius(0.0f)
+  Behaviour() : m_linearVelocity(0.0f), m_angularVelocity(0.0f), m_center(0.0f, 0.0f), m_radius(0.0f)
   {
   };
 

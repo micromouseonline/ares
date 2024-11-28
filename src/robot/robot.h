@@ -9,7 +9,7 @@
 #include <mutex>
 #include <cmath>
 #include <thread>
-#include "behaviour/robot-control.h"
+#include "behaviour/behaviour.h"
 #include "sensor-data.h"
 
 /***
@@ -101,7 +101,7 @@ private:
 
  mutable std::mutex m_SystickMutex; // Protects access to m_pose and m_orientation
  SensorValues m_sensorValues; // Current sensor readings
- RobotControl m_control; // Higher-level control logic
+ Behaviour m_control; // Higher-level control logic
  Application* m_application = nullptr; // Pointer to the Application (for querying sensor readings)
 };
 
