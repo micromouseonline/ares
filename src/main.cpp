@@ -2,7 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 #include "application/application.h"
-#include "robot/collision-object.h"
+#include "robot/robot-body.h"
 #include "robot/sensor.h"
 
 /***
@@ -40,13 +40,13 @@ struct RobotState {
 
 RobotState g_robot_state;
 
-CollisionGeometry g_robot(sf::Vector2f(0, 0));
+RobotBody g_robot(sf::Vector2f(0, 0));
 Sensor sensor_lfs(g_robot.position() + g_robot_state.lfs_offs, g_robot.angle(), (float)g_robot_state.sensor_half_angle, 64);
 Sensor sensor_lds(g_robot.position() + g_robot_state.lds_offs, g_robot.angle(), (float)g_robot_state.sensor_half_angle, 64);
 Sensor sensor_rds(g_robot.position() + g_robot_state.rds_offs, g_robot.angle(), (float)g_robot_state.sensor_half_angle, 64);
 Sensor sensor_rfs(g_robot.position() + g_robot_state.rfs_offs, g_robot.angle(), (float)g_robot_state.sensor_half_angle, 64);
 
-void configure_sensor_geometry(CollisionGeometry& robot) {
+void configure_sensor_geometry(RobotBody& robot) {
   sensor_lfs.set_angle(robot.angle());
   sensor_lfs.set_half_angle((float)g_robot_state.sensor_half_angle);
   sensor_lds.set_angle(robot.angle());

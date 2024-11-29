@@ -8,7 +8,18 @@
 #include <vector>
 #include "collisions.h"
 
-class CollisionGeometry {
+/*
+
+the RobotBody is a collection of shapes that can be rotated and moved. They are positioned at an
+offset from the center of the robot.
+The shapes are stored in a vector so that they can be used together to test for collisions.
+
+TODO: perhaps this is the place to draw a sprite?
+*/
+
+
+
+class RobotBody {
  public:
   struct ShapeData {
     std::unique_ptr<sf::Shape> shape;
@@ -16,7 +27,7 @@ class CollisionGeometry {
     sf::Vector2f rotatedOffset;
   };
 
-  explicit CollisionGeometry(const sf::Vector2f& center = {0, 0}) : m_center(center) { m_colour = sf::Color::White; }
+  explicit RobotBody(const sf::Vector2f& center = {0, 0}) : m_center(center) { m_colour = sf::Color::White; }
 
   void addShape(std::unique_ptr<sf::Shape> shape, const sf::Vector2f& offset) {
     shape->setPosition(m_center + offset);
