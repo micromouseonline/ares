@@ -34,7 +34,7 @@ class Textbox {
 
   void Setup(int lines, int charSize, int width, sf::Vector2f position) {
     m_visible_lines = lines;
-    m_font.loadFromFile("assets/fonts/FreeMono.ttf");
+    m_font.loadFromFile("assets/fonts/ubuntu-mono-r.ttf");
     m_text.setFont(m_font);
     m_text.setString("TextBox Here");
     m_text.setCharacterSize(charSize);
