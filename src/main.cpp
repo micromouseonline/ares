@@ -2,7 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 #include "application/application.h"
-#include "robot/robot-body.h"
+#include "application/robot-body.h"
 #include "robot/sensor.h"
 
 /***
