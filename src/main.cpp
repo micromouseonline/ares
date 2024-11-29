@@ -26,57 +26,7 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct RobotState {
-  sf::Vector2f pos{96.0f, 96.0f};
-  int angle = 0.0f;
-  int sensor_half_angle = 5;
-  int front_sensor_angle = 10;
-  int side_sensor_angle = 30;
-  sf::Vector2f lfs_offs = sf::Vector2f(-30, -40);
-  sf::Vector2f lds_offs = sf::Vector2f(-10, -50);
-  sf::Vector2f rds_offs = sf::Vector2f(+10, -50);
-  sf::Vector2f rfs_offs = sf::Vector2f(+30, -40);
-};
-
-RobotState g_robot_state;
-
 RobotBody g_robot(sf::Vector2f(0, 0));
-Sensor sensor_lfs(g_robot.position() + g_robot_state.lfs_offs, g_robot.angle(), (float)g_robot_state.sensor_half_angle, 64);
-Sensor sensor_lds(g_robot.position() + g_robot_state.lds_offs, g_robot.angle(), (float)g_robot_state.sensor_half_angle, 64);
-Sensor sensor_rds(g_robot.position() + g_robot_state.rds_offs, g_robot.angle(), (float)g_robot_state.sensor_half_angle, 64);
-Sensor sensor_rfs(g_robot.position() + g_robot_state.rfs_offs, g_robot.angle(), (float)g_robot_state.sensor_half_angle, 64);
-
-void configure_sensor_geometry(RobotBody& robot) {
-  sensor_lfs.set_angle(robot.angle());
-  sensor_lfs.set_half_angle((float)g_robot_state.sensor_half_angle);
-  sensor_lds.set_angle(robot.angle());
-  sensor_lds.set_half_angle((float)g_robot_state.sensor_half_angle);
-  sensor_rds.set_angle(robot.angle());
-  sensor_rds.set_half_angle((float)g_robot_state.sensor_half_angle);
-  sensor_rfs.set_angle(robot.angle());
-  sensor_rfs.set_half_angle((float)g_robot_state.sensor_half_angle);
-
-  /// Update the sensor geometry. This is done after we have
-  /// decided if we have collided or not so the angles and positions are correct
-  /// It is all pretty cumbersome for now
-  sf::Vector2f lfs_pos = rotatePoint(g_robot_state.lfs_offs, {0, 0}, robot.angle());
-  sf::Vector2f lds_pos = rotatePoint(g_robot_state.lds_offs, {0, 0}, robot.angle());
-  sf::Vector2f rds_pos = rotatePoint(g_robot_state.rds_offs, {0, 0}, robot.angle());
-  sf::Vector2f rfs_pos = rotatePoint(g_robot_state.rfs_offs, {0, 0}, robot.angle());
-
-  sensor_lfs.set_origin(robot.position() + lfs_pos);
-  sensor_lds.set_origin(robot.position() + lds_pos);
-  sensor_rds.set_origin(robot.position() + rds_pos);
-  sensor_rfs.set_origin(robot.position() + rfs_pos);
-  float lfs_ang = -90 - g_robot_state.front_sensor_angle;
-  float lds_ang = -180 + g_robot_state.side_sensor_angle;
-  float rds_ang = 0 - g_robot_state.side_sensor_angle;
-  float rfs_ang = -90 + g_robot_state.front_sensor_angle;
-  sensor_lfs.set_angle(robot.angle() + lfs_ang);
-  sensor_lds.set_angle(robot.angle() + lds_ang);
-  sensor_rds.set_angle(robot.angle() + rds_ang);
-  sensor_rfs.set_angle(robot.angle() + rfs_ang);
-}
 
 int main() {
   // Program entry point.

@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 #include "collisions.h"
-
+#include "robot/sensor.h"
 /*
 
 the RobotBody is a collection of shapes that can be rotated and moved. They are positioned at an
@@ -16,8 +16,6 @@ The shapes are stored in a vector so that they can be used together to test for 
 
 TODO: perhaps this is the place to draw a sprite?
 */
-
-
 
 class RobotBody {
  public:
@@ -78,6 +76,38 @@ class RobotBody {
 
   sf::Vector2f position() const { return m_center; }
 
+  void configure_sensor_geometry(RobotBody& robot) {
+    //    sensor_lfs.set_angle(robot.angle());
+    //    sensor_lfs.set_half_angle((float)g_robot_state.sensor_half_angle);
+    //    sensor_lds.set_angle(robot.angle());
+    //    sensor_lds.set_half_angle((float)g_robot_state.sensor_half_angle);
+    //    sensor_rds.set_angle(robot.angle());
+    //    sensor_rds.set_half_angle((float)g_robot_state.sensor_half_angle);
+    //    sensor_rfs.set_angle(robot.angle());
+    //    sensor_rfs.set_half_angle((float)g_robot_state.sensor_half_angle);
+
+    /// Update the sensor geometry. This is done after we have
+    /// decided if we have collided or not so the angles and positions are correct
+    /// It is all pretty cumbersome for now
+    //    sf::Vector2f lfs_pos = rotatePoint(g_robot_state.lfs_offs, {0, 0}, robot.angle());
+    //    sf::Vector2f lds_pos = rotatePoint(g_robot_state.lds_offs, {0, 0}, robot.angle());
+    //    sf::Vector2f rds_pos = rotatePoint(g_robot_state.rds_offs, {0, 0}, robot.angle());
+    //    sf::Vector2f rfs_pos = rotatePoint(g_robot_state.rfs_offs, {0, 0}, robot.angle());
+    //
+    //    sensor_lfs.set_origin(robot.position() + lfs_pos);
+    //    sensor_lds.set_origin(robot.position() + lds_pos);
+    //    sensor_rds.set_origin(robot.position() + rds_pos);
+    //    sensor_rfs.set_origin(robot.position() + rfs_pos);
+    //    float lfs_ang = -90 - g_robot_state.front_sensor_angle;
+    //    float lds_ang = -180 + g_robot_state.side_sensor_angle;
+    //    float rds_ang = 0 - g_robot_state.side_sensor_angle;
+    //    float rfs_ang = -90 + g_robot_state.front_sensor_angle;
+    //    sensor_lfs.set_angle(robot.angle() + lfs_ang);
+    //    sensor_lds.set_angle(robot.angle() + lds_ang);
+    //    sensor_rds.set_angle(robot.angle() + rds_ang);
+    //    sensor_rfs.set_angle(robot.angle() + rfs_ang);
+  }
+
   void draw(sf::RenderWindow& window) {
     for (const auto& item : shapedata) {
       window.draw(*item.shape);
@@ -111,6 +141,10 @@ class RobotBody {
   float m_angle = 0;
   sf::Color m_colour = sf::Color::White;
   std::vector<ShapeData> shapedata;  // List of shapes and their offsets
+  Sensor sensor_lfs;
+  Sensor sensor_lds;
+  Sensor sensor_rds;
+  Sensor sensor_rfs;
 };
 
 #endif  // _OBJECT_H

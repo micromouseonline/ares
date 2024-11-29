@@ -9,7 +9,7 @@ const float DEG_TO_RAD = 3.14159265359f / 180.0f;
 
 class Sensor {
  public:
-  Sensor(sf::Vector2f origin, float angle, float half_angle = 5.0f, int ray_count = 16)
+  Sensor(sf::Vector2f origin = {0, 0}, float angle = 0, float half_angle = 5.0f, int ray_count = 16)
       : m_origin(origin), m_angle(angle), m_half_angle(half_angle), m_rays(ray_count + 1) {
     m_vertices.resize(m_rays);
     m_vertices.setPrimitiveType(sf::TriangleFan);
