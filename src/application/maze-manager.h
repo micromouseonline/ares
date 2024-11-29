@@ -96,11 +96,13 @@ public:
 
   ~MazeManager() = default;
 
-  bool LoadMazeStringFromFile(const std::string& filename) {
+  bool LoadMazeStringFromFile(const std::string& filename)
+  {
     std::ifstream file(filename);
-    if (!file) {
-        std::cerr << "Error: Could not open file " << filename << std::endl;
-        return false;
+    if (!file)
+    {
+      std::cerr << "Error: Could not open file " << filename << std::endl;
+      return false;
     }
 
     std::ostringstream ss;
@@ -108,9 +110,37 @@ public:
     mazeDataString = ss.str(); // Store it in the mazeData string
 
     return true;
-}
+  }
 
+  bool loadFromMemory(const uint8_t* data, int mazeWidth)
+  {
+    for (int y = 0; y < mazeWidth; y++)
+    {
+      for (int x = 0; x < mazeWidth; x++)
+      {
+        int index = x * mazeWidth + y;
+        int walls = data[index];
+        for (int d = 0; d < 4; d++)
+        {
+          // we need only do the North and East walls
+          if (walls & BIT(0))
+          {
+            SetWallState(x, y, Direction::North, WallState::KnownPresent);
+          }
+          if (walls & BIT(1))
+          {
+            SetWallState(x, y, Direction::East, WallState::KnownPresent);
+          }
+        }
+      }
+    }
+    return true;
+  }
 
+  bool loadFromList(MazeDataSource& mazeData)
+  {
+    return loadFromMemory(mazeData.data, MAZE_WIDTH);
+  }
 
   void LoadMazeFromString(const std::string& mazeData)
   {
@@ -271,31 +301,6 @@ public:
     m_vertexArrayWalls = MakeVertexArrayFromWalls(m_walls); // do this only when maze changes state
     window.draw(m_vertexArrayWalls);
     window.draw(m_vertexArrayPosts);
-  }
-
-  bool loadFromMemory(const uint8_t* data, int mazeWidth)
-  {
-    for (int y = 0; y < mazeWidth; y++)
-    {
-      for (int x = 0; x < mazeWidth; x++)
-      {
-        int index = x * mazeWidth + y;
-        int walls = data[index];
-        for (int d = 0; d < 4; d++)
-        {
-          // we need only do the North and East walls
-          if (walls & BIT(0))
-          {
-            SetWallState(x, y, Direction::North, WallState::KnownPresent);
-          }
-          if (walls & BIT(1))
-          {
-            SetWallState(x, y, Direction::East, WallState::KnownPresent);
-          }
-        }
-      }
-    }
-    return true;
   }
 
 private:
