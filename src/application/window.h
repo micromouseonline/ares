@@ -54,6 +54,7 @@ class Window {
   /// is private so we do not have direct access to it
   void Draw(sf::Drawable& l_drawable);
 
+  sf::View& getMazeView() { return m_MazeView; }
   /// Any class that inherits from IEventObserver can register as an observer
   void AddObserver(IEventObserver* observer);
 
@@ -66,6 +67,7 @@ class Window {
   sf::RenderWindow m_window;
   sf::Vector2u m_windowSize;
   std::string m_windowTitle;
+  sf::View m_MazeView;
   bool m_isDone;
   /// Note that there will be trouble if an observer registers and then gets destroyed
   /// because the vector will still have a pointer to it. The solution is to use a shared_ptr

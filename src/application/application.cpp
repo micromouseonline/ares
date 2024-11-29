@@ -11,9 +11,8 @@ Application::Application() : m_window(conf::AppName, conf::WindowSize), m_elapse
   m_elapsed = sf::Time::Zero;
   mStatisticsUpdateTime = sf::Time::Zero;
 
-  /// remember that the default view scaling everything by a factor of 3
-  // TODO: sort out views and scaling
-  m_textbox.Setup(5, 72, 1600, sf::Vector2f(3000, 25));
+  /// The UI components are defined in world pixels in the window's default view
+  m_textbox.Setup(5, 14, 600, sf::Vector2f(1000, 10));
   m_textbox.Add("Hello World!");
   m_window.AddObserver(this);
   m_robot.Start(this);
@@ -69,7 +68,7 @@ void Application::Render() {
   m_window.BeginDraw();
   // grab the window reference to save typing
   sf::RenderWindow& window = *m_window.GetRenderWindow();
-
+  window.setView(m_window.getMazeView());
   // Render the physical maze
   // TODO: think about how to add and distinguish the robot map
   //       from the physical maze
@@ -80,6 +79,7 @@ void Application::Render() {
   float orientation = m_robot.GetOrientation();
   RobotDisplay::Draw(*m_window.GetRenderWindow(), pose, orientation);
 
+  window.setView(window.getDefaultView());
   // we can draw anything else we want here.
   // it could be a path to the goal, overlaid telemetry
   // flooding values, highlight to current target
