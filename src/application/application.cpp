@@ -4,12 +4,9 @@
 #include "application.h"
 #include "configuration.h"
 #include "robot-display.h"
+#include "vec2.h"
 
-Application::Application()
-  : m_window("Application", conf::WindowSize),
-    m_elapsed(sf::Time::Zero),
-    mStatisticsUpdateTime(sf::Time::Zero),
-    m_robot() {
+Application::Application() : m_window("Application", conf::WindowSize), m_elapsed(sf::Time::Zero), mStatisticsUpdateTime(sf::Time::Zero), m_robot() {
   RestartClock();
   m_elapsed = sf::Time::Zero;
   mStatisticsUpdateTime = sf::Time::Zero;
@@ -19,12 +16,11 @@ Application::Application()
   m_textbox.Setup(5, 72, 1600, sf::Vector2f(3000, 25));
   m_textbox.Add("Hello World!");
   m_window.AddObserver(this);
-
   m_robot.Start(this);
 }
 
 Application::~Application() {
-  m_robot.Stop(); // Ensure the robot thread stops
+  m_robot.Stop();  // Ensure the robot thread stops
 }
 
 void Application::OnEvent(const Event& event) {
@@ -56,7 +52,7 @@ void Application::OnEvent(const Event& event) {
  * @param deltaTime
  */
 void Application::Update(sf::Time deltaTime) {
-  m_window.Update(); // call this first to process window events
+  m_window.Update();  // call this first to process window events
   m_elapsed += deltaTime;
   // Update sensor data for the robot
   CalculateSensorValues();
@@ -119,15 +115,15 @@ void Application::UpdateStatistics(sf::Time elapsedTime) {
 }
 
 Window* Application::GetWindow() {
-  return &m_window; //
+  return &m_window;  //
 }
 
 sf::Time Application::GetElapsed() {
-  return m_elapsed; //
+  return m_elapsed;  //
 }
 
 void Application::RestartClock() {
-  m_clock.restart(); //
+  m_clock.restart();  //
 }
 
 void Application::CalculateSensorValues() {
@@ -147,4 +143,6 @@ void Application::CalculateSensorValues() {
   }
 }
 
-SensorValues& Application::GetSensorValues() { return m_sensorValues; }
+SensorValues& Application::GetSensorValues() {
+  return m_sensorValues;
+}
