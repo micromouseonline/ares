@@ -7,63 +7,60 @@
 
 #include <SFML/Graphics.hpp>
 
-inline void draw_line(sf::RenderTarget& target, sf::Vector2f start, sf::Vector2f end, sf::Color color = sf::Color::White) {
-  sf::Vertex line[2];
-  line[0].position = start;
-  line[0].color = color;
-  line[1].position = end;
-  line[1].color = color;
-  target.draw(line, 2, sf::Lines);
-}
+class Drawing {
+ public:
+  static void draw_line(sf::RenderTarget& target, sf::Vector2f start, sf::Vector2f end, sf::Color color = sf::Color::White) {
+    sf::Vertex line[2];
+    line[0].position = start;
+    line[0].color = color;
+    line[1].position = end;
+    line[1].color = color;
+    target.draw(line, 2, sf::Lines);
+  }
 
-inline void draw_vector(sf::RenderTarget& target, sf::Vector2f pos, sf::Vector2f vec, sf::Color color = sf::Color::White) {
-  sf::Vertex line[2];
-  line[0].position = pos;
-  line[0].color = color;
-  line[1].position = pos + vec;
-  line[1].color = color;
-  target.draw(line, 2, sf::Lines);
-}
+  static void draw_vector(sf::RenderTarget& target, sf::Vector2f pos, sf::Vector2f vec, sf::Color color = sf::Color::White) {
+    sf::Vertex line[2];
+    line[0].position = pos;
+    line[0].color = color;
+    line[1].position = pos + vec;
+    line[1].color = color;
+    target.draw(line, 2, sf::Lines);
+  }
 
-// Function to draw a vector with an arrowhead
-#include <SFML/Graphics.hpp>
-#include <cmath>
+  // Function to draw a vector with an arrowhead
+  static void draw_vector_arrow(sf::RenderTarget& target, sf::Vector2f pos, sf::Vector2f vec, float arrowheadSizePercent, sf::Color color = sf::Color::White) {
+    // Calculate the arrowhead size
+    float vectorLength = std::sqrt(vec.x * vec.x + vec.y * vec.y);
+    float arrowLength = vectorLength * (arrowheadSizePercent / 100.0f);  // Arrowhead length as a percentage of the vector length
+    float arrowAngle = 30.0f * RADIANS;                                  // Angle between the arrowhead lines and the vector
 
-// Function to draw a vector with an arrowhead
-inline void draw_vector_arrow(sf::RenderTarget& target, sf::Vector2f pos, sf::Vector2f vec, float arrowheadSizePercent, sf::Color color = sf::Color::White) {
-  sf::Vertex line[2];
-  line[0].position = pos;
-  line[0].color = color;
-  line[1].position = pos + vec;
-  line[1].color = color;
+    // Calculate the direction of the vector
+    float angle = std::atan2(vec.y, vec.x);
+    sf::Vector2f arrowVec1(arrowLength * std::cos(angle - arrowAngle), arrowLength * std::sin(angle - arrowAngle));
+    sf::Vector2f arrowVec2(arrowLength * std::cos(angle + arrowAngle), arrowLength * std::sin(angle + arrowAngle));
 
-  target.draw(line, 2, sf::Lines);
+    // Create a vertex array with 6 vertices: 2 for the main line, and 4 for the arrowhead
+    sf::VertexArray vertices(sf::Lines, 6);
 
-  // Arrowhead
-  float arrowLength = std::sqrt(vec.x * vec.x + vec.y * vec.y) * (arrowheadSizePercent / 100.0f);  // Arrowhead length as a percentage of the vector length
-  float arrowAngle = 30.0f;                                                                        // Angle between the arrowhead lines and the vector
+    // Main line
+    vertices[0].position = pos;
+    vertices[0].color = color;
+    vertices[1].position = pos + vec;
+    vertices[1].color = color;
 
-  // Calculate the direction of the vector
-  float angle = std::atan2(vec.y, vec.x);
-  sf::Vector2f arrowVec1(arrowLength * std::cos(angle - arrowAngle * M_PI / 180.0f), arrowLength * std::sin(angle - arrowAngle * M_PI / 180.0f));
-  sf::Vector2f arrowVec2(arrowLength * std::cos(angle + arrowAngle * M_PI / 180.0f), arrowLength * std::sin(angle + arrowAngle * M_PI / 180.0f));
+    // Arrowhead lines
+    vertices[2].position = pos + vec;
+    vertices[2].color = color;
+    vertices[3].position = pos + vec - arrowVec1;
+    vertices[3].color = color;
 
-  // Arrowhead lines
-  sf::Vertex arrowLine1[2];
-  arrowLine1[0].position = pos + vec;
-  arrowLine1[0].color = color;
-  arrowLine1[1].position = pos + vec - arrowVec1;
-  arrowLine1[1].color = color;
+    vertices[4].position = pos + vec;
+    vertices[4].color = color;
+    vertices[5].position = pos + vec - arrowVec2;
+    vertices[5].color = color;
 
-  sf::Vertex arrowLine2[2];
-  arrowLine2[0].position = pos + vec;
-  arrowLine2[0].color = color;
-  arrowLine2[1].position = pos + vec - arrowVec2;
-  arrowLine2[1].color = color;
-
-  // Draw the arrowhead lines
-  target.draw(arrowLine1, 2, sf::Lines);
-  target.draw(arrowLine2, 2, sf::Lines);
-}
-
+    // Draw the vertex array
+    target.draw(vertices);
+  }
+};
 #endif  // IMGUI_SFML_STARTER_DRAWING_H

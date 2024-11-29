@@ -64,7 +64,7 @@ class RobotDisplay : IEventObserver {
     window.draw(robotShape);
 
     // Render the heading
-    draw_vector_arrow(window, pose, headingVector, 25.0, sf::Color::Red);
+    Drawing::draw_vector_arrow(window, pose, headingVector, 25.0, sf::Color::Red);
   };
 
  private:
