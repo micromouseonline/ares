@@ -2,10 +2,10 @@
 // Created by peter on 23/11/24.
 //
 #include "application.h"
+#include <sstream>
 #include "configuration.h"
 #include "robot-display.h"
 #include "vec2.h"
-
 Application::Application() : m_window(conf::AppName, conf::WindowSize), m_elapsed(sf::Time::Zero), mStatisticsUpdateTime(sf::Time::Zero), m_robot() {
   RestartClock();
   m_elapsed = sf::Time::Zero;
@@ -20,24 +20,6 @@ Application::Application() : m_window(conf::AppName, conf::WindowSize), m_elapse
 
 Application::~Application() {
   m_robot.Stop();  // Ensure the robot thread stops
-}
-
-void Application::OnEvent(const Event& event) {
-  switch (event.type) {
-    case EventType::SFML_EVENT:
-      if (event.event.type == sf::Event::MouseWheelScrolled) {
-        std::string msg = "SFML Event - Mouse Wheel Scrolled ";
-        event.event.mouseWheelScroll.delta > 0 ? msg += "Up" : msg += "Down";
-        m_textbox.Add(msg);
-      }
-      break;
-    case EventType::USER_EVENT:
-      m_textbox.Add("USER Event");
-      break;
-    default:
-      m_textbox.Add("UNHANDLED Event");
-      break;
-  }
 }
 
 /***
@@ -92,11 +74,72 @@ void Application::Render() {
   m_window.EndDraw();
 }
 
+/***
+ * HandleInput is used to test the STATE of an input device. It is
+ * not meant to be used to respond to input events.
+ *
+ * For example, you might use something like this to continuously
+ * move a character in a game
+ *    if (sf::Keyboard::IsKeyPressed(sf::Keyboard::W) {
+ *        // move forward
+ *    }
+ */
 void Application::HandleInput() {
-  if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-    mp = sf::Vector2f(sf::Mouse::getPosition(*m_window.GetRenderWindow()));
-    std::string msg = "Left Mouse button pressed";
-    m_textbox.Add(msg);
+  /// This is a silly example of how HandleInput can be used
+  if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+    m_textbox.SetBackgroundColor(sf::Color(255, 255, 0, 48));
+  } else {
+    m_textbox.SetBackgroundColor(sf::Color(255, 255, 255, 48));
+  }
+}
+
+/***
+ * OnEvent is used to respond to CHANGES in state such as keypress
+ *
+ * For example, you might use something like this to continuously
+ * move a character in a game
+ *    if (sf::Keyboard::IsKeyPressed(sf::Keyboard::W) {
+ *        // move forward
+ *    }
+ */
+
+sf::FloatRect getViewBounds(const sf::RenderWindow& window, const sf::View& view) {
+  sf::Vector2f viewSize = view.getSize();
+  sf::Vector2f viewCenter = view.getCenter();
+  sf::Vector2f viewCorner = viewCenter - (viewSize / 2.0f);
+  return {viewCorner, viewSize};
+}
+
+void Application::OnEvent(const Event& event) {
+  switch (event.type) {
+    case EventType::SFML_EVENT:
+      if (event.event.type == sf::Event::MouseButtonPressed) {
+        sf::RenderWindow* window = m_window.GetRenderWindow();
+        sf::Vector2i pixelPos(sf::Mouse::getPosition(*window));
+        sf::Vector2f mazePos{0, 0};
+        window->setView(m_window.getMazeView());
+        sf::View mazeView = m_window.getMazeView();  // TODO: where should we store the mazeView? In config?
+        sf::FloatRect mazeBounds = getViewBounds(*window, conf::MazeView);
+        if (mazeBounds.contains(float(pixelPos.x), float(pixelPos.y))) {
+          mazePos = (window->mapPixelToCoords(pixelPos, mazeView));
+        }
+
+        std::stringstream msg;
+        if (event.event.mouseButton.button == sf::Mouse::Right) {
+          msg << " (RIGHT BUTTON) ";
+        } else {
+          msg << " (OTHER BUTTON) ";
+        }
+        msg << " @ " << Vec2(mazePos) << " =  " << Vec2(pixelPos);
+        m_textbox.Add(msg.str());
+      }
+      break;
+    case EventType::USER_EVENT:
+      m_textbox.Add("USER Event");
+      break;
+    default:
+      m_textbox.Add("UNHANDLED Event");
+      break;
   }
 }
 

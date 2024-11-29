@@ -29,14 +29,14 @@ void Window::Setup(const std::string title, const sf::Vector2u& size) {
   /// To change the properties, you have to re-create the screen
   Destroy();
   Create();
-  sf::View view = m_window.getDefaultView();
-  sf::Vector2f originalSize = view.getSize();                  // Scale the view to 25%
-  view.setSize(originalSize.x * 3.0f, originalSize.y * 3.0f);  // Center the view (optional, depending on desired effect)
-  sf::Vector2f newSize = view.getSize();                       // Scale the view to 25%
-
-  view.setCenter(newSize.x * 0.5f, newSize.y * 0.5f);  // Apply the view to the window
-  m_MazeView = view;
-  //  m_window.setView(view);
+  m_MazeView = conf::MazeView;
+  float scale = 1.0f;
+  float mazePixels = scale * conf::MazeViewScreenSize;
+  float vpTop = conf::WindowPadding / size.y;
+  float vpLeft = conf::WindowPadding / size.x;
+  float vpWidth = (mazePixels + conf::WindowPadding) / size.x;
+  float vpHeight = (mazePixels + conf::WindowPadding) / size.y;
+  m_MazeView.setViewport(sf::FloatRect(vpLeft, vpTop, vpWidth, vpHeight));
   m_window.setFramerateLimit(conf::FrameRate);
 }
 
@@ -52,7 +52,7 @@ void Window::Destroy() {
 }
 
 void Window::BeginDraw() {
-  m_window.clear(sf::Color::Black);
+  m_window.clear(conf::WindowBackGround);
 }
 void Window::EndDraw() {
   m_window.display();

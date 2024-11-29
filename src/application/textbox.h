@@ -21,7 +21,7 @@
 class Textbox {
  public:
   Textbox() {
-    Setup(5, 9, 200, sf::Vector2f(0, 0));  //
+    Setup(5, 9, 200, sf::Vector2f(conf::WindowPadding, 8 * conf::WindowPadding));  //
   }
 
   Textbox(int l_visible, int l_charSize, int l_width, sf::Vector2f l_screenPos) {
@@ -38,7 +38,7 @@ class Textbox {
     m_text.setFont(m_font);
     m_text.setString("TextBox Here");
     m_text.setCharacterSize(charSize);
-    sf::Vector2f padding(8.0f, 2.0f);  // padding at top left
+    sf::Vector2f padding(10.0f, 10.0f);  // padding at top left
     m_text.setPosition(position + padding);
 
     m_background.setSize(sf::Vector2f(width + 2 * padding.x, (lines * (charSize * 1.2f) + 2 * padding.y)));
