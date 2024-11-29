@@ -146,7 +146,7 @@ struct Vec2 {
   }
 
   friend std::ostream& operator<<(std::ostream& os, const Vec2& v) {
-    os << "PVector(" << v.x << ", " << v.y << ")";
+    os << "(" << v.x << ", " << v.y << ")";
     return os;
   }
 
