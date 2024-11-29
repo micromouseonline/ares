@@ -81,7 +81,6 @@ void configure_sensor_geometry(RobotBody& robot) {
 int main() {
   // Program entry point.
   Application app;
-  app.GetWindow()->SetTitle("Marty Mouse");
   auto image = sf::Image{};
   if (image.loadFromFile("assets/images/mouse-a.png")) {
     app.GetWindow()->GetRenderWindow()->setIcon(image.getSize().x, image.getSize().y, image.getPixelsPtr());

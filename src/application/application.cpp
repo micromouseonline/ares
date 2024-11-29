@@ -6,7 +6,7 @@
 #include "robot-display.h"
 #include "vec2.h"
 
-Application::Application() : m_window("Application", conf::WindowSize), m_elapsed(sf::Time::Zero), mStatisticsUpdateTime(sf::Time::Zero), m_robot() {
+Application::Application() : m_window(conf::AppName, conf::WindowSize), m_elapsed(sf::Time::Zero), mStatisticsUpdateTime(sf::Time::Zero), m_robot() {
   RestartClock();
   m_elapsed = sf::Time::Zero;
   mStatisticsUpdateTime = sf::Time::Zero;
