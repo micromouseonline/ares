@@ -12,10 +12,11 @@
 #include "application/maze-manager.h"
 #include "application/textbox.h"
 #include "application/window.h"
+#include "common/core.h"
+#include "common/vec2.h"
 #include "robot-display.h"
 #include "robot/robot.h"
 #include "robot/sensor-data.h"
-#include "utils/vec2.h"
 
 class Application : public IEventObserver {
  public:

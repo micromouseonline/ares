@@ -5,7 +5,8 @@
 #ifndef CORE_H
 #define CORE_H
 
-#include <SFML/Graphics.hpp>
+#include "SFML/Graphics.hpp"
+#include "types.h"
 
 #ifndef M_PI
 #define M_PI 3.1415923846f

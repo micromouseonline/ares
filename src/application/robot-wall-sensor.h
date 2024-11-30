@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "SFML/Graphics.hpp"
-#include "utils.h"
+#include "common/utils.h"
 
 class RobotSensor {
  public:

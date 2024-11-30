@@ -11,7 +11,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
-#include "application/core.h"
+#include "common/core.h"
 #include "configuration.h"
 #include "world/mazedata.h"
 

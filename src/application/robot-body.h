@@ -8,6 +8,7 @@
 #include <vector>
 #include "collisions.h"
 #include "robot-sensor.h"
+#include "common/collisions.h"
 /*
 
 the RobotBody is a collection of shapes that can be rotated and moved. They are positioned at an

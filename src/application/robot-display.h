@@ -11,8 +11,8 @@
 #include <optional>
 #include "application/drawing.h"
 #include "application/event_observer.h"
+#include "common/thread-safe-queue.h"
 #include "robot/robot.h"
-#include "utils/thread-safe-queue.h"
 
 /***
  * The RobotDisplay class renders the robot to the screen and handles any

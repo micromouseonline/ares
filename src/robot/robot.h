@@ -12,6 +12,7 @@
 #include <thread>
 #include "application/core.h"
 #include "behaviour/behaviour.h"
+#include "common/core.h"
 #include "sensor-data.h"
 
 /***
