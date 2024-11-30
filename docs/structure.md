@@ -1,6 +1,5 @@
 # Summary of the Application Structure
 
-
 1. Robot:  is a model of the physical vehicle.
     - At its simplest, it is given trajectory information and it turns that into (virtual) motion.
     - Everything that happens is tied to a core operation - Systick. In there all the motion calculations happen.
@@ -9,14 +8,17 @@
     - Sensor position and orientation is stored by the robot
     - Sensor data is held by the Robot. Interpretation of that data is not its concern.
     - Systick maintains internal time - one tick per iteration
-    - Systick adds to a list of state information on every iteration. That is effectively a black box recorder running at the systick frequency
+    - Systick adds to a list of state information on every iteration. That is effectively a black box recorder running
+      at the systick frequency
 1. Behaviour: Combined with Robot, that is what makes this a micromouse simulation
     - Behaviour is asynchronous in the sense that the behaviour code must wait for specific states or flags in the Robot
     - Robot never tells Behaviour what to do.
     - Behaviour tells the Robot what to do and constantly monitors its achievement.
     - Behaviour does not care about the world time, If it cares at all it is about tick count from the robot.
-    - This dependence means that robot can run systick at arbitrary speed but behaviour can timestamp its actions using the robot tick count.
-    - Behaviour also generates a log of actions. For simplicity, this can be separate to the Robot black box but the common time stamp lets you sync them up later.
+    - This dependence means that robot can run systick at arbitrary speed but behaviour can timestamp its actions using
+      the robot tick count.
+    - Behaviour also generates a log of actions. For simplicity, this can be separate to the Robot black box but the
+      common time stamp lets you sync them up later.
 1. World: is where the information about the physical environment is managed
     - Knows about the location and dimensions of the walls an posts
     - A Line follower would have the track layout
@@ -30,11 +32,13 @@
     - Can read shared state from Robot and Behaviour
     - Provides visualisation by displaying state held in the black box record and the behaviour log.
 
-That last item is, I think, pretty central in terms of one of  the logging/black box requirements 
+That last item is, I think, pretty central in terms of one of the logging/black box requirements
 
-If the Behaviour and the Robot run as fast as the computer permits, it can spew out the black box and behaviour logs very quickly. There is no need to try and make the overall operation run at 1:1 real time.
+If the Behaviour and the Robot run as fast as the computer permits, it can spew out the black box and behaviour logs
+very quickly. There is no need to try and make the overall operation run at 1:1 real time.
 
-Suppose the systick frequency is 1kHz. One mode in the Application would be to just run through the data, displaying a new frame every 16/17 items. That would look like a real-time run of the robot.
+Suppose the systick frequency is 1kHz. One mode in the Application would be to just run through the data, displaying a
+new frame every 16/17 items. That would look like a real-time run of the robot.
 
 
 ---
@@ -58,13 +62,14 @@ disadvantages of the structure.
 - Key Methods:
     - Run(): Starts the application, continuously updating and rendering the simulation.
     - SetRobot(): Assigns the Robot instance.
-    - CalculateSensorValues(): Calculates the latest sensor readings based on the robot's position and orientation in
+    - CallbackCalculateSensorData(): Calculates the latest sensor readings based on the robot's position and orientation
+      in
       the maze.
     - GetSensorValues(): Returns the most recent sensor data to the robot.
 - Attributes:
     - m_robot: A pointer to the Robot instance.
     - m_maze: The maze in which the robot navigates.
-    - m_sensorValues: Stores the calculated sensor readings.
+    - m_SensorData: Stores the calculated sensor readings.
 - Advantages:
     - Centralized control of the simulation.
     - Manages interaction between various components (e.g., maze, sensors).
@@ -85,7 +90,7 @@ disadvantages of the structure.
 - Attributes:
     - m_position: Current position of the robot in the simulation.
     - m_orientation: Current orientation of the robot (in degrees).
-    - m_sensorValues: Stores the sensor readings received from the Application.
+    - m_SensorData: Stores the sensor readings received from the Application.
     - m_sensorUpdateThread: A separate thread that periodically requests sensor data from the Application.
     - m_application: A pointer to the Application to fetch sensor data.
 - Advantages:

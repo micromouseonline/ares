@@ -77,6 +77,7 @@ class RobotBody {
   sf::Vector2f position() const { return m_center; }
 
   void configure_sensor_geometry(RobotBody& robot) {
+    (void)robot;
     //    sensor_lfs.set_angle(robot.angle());
     //    sensor_lfs.set_half_angle((float)g_robot_state.sensor_half_angle);
     //    sensor_lds.set_angle(robot.angle());

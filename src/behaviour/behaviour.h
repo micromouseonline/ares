@@ -48,47 +48,37 @@
 #include <SFML/Graphics.hpp>
 #include "robot/sensor-data.h"
 
-class Behaviour
-{
-public:
-  Behaviour() : m_linearVelocity(0.0f), m_angularVelocity(0.0f), m_center(0.0f, 0.0f), m_radius(0.0f)
-  {
-  };
+class Behaviour {
+ public:
+  Behaviour() : m_linearVelocity(0.0f), m_angularVelocity(0.0f), m_center(0.0f, 0.0f), m_radius(0.0f){};
 
   // Updates the control logic with the current sensor data
-  void Update(const SensorValues& sensorValues)
-  {
-    (void)sensorValues;
-    // nothing happens based on sensor datain this test
-  };
+  void Update() {};
 
   // Get the current velocities (linear and angular)
-  float GetLinearVelocity() const
-  {
-    return m_linearVelocity; //
+  float GetLinearVelocity() const {
+    return m_linearVelocity;  //
   };
 
-  float GetAngularVelocity() const
-  {
-    return m_angularVelocity; //
+  float GetAngularVelocity() const {
+    return m_angularVelocity;  //
   };
 
   // Set a circular trajectory for the robot
-  void SetCircularTrajectory(const sf::Vector2f& center, float radius, float angularSpeedDegrees)
-  {
+  void SetCircularTrajectory(const sf::Vector2f& center, float radius, float angularSpeedDegrees) {
     m_center = center;
     m_radius = radius;
-    m_angularVelocity = angularSpeedDegrees; // Store angular speed in degrees per second
+    m_angularVelocity = angularSpeedDegrees;  // Store angular speed in degrees per second
     m_linearVelocity = radius * (m_angularVelocity * 3.14159f / 180.0f);
     // Convert angular speed to radians for calculation
   }
 
-private:
+ private:
   // Current control outputs
-  float m_linearVelocity; // Forward velocity (units per second)
-  float m_angularVelocity; // Angular velocity (radians per second)
-  sf::Vector2f m_center; // Center of the circular trajectory
-  float m_radius; // Radius of the circular trajectory
+  float m_linearVelocity;   // Forward velocity (units per second)
+  float m_angularVelocity;  // Angular velocity (radians per second)
+  sf::Vector2f m_center;    // Center of the circular trajectory
+  float m_radius;           // Radius of the circular trajectory
 };
 
 #endif  // ROBOT_CONTROL_H

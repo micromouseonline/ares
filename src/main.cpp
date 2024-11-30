@@ -3,7 +3,6 @@
 #include <string>
 #include "application/application.h"
 #include "application/robot-body.h"
-#include "robot/sensor.h"
 
 /***
  * This app starts to take the 015 example and convert it to a more generic application structure.
@@ -74,21 +73,7 @@ int main() {
   g_robot.setPosition(96, 96);
   g_robot.setRotation(180);
   std::unique_ptr<MazeManager> maze = std::make_unique<MazeManager>();
-  maze->add_posts(5, 5);
-  /// note that  this is a simple demo, nothing stops duplicate walls
-  for (int i = 0; i < 4; i++) {
-    maze->add_wall(i, 0, NORTH);
-    maze->add_wall(i, 3, SOUTH);
-    maze->add_wall(0, i, WEST);
-    maze->add_wall(3, i, EAST);
-  }
-  maze->add_wall(0, 0, EAST);
-  maze->add_wall(2, 2, EAST);
-  maze->add_wall(2, 3, WEST);
-  maze->add_wall(1, 1, SOUTH);
-  maze->add_wall(2, 0, SOUTH);
-  maze->add_wall(1, 1, EAST);
-  maze->add_wall(0, 2, EAST);
+
 
   float v = 180;
   float omega = 180;

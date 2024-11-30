@@ -132,7 +132,5 @@ include_directories(src/utils)
 target_sources(${APP} PRIVATE
         src/main.cpp
         src/application/window.cpp
-        src/application/application.cpp
-        src/robot/robot.cpp
         src/world/mazedata.cpp
 )

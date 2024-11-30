@@ -6,6 +6,7 @@
 #define DRAWING_H
 
 #include <SFML/Graphics.hpp>
+#include <cmath>
 
 class Drawing {
  public:

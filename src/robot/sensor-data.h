@@ -7,7 +7,7 @@
 
 #include <mutex>
 
-struct SensorValues {
+struct SensorData {
   float lfs_value = 0;
   float rfs_value = 0;
   float lds_value = 0;
@@ -18,10 +18,14 @@ struct SensorValues {
   float rds_dist = 0;
 };
 
-class SensorData {
+#include <functional>
+/// Returns a SensorData struct
+using SensorDataCallback = std::function<SensorData()>;
+
+class SensorDataClass {
  public:
   // Constructor
-  SensorData() : frontDistance(0.0f), leftDistance(0.0f), rightDistance(0.0f) {}
+  SensorDataClass() : frontDistance(0.0f), leftDistance(0.0f), rightDistance(0.0f) {}
 
   // Setters
   void setFrontDistance(float distance) {
