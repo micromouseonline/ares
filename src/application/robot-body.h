@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 #include "collisions.h"
-#include "robot/sensor.h"
+#include "robot-sensor.h"
 /*
 
 the RobotBody is a collection of shapes that can be rotated and moved. They are positioned at an
@@ -142,10 +142,10 @@ class RobotBody {
   float m_angle = 0;
   sf::Color m_colour = sf::Color::White;
   std::vector<ShapeData> shapedata;  // List of shapes and their offsets
-  Sensor sensor_lfs;
-  Sensor sensor_lds;
-  Sensor sensor_rds;
-  Sensor sensor_rfs;
+  RobotSensor sensor_lfs;
+  RobotSensor sensor_lds;
+  RobotSensor sensor_rds;
+  RobotSensor sensor_rfs;
 };
 
 #endif  // _OBJECT_H

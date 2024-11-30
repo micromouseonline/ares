@@ -1,15 +1,13 @@
 #ifndef SENSOR_H
 #define SENSOR_H
 
-#include <SFML/Graphics.hpp>
 #include <vector>
+#include "SFML/Graphics.hpp"
 #include "utils.h"
 
-const float DEG_TO_RAD = 3.14159265359f / 180.0f;
-
-class Sensor {
+class RobotSensor {
  public:
-  Sensor(sf::Vector2f origin = {0, 0}, float angle = 0, float half_angle = 5.0f, int ray_count = 16)
+  RobotSensor(sf::Vector2f origin = {0, 0}, float angle = 0, float half_angle = 5.0f, int ray_count = 16)
       : m_origin(origin), m_angle(angle), m_half_angle(half_angle), m_rays(ray_count + 1) {
     m_vertices.resize(m_rays);
     m_vertices.setPrimitiveType(sf::TriangleFan);
@@ -46,8 +44,8 @@ class Sensor {
    */
   void update(const std::vector<sf::RectangleShape>& obstacles) {
     // Calculate angular increment for rays
-    float startAngle = (m_angle - m_half_angle) * DEG_TO_RAD;
-    float endAngle = (m_angle + m_half_angle) * DEG_TO_RAD;
+    float startAngle = (m_angle - m_half_angle) * RADIANS;
+    float endAngle = (m_angle + m_half_angle) * RADIANS;
     float angleIncrement = (endAngle - startAngle) / float(m_rays - 1);
 
     float total_power = 0;
