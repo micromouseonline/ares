@@ -15,7 +15,6 @@
 #include "common/core.h"
 #include "common/vec2.h"
 #include "robot-body.h"
-#include "robot-display.h"
 #include "robot/robot.h"
 #include "robot/sensor-data.h"
 
