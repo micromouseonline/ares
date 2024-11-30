@@ -7,13 +7,14 @@
 
 #include <SFML/Graphics.hpp>
 #include <cstdlib>
-#include "application/core.h"
 #include "application/event_observer.h"
 #include "application/maze-manager.h"
+#include "application/robot-wall-sensor.h"
 #include "application/textbox.h"
 #include "application/window.h"
 #include "common/core.h"
 #include "common/vec2.h"
+#include "robot-body.h"
 #include "robot-display.h"
 #include "robot/robot.h"
 #include "robot/sensor-data.h"
@@ -29,9 +30,9 @@ class Application : public IEventObserver {
     m_textbox.Setup(5, 14, 600, sf::Vector2f(1000, 10));
     m_textbox.Add("Hello World!");
     m_window.AddObserver(this);
-    /// The Lambda expression here serves too bind the callback to the application instance
-    m_robot.SetSensorCallback([this]() -> SensorData { return this->CallbackCalculateSensorData(); });
 
+    /// The Lambda expression here serves to bind the callback to the application instance
+    m_robot.SetSensorCallback([this]() -> SensorData { return this->CallbackCalculateSensorData(); });
     m_robot.Start();
   }
 
@@ -133,7 +134,7 @@ class Application : public IEventObserver {
     m_window.Update();  // call this first to process window events
     m_elapsed += deltaTime;
     // Update sensor data for the robot
-    CallbackCalculateSensorData();
+    m_mazeManager.UpdateObstacles();
     // now read back what the robot sees
     SensorData sensors = m_robot.GetSensorData();
     char str[100];
@@ -161,7 +162,13 @@ class Application : public IEventObserver {
     // Draw the robot using the RobotDisplay class
     sf::Vector2f pose = m_robot.GetPose();
     float orientation = m_robot.GetOrientation();
-    RobotDisplay::Draw(*m_window.GetRenderWindow(), pose, orientation);
+    RobotDisplay::Draw(window, pose, orientation);
+    //    m_RobotBody.draw(window);
+    //    m_mazeManager.UpdateObstacles();
+
+    //    for (auto& sensor : m_robot_sensors) {
+    //      sensor.draw(window);
+    //    }
 
     window.setView(window.getDefaultView());
     // we can draw anything else we want here.
@@ -212,6 +219,11 @@ class Application : public IEventObserver {
    * @return a copy of the local sensor data
    */
   SensorData CallbackCalculateSensorData() {
+    std::vector<sf::RectangleShape> obstacles;  //= m_mazeManager.GetObstacles(); TODO: GetObstacles is broken
+    sf::RectangleShape block({180.0f, 180.0f});
+    block.setPosition(540, 1080);
+    obstacles.push_back(block);
+
     static uint32_t ticks = 0;
     /// just modify the sensor values a bit to see that they change
     float v = 50.0f + (++ticks % 1000) / 10.0f;
@@ -248,10 +260,13 @@ class Application : public IEventObserver {
   sf::Text mStatisticsText;
   sf::Time mStatisticsUpdateTime;
   Textbox m_textbox;
-  Robot m_robot;                 // The robot instance
+  Robot m_robot;  // The robot instance
+  RobotBody m_RobotBody;
+
   std::mutex m_sensorDataMutex;  // Protects sensor data updates
   SensorData m_SensorData;       // Current sensor reading that are read by robot
   MazeManager m_mazeManager;     // This is the maze manager
+  std::mutex appMutex;
 };
 
 #endif  // APPLICATION_H

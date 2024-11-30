@@ -6,9 +6,9 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-#include "collisions.h"
-#include "robot-sensor.h"
 #include "common/collisions.h"
+#include "robot-wall-sensor.h"
+#include "robot/robot.h"
 /*
 
 the RobotBody is a collection of shapes that can be rotated and moved. They are positioned at an
@@ -77,8 +77,13 @@ class RobotBody {
 
   sf::Vector2f position() const { return m_center; }
 
-  void configure_sensor_geometry(RobotBody& robot) {
+  void updateSensorGeometry(Robot& robot) {
     (void)robot;
+    //    std::lock_guard<std::mutex> lock(m_BodyMutex);
+    //    for (auto& sensor : m_robot_sensors) {
+    //      sensor.set_angle(m_robot.GetOrientation());
+    //      sensor.set_origin(m_robot.GetPose());
+    //    }
     //    sensor_lfs.set_angle(robot.angle());
     //    sensor_lfs.set_half_angle((float)g_robot_state.sensor_half_angle);
     //    sensor_lds.set_angle(robot.angle());
@@ -143,10 +148,12 @@ class RobotBody {
   float m_angle = 0;
   sf::Color m_colour = sf::Color::White;
   std::vector<ShapeData> shapedata;  // List of shapes and their offsets
-  RobotSensor sensor_lfs;
-  RobotSensor sensor_lds;
-  RobotSensor sensor_rds;
-  RobotSensor sensor_rfs;
+  std::vector<RobotWallSensor> m_robot_sensors;
+  RobotWallSensor sensor_lfs;
+  RobotWallSensor sensor_lds;
+  RobotWallSensor sensor_rds;
+  RobotWallSensor sensor_rfs;
+  std::mutex m_BodyMutex;
 };
 
 #endif  // _OBJECT_H

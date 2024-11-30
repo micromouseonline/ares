@@ -268,6 +268,24 @@ class MazeManager {
     window.draw(m_vertexArrayPosts);
   }
 
+  void UpdateObstacles() {
+    std::lock_guard<std::mutex> lock(m_ObstacleMutex);
+    m_Obstacles.clear();
+    int c = 25;
+    for (auto& wall : m_walls) {
+      if (wall.state == WallState::KnownPresent) {
+        m_Obstacles.push_back(wall.shape);
+      }
+      if (--c <= 0) {
+        return;
+      }
+    }
+  }
+
+  std::vector<sf::RectangleShape> GetObstacles() {
+    return m_Obstacles;  //
+  }
+
  private:
   /***
    * This utility will take a list of float rectangles (should be ints?) and create a vertex array
@@ -340,6 +358,9 @@ class MazeManager {
   std::string mazeDataString;
   sf::RectangleShape m_MazeBase;
   bool m_MazeChanged = false;
+  mutable std::mutex m_ObstacleMutex;  // Protects access to m_pose and m_orientation
+
+  std::vector<sf::RectangleShape> m_Obstacles;
 };
 
 #endif  // MAZE_H

@@ -5,9 +5,40 @@
 #include "SFML/Graphics.hpp"
 #include "common/utils.h"
 
-class RobotSensor {
+/**
+ * The RobotWallSensor is a mocked device that calculates sensor data for the simulated
+ * robot. Instances of the lass represent a single sensor that can calculate the
+ * reflected light power from nearby walls. It does this by finding the distance to the
+ * nearest obstacle for a fan of rays emitted from the sensor location. The number of rays
+ * and their angular spread can be specified. The actual response is the average of the
+ * distances for each ray.
+ *
+ * The power is calculated from an inverse square model for the relationship between
+ * reflected power and distance.
+ *
+ * An individual sensor must also be given a position and an orientation. These are
+ * determined by the position and orientation of the Robot to which they belong.
+ *
+ * The Robot has a list of sensors positions and, for each, a set of offsets -
+ * x,y,theta - that are relative to the Robot's centre of rotation and current heading.
+ *
+ * The Application can query those parameters. The CalculateSensors callback will
+ * query the robot for the location of each sensor and then perform the calculation.
+ *
+ * It is the offsets that are queried and then combined with the robot pose to get
+ * the current sensor orientation. It is this way around because the real robot has
+ * no control over sensor orientation although the offsets are part of the robot design.
+ *
+ * NOTE: SHOULD the configuration file hold the robot setup in terms of the number
+ *       of sensors and their initial placement? and should than be as individual
+ *       items or an array. An array with named indices is more flexible
+ *
+ *
+ *
+ */
+class RobotWallSensor {
  public:
-  RobotSensor(sf::Vector2f origin = {0, 0}, float angle = 0, float half_angle = 5.0f, int ray_count = 16)
+  RobotWallSensor(sf::Vector2f origin = {0, 0}, float angle = 0, float half_angle = 5.0f, int ray_count = 16)
       : m_origin(origin), m_angle(angle), m_half_angle(half_angle), m_rays(ray_count + 1) {
     m_vertices.resize(m_rays);
     m_vertices.setPrimitiveType(sf::TriangleFan);

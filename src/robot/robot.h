@@ -10,7 +10,6 @@
 #include <iostream>
 #include <mutex>
 #include <thread>
-#include "application/core.h"
 #include "behaviour/behaviour.h"
 #include "common/core.h"
 #include "sensor-data.h"
@@ -50,7 +49,11 @@
  */
 class Robot {
  public:
-  Robot() : m_running(false), m_pose(1300.0f, 1300.0f), m_orientation(0.0f) {}
+  Robot() : m_running(false), m_pose(1300.0f, 1300.0f), m_orientation(0.0f) {
+    for (int i = 0; i < conf::SENSOR_COUNT; i++) {
+      m_SensorOffsets[i] = conf::SensorDefaultOffsets[i];  //
+    }
+  }
 
   ~Robot() { Stop(); }
 
@@ -222,7 +225,9 @@ class Robot {
   SensorDataCallback m_SensorCallback = nullptr;
   mutable std::mutex m_SystickMutex;  // Protects access to m_pose and m_orientation
   SensorData m_SensorData;            // Current sensor readings
-  Behaviour m_control;                // Higher-level control logic
+
+  Behaviour m_control;  // Higher-level control logic
+  SensorGeometry m_SensorOffsets[conf::SENSOR_COUNT];
 };
 
 #endif  // ROBOT_H

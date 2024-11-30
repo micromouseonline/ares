@@ -5,8 +5,9 @@
 
 namespace conf {
 
-  // Dimensions
+  // Maze Dimensions
   const float MazeSize = (16 * 180.0f) + 12.0f;  // 2892.0f;
+
   // Window configuration
   const std::string AppName = "ARES Simulator for Micromouse";
   const sf::Vector2u WindowSize = {1900, 1050};
@@ -27,5 +28,17 @@ namespace conf {
   const sf::Color VirtualColour = (sf::Color(0, 255, 255));
   const sf::Color ErrorColour = (sf::Color(255, 0, 255, 128));
   const sf::Color MazeBaseColour = sf::Color(30, 30, 30, 64);
+
+  // Robot configuration defaults
+  // NOTE: this might be better in its own namespace to support different robots
+  //       at build time. Or even in the Robot class?
+  const int SENSOR_COUNT = 4;
+  enum WallSensorName { LFS, LDS, RDS, RFS };
+  const SensorGeometry SensorDefaultOffsets[SENSOR_COUNT] = {
+      {.x = -30, .y = -40, .theta = -10, .halfAngle = 5.0f, .rayCount = 32},
+      {.x = -10, .y = -50, .theta = -30, .halfAngle = 5.0f, .rayCount = 32},
+      {.x = +10, .y = -50, .theta = +30, .halfAngle = 5.0f, .rayCount = 32},
+      {.x = +30, .y = -40, .theta = +10, .halfAngle = 5.0f, .rayCount = 32},
+  };
 
 }  // namespace conf
