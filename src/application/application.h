@@ -131,10 +131,10 @@ class Application : public IEventObserver {
       m_robot.setOmega(-90);
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-      m_robot.setVelocity(90);
+      m_robot.setVelocity(540);
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-      m_robot.setVelocity(-90);
+      m_robot.setVelocity(-540);
     }
   }
 
