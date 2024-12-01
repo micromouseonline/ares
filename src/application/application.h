@@ -158,11 +158,6 @@ class Application : public IEventObserver {
     // Update sensor data for the robot
     m_mazeManager.UpdateObstacles();
     // now read back what the robot sees
-    SensorData sensors = m_robot.getSensorData();
-    char str[100];
-    sprintf(str, "%4d %4d %4d %4d ", (int)sensors.lfs_value, (int)sensors.lds_value, (int)sensors.rds_value, (int)sensors.rfs_value);
-    std::string msg = std::to_string(sensors.lfs_value) + " " + std::to_string(sensors.rfs_value);
-    m_textbox.Add(str);
   }
 
   /// The Render() method is the only place that output is generated for the
