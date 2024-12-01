@@ -19,7 +19,8 @@ struct Vec2 {
   explicit Vec2(const sf::Vector2i& v) : x((float)v.x), y((float)v.y) {}
   explicit Vec2(const sf::Vector2u& v) : x((float)v.x), y((float)v.y) {}
 
-  static Vec2 fromAngle(float angle) { return {cosf(angle), sinf(angle)}; }
+  static Vec2 fromRadians(float angle) { return {cosf(angle), sinf(angle)}; }
+  static Vec2 fromDegrees(float angle) { return {cosf(angle * RADIANS), sinf(angle * RADIANS)}; }
 
   static Vec2 zero() { return {0, 0}; }
   static Vec2 up() { return {0, 1}; }

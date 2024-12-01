@@ -7,9 +7,9 @@
 #include <memory>
 #include <vector>
 #include "common/collisions.h"
+#include "drawing.h"
 #include "robot-wall-sensor.h"
 #include "robot/robot.h"
-
 /**
  * The RobotBody holds the physical arrangement of the robot and describes its appearance on
  * the display.
@@ -175,11 +175,12 @@ class RobotBody {
     sensor_rds.draw(window);
     sensor_rfs.draw(window);
     for (auto& sensor : m_robot_sensors) {
-      //      sensor.set_angle(angle - 90);
       sensor.set_origin(pos);
-      //      sensor.draw(window);
       sensor.update(obstacles);
     }
+    Vec2 pointer = Vec2::fromDegrees(angle) * 100;
+
+    Drawing::draw_vector_arrow(window, m_center, sf::Vector2f(pointer), 15.0);
   }
 
   bool collides_with(const sf::RectangleShape& rect) const {

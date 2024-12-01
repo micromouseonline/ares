@@ -116,6 +116,20 @@ class Application : public IEventObserver {
     } else {
       m_textbox.SetBackgroundColor(sf::Color(255, 255, 255, 48));
     }
+    m_robot.setOmega(0);
+    m_robot.setVelocity(0);
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+      m_robot.setOmega(90);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+      m_robot.setOmega(-90);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+      m_robot.setVelocity(90);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+      m_robot.setVelocity(-90);
+    }
   }
 
   /***

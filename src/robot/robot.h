@@ -138,9 +138,20 @@ class Robot {
     m_state.x = x;
     m_state.y = y;
   }
+
   void setOrientation(float theta) {
     std::lock_guard<std::mutex> lock(m_systickMutex);
     m_state.theta = theta;  //
+  }
+
+  void setVelocity(float velocity) {
+    std::lock_guard<std::mutex> lock(m_systickMutex);
+    m_state.v = velocity;  //
+  }
+
+  void setOmega(float omega) {
+    std::lock_guard<std::mutex> lock(m_systickMutex);
+    m_state.omega = omega;  //
   }
 
   ///////////// Sensors
