@@ -4,7 +4,7 @@
 #include <vector>
 #include "SFML/Graphics.hpp"
 #include "common/utils.h"
-
+#include "configuration.h"
 /**
  * The RobotWallSensor is a mocked device that calculates sensor data for the simulated
  * robot. Instances of the lass represent a single sensor that can calculate the
@@ -64,6 +64,10 @@ class RobotWallSensor {
     m_rays = ray_count;
     m_vertices.resize(m_rays);
   }
+
+  void SetGeometry(SensorGeometry geometry) { m_geometry = geometry; }
+
+  SensorGeometry& getGeometry() { return m_geometry; }
 
   [[nodiscard]] float power() const { return m_power; }
   [[nodiscard]] float distance() const { return m_distance; }
@@ -174,6 +178,7 @@ class RobotWallSensor {
     return std::min(tmin >= 0 ? tmin : tmax, m_max_range);  // Intersection behind the ray origin
   }
 
+  SensorGeometry m_geometry;
   sf::Vector2f m_origin = {0, 0};
   float m_angle;
   float m_half_angle;

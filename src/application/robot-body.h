@@ -44,10 +44,15 @@ class RobotBody {
     body->setFillColor(sf::Color(0, 76, 0, 255));
     body->setOrigin(38, 31);
     addShape(std::move(body), sf::Vector2f(0, 0));
-    sensor_lfs.set_angle(0);
-    sensor_lfs.set_half_angle(5.0);
-    sensor_lfs.set_ray_count(32);
+    sensor_lfs.SetGeometry(conf::SensorDefaultOffsets[0]);
+    sensor_lds.SetGeometry(conf::SensorDefaultOffsets[1]);
+    sensor_rds.SetGeometry(conf::SensorDefaultOffsets[2]);
+    sensor_rfs.SetGeometry(conf::SensorDefaultOffsets[3]);
+
     m_robot_sensors.push_back(sensor_lfs);
+    m_robot_sensors.push_back(sensor_lds);
+    m_robot_sensors.push_back(sensor_rds);
+    m_robot_sensors.push_back(sensor_rfs);
   };
 
   void setRobot(Robot& robot) { m_Robot = &robot; }
@@ -102,40 +107,29 @@ class RobotBody {
 
   void updateSensorGeometry(Robot& robot) {
     //    (void)robot;
-    std::lock_guard<std::mutex> lock(m_BodyMutex);
-    for (auto& sensor : m_robot_sensors) {
-      sensor.set_angle(m_Robot->GetOrientation());
-      sensor.set_origin(m_Robot->GetPose());
+    float angle = 0;
+    sf::Vector2f pos{90, 90};
+    if (m_Robot) {
+      pos = m_Robot->GetPose();
+      angle = m_Robot->GetOrientation() + 90;
     }
-    //    sensor_lfs.set_angle(robot.angle());
-    //    sensor_lfs.set_half_angle((float)g_robot_state.sensor_half_angle);
-    //    sensor_lds.set_angle(robot.angle());
-    //    sensor_lds.set_half_angle((float)g_robot_state.sensor_half_angle);
-    //    sensor_rds.set_angle(robot.angle());
-    //    sensor_rds.set_half_angle((float)g_robot_state.sensor_half_angle);
-    //    sensor_rfs.set_angle(robot.angle());
-    //    sensor_rfs.set_half_angle((float)g_robot_state.sensor_half_angle);
+    sensor_lfs.set_angle(angle + sensor_lfs.getGeometry().theta - 90);
+    sensor_lds.set_angle(angle - sensor_lds.getGeometry().theta - 180);
+    sensor_rds.set_angle(angle - sensor_rds.getGeometry().theta - 0);
+    sensor_rfs.set_angle(angle + sensor_rfs.getGeometry().theta - 90);
 
     /// Update the sensor geometry. This is done after we have
     /// decided if we have collided or not so the angles and positions are correct
     /// It is all pretty cumbersome for now
-    //    sf::Vector2f lfs_pos = rotatePoint(g_robot_state.lfs_offs, {0, 0}, robot.angle());
-    //    sf::Vector2f lds_pos = rotatePoint(g_robot_state.lds_offs, {0, 0}, robot.angle());
-    //    sf::Vector2f rds_pos = rotatePoint(g_robot_state.rds_offs, {0, 0}, robot.angle());
-    //    sf::Vector2f rfs_pos = rotatePoint(g_robot_state.rfs_offs, {0, 0}, robot.angle());
-    //
-    //    sensor_lfs.set_origin(robot.position() + lfs_pos);
-    //    sensor_lds.set_origin(robot.position() + lds_pos);
-    //    sensor_rds.set_origin(robot.position() + rds_pos);
-    //    sensor_rfs.set_origin(robot.position() + rfs_pos);
-    //    float lfs_ang = -90 - g_robot_state.front_sensor_angle;
-    //    float lds_ang = -180 + g_robot_state.side_sensor_angle;
-    //    float rds_ang = 0 - g_robot_state.side_sensor_angle;
-    //    float rfs_ang = -90 + g_robot_state.front_sensor_angle;
-    //    sensor_lfs.set_angle(robot.angle() + lfs_ang);
-    //    sensor_lds.set_angle(robot.angle() + lds_ang);
-    //    sensor_rds.set_angle(robot.angle() + rds_ang);
-    //    sensor_rfs.set_angle(robot.angle() + rfs_ang);
+    sf::Vector2f lfs_pos = rotatePoint({sensor_lfs.getGeometry().x, sensor_lfs.getGeometry().y}, {0, 0}, angle);
+    sf::Vector2f lds_pos = rotatePoint({sensor_lds.getGeometry().x, sensor_lds.getGeometry().y}, {0, 0}, angle);
+    sf::Vector2f rds_pos = rotatePoint({sensor_rds.getGeometry().x, sensor_rds.getGeometry().y}, {0, 0}, angle);
+    sf::Vector2f rfs_pos = rotatePoint({sensor_rfs.getGeometry().x, sensor_rfs.getGeometry().y}, {0, 0}, angle);
+
+    sensor_lfs.set_origin(pos + lfs_pos);
+    sensor_lds.set_origin(pos + lds_pos);
+    sensor_rds.set_origin(pos + rds_pos);
+    sensor_rfs.set_origin(pos + rfs_pos);
   }
 
   void draw(sf::RenderWindow& window) {
@@ -147,7 +141,7 @@ class RobotBody {
     }
     setPosition(pos);
     setRotation(angle);
-
+    updateSensorGeometry(*m_Robot);
     for (const auto& item : bodyShapes) {
       window.draw(*item.shape);
     }
@@ -156,18 +150,34 @@ class RobotBody {
     dot.setFillColor(m_colour);
     dot.setPosition(m_center);
     window.draw(dot);
-    sf::RectangleShape block({300, 300});
-    block.setPosition(1000, 900);
+
+    sf::RectangleShape block({720, 90});
+    block.setPosition(800, 1090);
     block.setFillColor(sf::Color::Cyan);
     window.draw(block);
+
+    sf::RectangleShape block2({90, 90});
+    block2.setPosition(90 * 12, 90 * 17);
+    block2.setFillColor(sf::Color::Cyan);
+    window.draw(block2);
 
     std::vector<sf::RectangleShape> obstacles;
     obstacles.clear();
     obstacles.push_back(block);
+    obstacles.push_back(block2);
+    sensor_lfs.update(obstacles);
+    sensor_lds.update(obstacles);
+    sensor_rds.update(obstacles);
+    sensor_rfs.update(obstacles);
+
+    sensor_lfs.draw(window);
+    sensor_lds.draw(window);
+    sensor_rds.draw(window);
+    sensor_rfs.draw(window);
     for (auto& sensor : m_robot_sensors) {
-      sensor.set_angle(angle - 90);
+      //      sensor.set_angle(angle - 90);
       sensor.set_origin(pos);
-      sensor.draw(window);
+      //      sensor.draw(window);
       sensor.update(obstacles);
     }
   }
@@ -186,6 +196,10 @@ class RobotBody {
     }
     return false;
   }
+  RobotWallSensor sensor_lfs;
+  RobotWallSensor sensor_lds;
+  RobotWallSensor sensor_rds;
+  RobotWallSensor sensor_rfs;
 
  private:
   sf::Vector2f m_center;
@@ -193,10 +207,6 @@ class RobotBody {
   sf::Color m_colour = sf::Color::White;
   std::vector<ShapeData> bodyShapes;  // List of shapes and their offsets
   std::vector<RobotWallSensor> m_robot_sensors;
-  RobotWallSensor sensor_lfs;
-  RobotWallSensor sensor_lds;
-  RobotWallSensor sensor_rds;
-  RobotWallSensor sensor_rfs;
   Robot* m_Robot = nullptr;
   std::mutex m_BodyMutex;
 };
