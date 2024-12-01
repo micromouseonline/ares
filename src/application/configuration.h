@@ -37,7 +37,7 @@ namespace conf {
   const uint8_t SENSOR_ALPHA = 128;
   const sf::Color SENSOR_COLOUR(255, 0, 255, SENSOR_ALPHA);
 
-  enum WallSensorName { LFS, LDS, RDS, RFS };
+  enum WallSensorName { LFS = 0, LDS, RDS, RFS };
   const SensorGeometry SensorDefaultOffsets[SENSOR_COUNT] = {
       {.x = 25, .y = -30, .theta = -10, .halfAngle = 5.0f, .rayCount = 32},
       {.x = 50, .y = -10, .theta = -60, .halfAngle = 5.0f, .rayCount = 32},

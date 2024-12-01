@@ -222,10 +222,10 @@ class Application : public IEventObserver {
     float v = 50.0f + (++ticks % 1000) / 10.0f;
     {
       //      std::lock_guard<std::mutex> lock(m_sensorDataMutex);
-      m_SensorData.lfs_value = m_RobotBody.sensor_lfs.distance();
-      m_SensorData.rfs_value = m_RobotBody.sensor_lds.distance();
-      m_SensorData.lds_value = m_RobotBody.sensor_rds.distance();
-      m_SensorData.rds_value = m_RobotBody.sensor_rfs.distance();
+      m_SensorData.lfs_value = m_RobotBody.m_sensors[conf::LFS].distance();
+      m_SensorData.rfs_value = m_RobotBody.m_sensors[conf::LDS].distance();
+      m_SensorData.lds_value = m_RobotBody.m_sensors[conf::RDS].distance();
+      m_SensorData.rds_value = m_RobotBody.m_sensors[conf::RFS].distance();
       m_SensorData.lfs_dist = sqrtf(v);
       m_SensorData.rfs_dist = sqrtf(v);
       m_SensorData.lds_dist = sqrtf(v);
