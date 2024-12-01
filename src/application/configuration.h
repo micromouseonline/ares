@@ -38,7 +38,7 @@ namespace conf {
       {.x = 50, .y = +10, .theta = +60, .halfAngle = 5.0f, .rayCount = 32},
       {.x = 25, .y = 30, .theta = +10, .halfAngle = 5.0f, .rayCount = 32},
   };
-  const float SENSOR_MAX_RANGE = 255.0f;
+  const float SENSOR_MAX_RANGE = 355.0f;
   const uint8_t SENSOR_ALPHA = 128;
   const sf::Color SENSOR_COLOUR(255, 0, 255, SENSOR_ALPHA);
 

@@ -9,13 +9,9 @@
 
 struct SensorData {
   float lfs_value = 0;
-  float rfs_value = 0;
   float lds_value = 0;
   float rds_value = 0;
-  float lfs_dist = 0;
-  float rfs_dist = 0;
-  float lds_dist = 0;
-  float rds_dist = 0;
+  float rfs_value = 0;
 };
 
 #include <functional>

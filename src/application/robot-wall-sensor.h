@@ -84,7 +84,6 @@ class RobotWallSensor {
     float endAngle = (m_angle + m_half_angle) * RADIANS;
     float angleIncrement = (endAngle - startAngle) / float(m_rays - 1);
 
-    float total_power = 0;
     float total_distance = 0;
     for (int i = 1; i < m_rays; ++i) {  // Remember to skip origin (index 0)
       float angle = startAngle + float(i - 1) * angleIncrement;
@@ -104,17 +103,10 @@ class RobotWallSensor {
       m_vertices[i].color.a = conf::SENSOR_ALPHA * (1.0f - closestHit / m_max_range);
 
       /// Accumulate distance and power for averaging
-      /// you cannot do te power afterwards form the average distance
-      /// because power is not linear with distance.
-      /// perhaps we should only record power and always calculate
-      /// distance - as in the real mouse
-      /// TODO: implement a proper function that calculates power
-      float power = 855.0f / closestHit;
-      power = power * power;
-      total_power += power;
       total_distance += closestHit;
     }
-    m_power = std::min(total_power / float(m_rays - 1), 1024.0f);
+    float a = total_distance / m_rays;
+    m_power = 1600.0f * expf(-0.025f * a);
   }
 
   /// The sensor will be drawn as a triangle fan. This is really

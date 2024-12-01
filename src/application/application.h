@@ -124,20 +124,26 @@ class Application : public IEventObserver {
     } else {
       m_textbox.SetBackgroundColor(sf::Color(255, 255, 255, 48));
     }
-    m_robot.setOmega(0);
-    m_robot.setVelocity(0);
+    float v = 0;
+    float w = 0;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-      m_robot.setOmega(90);
+      w = 90;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-      m_robot.setOmega(-90);
+      w = -90;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-      m_robot.setVelocity(540);
+      v = 540;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-      m_robot.setVelocity(-540);
+      v = -540;
     }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::RShift)) {
+      w = w / 10.0f;
+      v = v / 10.0f;
+    }
+    m_robot.setVelocity(v);
+    m_robot.setOmega(w);
   }
 
   /***
@@ -233,9 +239,9 @@ class Application : public IEventObserver {
     m_RobotBody.updateSensorGeometry(x, y, -theta);
     m_RobotBody.updateSensors(m_mazeManager.GetObstacles());
     m_SensorData.lfs_value = m_RobotBody.getSensor(conf::LFS).power();
-    m_SensorData.rfs_value = m_RobotBody.getSensor(conf::LDS).power();
+    m_SensorData.rds_value = m_RobotBody.getSensor(conf::LDS).power();
     m_SensorData.lds_value = m_RobotBody.getSensor(conf::RDS).power();
-    m_SensorData.rds_value = m_RobotBody.getSensor(conf::RFS).power();
+    m_SensorData.rfs_value = m_RobotBody.getSensor(conf::RFS).power();
     m_processTime = m_timer.getElapsedTime();
     return m_SensorData;
   }
