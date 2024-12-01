@@ -7,6 +7,13 @@
 
 #include <SFML/Graphics.hpp>
 
+/**
+ * Positions here are in world coordinates with
+ * the origin in the bottom left, x-axis to the right
+ * Angles are with respect to the x-axis. Positive angles
+ * are anti-clockwise
+ *
+ */
 struct RobotState {
   sf::Vector2f pos{96.0f, 96.0f};
   float x;
