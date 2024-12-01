@@ -31,8 +31,10 @@ class Application : public IEventObserver {
     m_window.AddObserver(this);
     m_RobotBody.setRobot(m_robot);
 
+    m_robot.setPosition(7 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f, 8 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f);
+    m_robot.setOrientation(-90.0);
     /// The Lambda expression here serves to bind the callback to the application instance
-    m_robot.SetSensorCallback([this]() -> SensorData { return this->CallbackCalculateSensorData(); });
+    m_robot.setSensorCallback([this]() -> SensorData { return this->CallbackCalculateSensorData(); });
     m_robot.Start();
   }
 
@@ -136,7 +138,7 @@ class Application : public IEventObserver {
     // Update sensor data for the robot
     m_mazeManager.UpdateObstacles();
     // now read back what the robot sees
-    SensorData sensors = m_robot.GetSensorData();
+    SensorData sensors = m_robot.getSensorData();
     char str[100];
     sprintf(str, "%4d %4d %4d %4d ", (int)sensors.lfs_value, (int)sensors.lds_value, (int)sensors.rds_value, (int)sensors.rfs_value);
     std::string msg = std::to_string(sensors.lfs_value) + " " + std::to_string(sensors.rfs_value);

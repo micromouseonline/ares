@@ -69,7 +69,7 @@ disadvantages of the structure.
 - Attributes:
     - m_robot: A pointer to the Robot instance.
     - m_maze: The maze in which the robot navigates.
-    - m_SensorData: Stores the calculated sensor readings.
+    - m_sensorData: Stores the calculated sensor readings.
 - Advantages:
     - Centralized control of the simulation.
     - Manages interaction between various components (e.g., maze, sensors).
@@ -90,7 +90,7 @@ disadvantages of the structure.
 - Attributes:
     - m_position: Current position of the robot in the simulation.
     - m_orientation: Current orientation of the robot (in degrees).
-    - m_SensorData: Stores the sensor readings received from the Application.
+    - m_sensorData: Stores the sensor readings received from the Application.
     - m_sensorUpdateThread: A separate thread that periodically requests sensor data from the Application.
     - m_application: A pointer to the Application to fetch sensor data.
 - Advantages:

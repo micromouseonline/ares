@@ -12,6 +12,7 @@
 #include <thread>
 #include "behaviour/behaviour.h"
 #include "common/core.h"
+#include "robot-state.h"
 #include "sensor-data.h"
 
 /***
@@ -45,14 +46,28 @@
 #define CRITICAL_SECTION(the_mutex) if (std::lock_guard<std::mutex> lock(the_mutex); true)
 
 /***
- * This is the robot class.
+ * The Robot class models the physical robot. It is just the vehicle that moves around the screen.
+ *
+ * It will provide the dynamic behaviour for the simulation
+ *
+ * It should be regarded as like your car. You can tell it to move and turn and you
+ * can examine its status. Almost nothing about the Robot is specific to its use
+ * for any particular behaviour except, perhaps, the non-holonomic constraints
+ * and the array of sensor data it collects.
+ *
+ * Sensor data is actually evaluated by a callback to the application and stored
+ * in the Robot. This is directly analogous to the way the sensors actually work.
+ * The Application holds the information about the physical world and the
+ * relationship of the robot to that world.
+ * Provision is made for sensor data to simply be a number in the range 0..1023
+ *
+ * The interpretation of that number is something the Behaviour should be responsible
+ * for.
  */
 class Robot {
  public:
-  Robot() : m_running(false), m_pose(1300.0f, 1300.0f), m_orientation(0.0f) {
-    for (int i = 0; i < conf::SENSOR_COUNT; i++) {
-      m_SensorOffsets[i] = conf::SensorDefaultOffsets[i];  //
-    }
+  Robot() : m_running(false) {
+    //
   }
 
   ~Robot() { Stop(); }
@@ -77,6 +92,7 @@ class Robot {
    */
   void Start() {
     if (!m_running) {
+      m_ticks = 0;
       m_running = true;
       m_thread = std::thread(&Robot::Run, this);
       m_systick_thread = std::thread(&Robot::systick, this);
@@ -96,32 +112,46 @@ class Robot {
     }
   }
 
-  // Accessors for robot state (thread-safe)
-  sf::Vector2f GetPose() const {
-    std::lock_guard<std::mutex> lock(m_SystickMutex);
-    return m_pose;
+  ////// Accessors
+  sf::Vector2f getPose() const {
+    std::lock_guard<std::mutex> lock(m_systickMutex);
+    return sf::Vector2f(m_state.x, m_state.y);
   }
 
-  float GetOrientation() const {
-    std::lock_guard<std::mutex> lock(m_SystickMutex);
-    return m_orientation;
+  RobotState getState() const {
+    std::lock_guard<std::mutex> lock(m_systickMutex);
+    return m_state;
   }
 
-  void SetSensorCallback(SensorDataCallback callback) { m_SensorCallback = callback; }
-
-  // This must request sensor data from the Application
-  void ReadSensorData();
-
-  /// A getter for the Robot's sensor values
-
-  SensorData& GetSensorData() {
-    std::lock_guard<std::mutex> lock(m_SystickMutex);
-    return m_SensorData;
+  RobotState setState() const {
+    std::lock_guard<std::mutex> lock(m_systickMutex);
+    return m_state;
   }
 
-  void StartSystick();
+  float getOrientation() const {
+    std::lock_guard<std::mutex> lock(m_systickMutex);
+    return m_state.theta;
+  }
 
-  void StopSystick();
+  void setPosition(float x, float y) {
+    std::lock_guard<std::mutex> lock(m_systickMutex);
+    m_state.x = x;
+    m_state.y = y;
+  }
+  void setOrientation(float theta) {
+    std::lock_guard<std::mutex> lock(m_systickMutex);
+    m_state.theta = theta;  //
+  }
+
+  ///////////// Sensors
+  void setSensorCallback(SensorDataCallback callback) {
+    m_sensorCallback = callback;  //
+  }
+
+  SensorData& getSensorData() {
+    std::lock_guard<std::mutex> lock(m_systickMutex);
+    return m_sensorData;
+  }
 
   /***
    * The systick() method runs in its own thread, with the loop running at, in
@@ -148,37 +178,35 @@ class Robot {
   void systick() {
     using namespace std::chrono;
     /// NOTE: this runs a little fast on linux
-    auto interval_us = duration_cast<microseconds>(duration<float>(m_LoopTime));
+    auto interval_us = duration_cast<microseconds>(duration<float>(m_loopTime));
     auto next_time = steady_clock::now() + interval_us;
     while (m_running) {
       // The mutex will lock out the main thread while this block runs.
-      CRITICAL_SECTION(m_SystickMutex) {
-        ticks++;
-        // MonitorEvents();
-        if (m_SensorCallback) {
-          m_SensorData = m_SensorCallback();
+      CRITICAL_SECTION(m_systickMutex) {
+        m_ticks++;
+        if (m_sensorCallback) {
+          m_sensorData = m_sensorCallback();
         }
-        // UpdateMotion();
-        m_orientation += m_AngularVelocity * m_LoopTime;
-        if (m_orientation >= 360.0f) {
-          m_orientation -= 360.0f;
-        } else if (m_orientation < 0.0f) {
-          m_orientation += 360.0f;
+        // updateMotionControllers();
+        m_state.theta += m_state.omega * m_loopTime;
+        if (m_state.theta >= 360.0f) {
+          m_state.theta -= 360.0f;
+        } else if (m_state.theta < 0.0f) {
+          m_state.theta += 360.0f;
         }
-        // Update position based on linear velocity and orientation
-        float orientationRad = m_orientation * RADIANS;
-        m_pose.x += m_LinearVelocity * std::cos(orientationRad) * m_LoopTime;
-        m_pose.y += m_LinearVelocity * std::sin(orientationRad) * m_LoopTime;
+        m_state.x += m_state.v * std::cos(m_state.theta * RADIANS) * m_loopTime;
+        m_state.y += m_state.v * std::sin(m_state.theta * RADIANS) * m_loopTime;
       }
+      /// TODO: switching to an asynchronous method in Behaviour would call
+      ///       systick directly from delays through the yield function??
       std::this_thread::sleep_until(next_time);
       next_time += interval_us;
     }
   }
 
   uint32_t millis() {
-    std::lock_guard<std::mutex> lock(m_SystickMutex);
-    return ticks;
-    ;
+    std::lock_guard<std::mutex> lock(m_systickMutex);
+    return m_ticks;
   }
 
  private:
@@ -188,46 +216,21 @@ class Robot {
    * is used so that the parent thread can signal an orderly termination.
    */
   void Run() {
-    /// TODO: for testing, just have the robot run around in a circle.
-    ///       This will be replaced with the real robot code
-    const sf::Vector2f initialCenter(2200.0f, 1200.0f);  // Center of the circle
-    const float initialRadius = 400.0f;                  // Radius of the circle
-    const float initialAngularSpeed = 120.0f;            // Degrees per second
-
-    m_control.SetCircularTrajectory(initialCenter, initialRadius, initialAngularSpeed);
-    sf::Clock clock;
     while (m_running) {
-      // Get the velocities from the RobotControl class
-      m_LinearVelocity = m_control.GetLinearVelocity();
-      m_AngularVelocity = m_control.GetAngularVelocity();
-
       std::this_thread::sleep_for(std::chrono::milliseconds(10));  // 100 Hz loop
     }
   }
 
-  //  // Low-level control methods
-  //  void UpdateState() {
-  //    std::lock_guard<std::mutex> lock(m_SystickMutex);
-  //    // Update the robot's position and orientation (simulation logic here)
-  //  }
-  //  void ProcessControl();
-
-  uint32_t ticks = 0;
+  uint32_t m_ticks;
   std::thread m_systick_thread;
   std::thread m_thread;
   std::atomic<bool> m_running;  // Thread control flag
-  float m_AngularVelocity = 0.0f;
-  float m_LinearVelocity = 0.0f;
-  float m_LoopTime = 0.001f;
-  sf::Vector2f m_pose;  // (x, y) position
-  float m_orientation;  // Orientation in radians
+  float m_loopTime = 0.001f;
 
-  SensorDataCallback m_SensorCallback = nullptr;
-  mutable std::mutex m_SystickMutex;  // Protects access to m_pose and m_orientation
-  SensorData m_SensorData;            // Current sensor readings
-
-  Behaviour m_control;  // Higher-level control logic
-  SensorGeometry m_SensorOffsets[conf::SENSOR_COUNT];
+  SensorDataCallback m_sensorCallback = nullptr;
+  mutable std::mutex m_systickMutex;  // Protects access to m_pose and m_orientation
+  SensorData m_sensorData;            // Current sensor readings
+  RobotState m_state;
 };
 
 #endif  // ROBOT_H

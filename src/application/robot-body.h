@@ -63,17 +63,17 @@ class RobotBody {
   }
   void set_colour(sf::Color colour) { m_colour = colour; }
 
-  void rotate(float angle) {
-    // Convert angle from degrees to radians
-    m_angle += angle;
-    while (m_angle > 360) {
-      m_angle -= 360;
-    }
-    while (m_angle < 0) {
-      m_angle += 360;
-    }
-    setRotation(m_angle);
-  }
+  //  void rotate(float angle) {
+  //    // Convert angle from degrees to radians
+  //    m_angle += angle;
+  //    while (m_angle > 360) {
+  //      m_angle -= 360;
+  //    }
+  //    while (m_angle < 0) {
+  //      m_angle += 360;
+  //    }
+  //    setRotation(m_angle);
+  //  }
 
   void setPosition(float x, float y) { setPosition(sf::Vector2f(x, y)); }
 
@@ -110,13 +110,13 @@ class RobotBody {
     float angle = 0;
     sf::Vector2f pos{90, 90};
     if (m_Robot) {
-      pos = m_Robot->GetPose();
-      angle = m_Robot->GetOrientation() + 90;
+      pos = m_Robot->getPose();
+      angle = -(m_Robot->getOrientation());
     }
-    sensor_lfs.set_angle(angle + sensor_lfs.getGeometry().theta - 90);
-    sensor_lds.set_angle(angle - sensor_lds.getGeometry().theta - 180);
-    sensor_rds.set_angle(angle - sensor_rds.getGeometry().theta - 0);
-    sensor_rfs.set_angle(angle + sensor_rfs.getGeometry().theta - 90);
+    sensor_lfs.set_angle(angle + sensor_lfs.getGeometry().theta);
+    sensor_lds.set_angle(angle + sensor_lds.getGeometry().theta);
+    sensor_rds.set_angle(angle + sensor_rds.getGeometry().theta);
+    sensor_rfs.set_angle(angle + sensor_rfs.getGeometry().theta);
 
     /// Update the sensor geometry. This is done after we have
     /// decided if we have collided or not so the angles and positions are correct
@@ -136,8 +136,8 @@ class RobotBody {
     float angle = 0;
     sf::Vector2f pos{90, 90};
     if (m_Robot) {
-      pos = m_Robot->GetPose();
-      angle = m_Robot->GetOrientation() + 90;
+      pos = m_Robot->getPose();
+      angle = -(m_Robot->getOrientation());
     }
     setPosition(pos);
     setRotation(angle);

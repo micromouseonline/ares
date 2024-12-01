@@ -9,14 +9,15 @@
 
 struct RobotState {
   sf::Vector2f pos{96.0f, 96.0f};
-  //  int angle = 0.0f;
-  //  int sensor_half_angle = 5;
-  //  int front_sensor_angle = 10;
-  //  int side_sensor_angle = 30;
-  //  sf::Vector2f lfs_offs = sf::Vector2f(-30, -40);
-  //  sf::Vector2f lds_offs = sf::Vector2f(-10, -50);
-  //  sf::Vector2f rds_offs = sf::Vector2f(+10, -50);
-  //  sf::Vector2f rfs_offs = sf::Vector2f(+30, -40);
+  float x;
+  float y;
+  float v;
+  float theta;
+  float omega;
+
+  RobotState() : x(0.0f), y(0.0f), v(0.0f), theta(0.0f), omega(0.0f) {
+    //
+  }
 };
 
 #endif  // ROBOT_STATE_H

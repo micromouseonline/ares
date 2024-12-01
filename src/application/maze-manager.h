@@ -15,7 +15,7 @@
 #include "configuration.h"
 #include "world/mazedata.h"
 
-const int MAZE_WIDTH = (32);
+const int MAZE_WIDTH = (16);
 const int NODES_PER_HORIZ_WALL_ROW = (MAZE_WIDTH);
 const int NODES_PER_VERT_WALL_ROW = (MAZE_WIDTH - 1);
 const int NUMBER_OF_HORIZ_WALLS = (NODES_PER_HORIZ_WALL_ROW);
@@ -93,7 +93,7 @@ class MazeManager {
 
     InitMaze();  //
     InitPosts();
-    loadFromMemory(japan2016ef_half, MAZE_WIDTH);
+    loadFromMemory(japan2007ef, MAZE_WIDTH);
   };
 
   ~MazeManager() = default;
