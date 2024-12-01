@@ -60,7 +60,10 @@ class RobotWallSensor {
 
   void set_half_angle(float half_angle) { m_half_angle = half_angle; }
 
-  void set_ray_count(int ray_count) { m_rays = ray_count; }
+  void set_ray_count(int ray_count) {
+    m_rays = ray_count;
+    m_vertices.resize(m_rays);
+  }
 
   [[nodiscard]] float power() const { return m_power; }
   [[nodiscard]] float distance() const { return m_distance; }
@@ -81,7 +84,6 @@ class RobotWallSensor {
 
     float total_power = 0;
     float total_distance = 0;
-
     for (int i = 1; i < m_rays; ++i) {  // Remember to skip origin (index 0)
       float angle = startAngle + float(i - 1) * angleIncrement;
       sf::Vector2f dir = {std::cos(angle), std::sin(angle)};
@@ -93,6 +95,7 @@ class RobotWallSensor {
           closestHit = distance;
         }
       }
+
       // Update the ray endpoint
       sf::Vector2f hitPosition = m_origin + dir * closestHit;
       m_vertices[i].position = hitPosition;
@@ -109,7 +112,6 @@ class RobotWallSensor {
       total_power += power;
       total_distance += closestHit;
     }
-
     m_distance = std::min(total_distance / float(m_rays - 1), m_max_range);
     m_power = std::min(total_power / float(m_rays - 1), 1024.0f);
   }

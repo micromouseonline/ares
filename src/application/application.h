@@ -20,7 +20,7 @@
 
 class Application : public IEventObserver {
  public:
-  Application() : m_window(conf::AppName, conf::WindowSize), m_elapsed(sf::Time::Zero), mStatisticsUpdateTime(sf::Time::Zero), m_robot() {
+  Application() : m_window(conf::AppName, conf::WindowSize), m_elapsed(sf::Time::Zero), mStatisticsUpdateTime(sf::Time::Zero) {
     RestartClock();
     m_elapsed = sf::Time::Zero;
     mStatisticsUpdateTime = sf::Time::Zero;
@@ -29,6 +29,7 @@ class Application : public IEventObserver {
     m_textbox.Setup(5, 14, 600, sf::Vector2f(1000, 10));
     m_textbox.Add("Hello World!");
     m_window.AddObserver(this);
+    m_RobotBody.setRobot(m_robot);
 
     /// The Lambda expression here serves to bind the callback to the application instance
     m_robot.SetSensorCallback([this]() -> SensorData { return this->CallbackCalculateSensorData(); });
@@ -153,30 +154,12 @@ class Application : public IEventObserver {
     // grab the window reference to save typing
     sf::RenderWindow& window = *m_window.GetRenderWindow();
     window.setView(m_window.getMazeView());
-    // Render the physical maze
-    // TODO: think about how to add and distinguish the robot map
-    //       from the physical maze
+    // Render the physical maze TODO: think about how to add and distinguish the robot map from the physical maze
     m_mazeManager.Render(window);
-
-    // Draw the robot using the RobotDisplay class
-    sf::Vector2f pose = m_robot.GetPose();
-    float orientation = m_robot.GetOrientation();
-    RobotDisplay::Draw(window, pose, orientation);
-    //    m_RobotBody.draw(window);
-    //    m_mazeManager.UpdateObstacles();
-
-    //    for (auto& sensor : m_robot_sensors) {
-    //      sensor.draw(window);
-    //    }
+    m_RobotBody.draw(window);
 
     window.setView(window.getDefaultView());
     // we can draw anything else we want here.
-    // it could be a path to the goal, overlaid telemetry
-    // flooding values, highlight to current target
-    // use your imagination.
-
-    // the textbox it just a demonstration.
-    // we can also put ImGui components here I guess
     m_textbox.Render(window);
     /// ALWAYS do this last
     m_window.EndDraw();
@@ -218,11 +201,6 @@ class Application : public IEventObserver {
    * @return a copy of the local sensor data
    */
   SensorData CallbackCalculateSensorData() {
-    std::vector<sf::RectangleShape> obstacles;  //= m_mazeManager.GetObstacles(); TODO: GetObstacles is broken
-    sf::RectangleShape block({180.0f, 180.0f});
-    block.setPosition(540, 1080);
-    obstacles.push_back(block);
-
     static uint32_t ticks = 0;
     /// just modify the sensor values a bit to see that they change
     float v = 50.0f + (++ticks % 1000) / 10.0f;

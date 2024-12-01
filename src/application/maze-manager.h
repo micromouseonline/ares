@@ -271,7 +271,7 @@ class MazeManager {
   void UpdateObstacles() {
     std::lock_guard<std::mutex> lock(m_ObstacleMutex);
     m_Obstacles.clear();
-    int c = 25;
+    int c = 40;
     for (auto& wall : m_walls) {
       if (wall.state == WallState::KnownPresent) {
         m_Obstacles.push_back(wall.shape);
