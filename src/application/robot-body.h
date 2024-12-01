@@ -119,7 +119,7 @@ class RobotBody {
     setRotation(angle);
     //    updateSensorGeometry(pos.x, pos.y, angle);
 
-    for (const auto& item : bodyShapes) {
+    for (const auto& item : m_bodyShapes) {
       window.draw(*item.shape);
     }
     for (auto& sensor : m_sensors) {
