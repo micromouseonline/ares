@@ -34,7 +34,7 @@ class Application : public IEventObserver {
     m_robot.setPosition(7 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f, 8 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f);
     m_robot.setOrientation(0.0);
     /// The Lambda expression here serves to bind the callback to the application instance
-    m_robot.setSensorCallback([this]() -> SensorData { return this->CallbackCalculateSensorData(); });
+    m_robot.setSensorCallback([this](float x, float y, float theta) -> SensorData { return this->CallbackCalculateSensorData(x, y, theta); });
     m_robot.Start();
   }
 
@@ -216,8 +216,13 @@ class Application : public IEventObserver {
    *
    * @return a copy of the local sensor data
    */
-  SensorData CallbackCalculateSensorData() {
+  SensorData CallbackCalculateSensorData(float x, float y, float theta) {
     static uint32_t ticks = 0;
+    m_RobotBody.updateSensorGeometry(x, y, -theta);
+    // TODO: now we must update the values
+    /// TODO: these will come from the maze
+    std::vector<sf::RectangleShape> obstacles{};
+    m_RobotBody.updateSensors(obstacles);
     /// just modify the sensor values a bit to see that they change
     float v = 50.0f + (++ticks % 1000) / 10.0f;
     {

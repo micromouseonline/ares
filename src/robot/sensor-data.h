@@ -20,7 +20,7 @@ struct SensorData {
 
 #include <functional>
 /// Returns a SensorData struct
-using SensorDataCallback = std::function<SensorData()>;
+using SensorDataCallback = std::function<SensorData(float, float, float)>;
 
 class SensorDataClass {
  public:

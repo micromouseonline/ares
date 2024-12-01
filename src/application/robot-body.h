@@ -41,15 +41,6 @@ class RobotBody {
     m_sensors[conf::LDS].SetGeometry(conf::SensorDefaultOffsets[conf::LDS]);
     m_sensors[conf::RDS].SetGeometry(conf::SensorDefaultOffsets[conf::RDS]);
     m_sensors[conf::RFS].SetGeometry(conf::SensorDefaultOffsets[conf::RFS]);
-
-    // Initialize static obstacles outside draw
-    block.setSize({720, 90});
-    block.setPosition(800, 1090);
-    block.setFillColor(sf::Color::Cyan);
-
-    block2.setSize({90, 90});
-    block2.setPosition(90 * 12, 90 * 17);
-    block2.setFillColor(sf::Color::Cyan);
   }
 
   void createBody() {
@@ -108,15 +99,8 @@ class RobotBody {
 
   sf::Vector2f position() const { return m_center; }
 
-  void updateSensorGeometry() {
-    float angle = 0;
-    sf::Vector2f pos{0, 0};
-    if (m_robot) {
-      /// angle is negative because the screen y-axis is inverted
-      pos = m_robot->getPose();
-      angle = -(m_robot->getOrientation());
-    }
-
+  void updateSensorGeometry(float x, float y, float angle) {
+    sf::Vector2f pos{x, y};
     for (auto& sensor : m_sensors) {
       sensor.set_origin(pos + rotatePoint({sensor.getGeometry().x, sensor.getGeometry().y}, {0, 0}, angle));
       sensor.set_angle(angle + sensor.getGeometry().theta);
@@ -133,27 +117,24 @@ class RobotBody {
 
     setPosition(pos);
     setRotation(angle);
-    updateSensorGeometry();
+    //    updateSensorGeometry(pos.x, pos.y, angle);
 
     for (const auto& item : bodyShapes) {
       window.draw(*item.shape);
     }
-
-    // Draw static obstacles
-    /// TODO: these will come from the maze
-    window.draw(block);
-    window.draw(block2);
-    std::vector<sf::RectangleShape> obstacles{block, block2};
-
-    // Update and draw sensors
     for (auto& sensor : m_sensors) {
-      sensor.update(obstacles);
       sensor.draw(window);
     }
 
     // Draw the direction arrow
     Vec2 pointer = Vec2::fromDegrees(angle) * 100;
     Drawing::draw_vector_arrow(window, m_center, sf::Vector2f(pointer), 15.0);
+  }
+
+  void updateSensors(std::vector<sf::RectangleShape>& obstacles) {
+    for (auto& sensor : m_sensors) {
+      sensor.update(obstacles);
+    }
   }
 
   bool collides_with(const sf::RectangleShape& rect) const {

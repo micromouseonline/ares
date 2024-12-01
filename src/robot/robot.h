@@ -196,7 +196,7 @@ class Robot {
       CRITICAL_SECTION(m_systickMutex) {
         m_ticks++;
         if (m_sensorCallback) {
-          m_sensorData = m_sensorCallback();
+          m_sensorData = m_sensorCallback(m_state.x, m_state.y, m_state.theta);
         }
         // updateMotionControllers();
         m_state.theta += m_state.omega * m_loopTime;
