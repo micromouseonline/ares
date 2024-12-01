@@ -69,7 +69,7 @@ class RobotBody {
     addShape(std::move(dot), sf::Vector2f(0, 0));
   }
 
-  void setRobot(Robot& robot) { m_Robot = &robot; }
+  void setRobot(Robot& robot) { m_robot = &robot; }
 
   void addShape(std::unique_ptr<sf::Shape> shape, const sf::Vector2f& offset) {
     shape->setPosition(m_center + offset);
@@ -110,13 +110,15 @@ class RobotBody {
 
   void updateSensorGeometry() {
     float angle = 0;
-    if (m_Robot) {
+    sf::Vector2f pos{0, 0};
+    if (m_robot) {
       /// angle is negative because the screen y-axis is inverted
-      angle = -(m_Robot->getOrientation());
+      pos = m_robot->getPose();
+      angle = -(m_robot->getOrientation());
     }
 
     for (auto& sensor : m_sensors) {
-      sensor.set_origin(rotatePoint({sensor.getGeometry().x, sensor.getGeometry().y}, {0, 0}, angle));
+      sensor.set_origin(pos + rotatePoint({sensor.getGeometry().x, sensor.getGeometry().y}, {0, 0}, angle));
       sensor.set_angle(angle + sensor.getGeometry().theta);
     }
   }
@@ -124,9 +126,9 @@ class RobotBody {
   void draw(sf::RenderWindow& window) {
     float angle = 0;
     sf::Vector2f pos{90, 90};
-    if (m_Robot) {
-      pos = m_Robot->getPose();
-      angle = -(m_Robot->getOrientation());
+    if (m_robot) {
+      pos = m_robot->getPose();
+      angle = -(m_robot->getOrientation());
     }
 
     setPosition(pos);
@@ -145,7 +147,6 @@ class RobotBody {
 
     // Update and draw sensors
     for (auto& sensor : m_sensors) {
-      sensor.set_origin(pos);
       sensor.update(obstacles);
       sensor.draw(window);
     }
@@ -183,7 +184,7 @@ class RobotBody {
   float m_angle = 0;
   sf::Color m_colour = sf::Color::White;
   std::vector<ShapeData> bodyShapes;  // List of shapes and their offsets
-  Robot* m_Robot = nullptr;
+  Robot* m_robot = nullptr;
   sf::RectangleShape block;
   sf::RectangleShape block2;
 };
