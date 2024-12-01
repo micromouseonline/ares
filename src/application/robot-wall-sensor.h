@@ -47,7 +47,6 @@ class RobotWallSensor {
 
     m_max_range = conf::SENSOR_MAX_RANGE;
     m_power = 0.0f;
-    m_distance = 0.0f;
   }
 
   void set_origin(const sf::Vector2f& origin) {
@@ -70,7 +69,6 @@ class RobotWallSensor {
   SensorGeometry& getGeometry() { return m_geometry; }
 
   [[nodiscard]] float power() const { return m_power; }
-  [[nodiscard]] float distance() const { return m_distance; }
 
   /***
    * generate a complete sensor fan for every rectangle in the supplied
@@ -116,7 +114,6 @@ class RobotWallSensor {
       total_power += power;
       total_distance += closestHit;
     }
-    m_distance = std::min(total_distance / float(m_rays - 1), m_max_range);
     m_power = std::min(total_power / float(m_rays - 1), 1024.0f);
   }
 
@@ -185,7 +182,6 @@ class RobotWallSensor {
   float m_max_range;
   int m_rays;
   float m_power;
-  float m_distance;
 
   sf::VertexArray m_vertices;
 };

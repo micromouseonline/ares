@@ -283,6 +283,7 @@ class MazeManager {
   }
 
   const std::vector<sf::RectangleShape>& GetObstacles() {
+    UpdateObstacles();
     return m_Obstacles;  //
   }
 

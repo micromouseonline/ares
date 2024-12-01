@@ -34,6 +34,8 @@ class Application : public IEventObserver {
     /// The UI components are defined in world pixels in the window's default view
     m_textbox.Setup(5, 14, 600, sf::Vector2f(1000, 10));
     m_textbox.Add("Hello World!");
+    m_textbox.Add("WASD keys to move robot");
+
     m_window.AddObserver(this);
     m_RobotBody.setRobot(m_robot);
 
@@ -155,9 +157,14 @@ class Application : public IEventObserver {
   void Update(sf::Time deltaTime = sf::seconds(0.01)) {
     m_window.Update();  // call this first to process window events
     m_elapsed += deltaTime;
-    // Update sensor data for the robot
-    m_mazeManager.UpdateObstacles();
-    // now read back what the robot sees
+    std::string msg;
+    SensorData sensors = m_robot.getSensorData();
+    char str[100];
+    sprintf(str, "%4d %4d %4d %4d ", (int)sensors.lfs_value, (int)sensors.lds_value, (int)sensors.rds_value, (int)sensors.rfs_value);
+    msg += str;
+    msg += "\n";
+    msg += "sensor update: " + std::to_string(m_processTime.asMicroseconds()) + " us";
+    m_adhocText.setString(msg);
   }
 
   /// The Render() method is the only place that output is generated for the
@@ -177,16 +184,8 @@ class Application : public IEventObserver {
 
     window.setView(window.getDefaultView());
     // we can draw anything else we want here.
-    m_adhocText.setString("sensor update: " + std::to_string(m_processTime.asMicroseconds()) + " us");
-    m_adhocText.setPosition(1000, 200);
-    window.draw(m_adhocText);
 
-    SensorData sensors = m_robot.getSensorData();
-    char str[100];
-    sprintf(str, "%4d %4d %4d %4d ", (int)sensors.lfs_value, (int)sensors.lds_value, (int)sensors.rds_value, (int)sensors.rfs_value);
-    std::string msg = std::to_string(sensors.lfs_value) + " " + std::to_string(sensors.rfs_value);
-    m_adhocText.setString(str);
-    m_adhocText.setPosition(1000, 220);
+    m_adhocText.setPosition(1000, 200);
     window.draw(m_adhocText);
 
     m_textbox.Render(window);
@@ -231,26 +230,12 @@ class Application : public IEventObserver {
    */
   SensorData CallbackCalculateSensorData(float x, float y, float theta) {
     m_timer.restart();
-    static uint32_t ticks = 0;
     m_RobotBody.updateSensorGeometry(x, y, -theta);
-    // TODO: now we must update the values
-    /// TODO: these will come from the maze
-    //    std::vector<sf::RectangleShape> obstacles{};
-    //    obstacles = m_mazeManager.GetObstacles();
     m_RobotBody.updateSensors(m_mazeManager.GetObstacles());
-    /// just modify the sensor values a bit to see that they change
-    float v = 50.0f + (++ticks % 1000) / 10.0f;
-    {
-      //      std::lock_guard<std::mutex> lock(m_sensorDataMutex);
-      m_SensorData.lfs_value = m_RobotBody.getSensor(conf::LFS).distance();
-      m_SensorData.rfs_value = m_RobotBody.getSensor(conf::LDS).distance();
-      m_SensorData.lds_value = m_RobotBody.getSensor(conf::RDS).distance();
-      m_SensorData.rds_value = m_RobotBody.getSensor(conf::RFS).distance();
-      m_SensorData.lfs_dist = sqrtf(v);
-      m_SensorData.rfs_dist = sqrtf(v);
-      m_SensorData.lds_dist = sqrtf(v);
-      m_SensorData.rds_dist = sqrtf(v);
-    }
+    m_SensorData.lfs_value = m_RobotBody.getSensor(conf::LFS).power();
+    m_SensorData.rfs_value = m_RobotBody.getSensor(conf::LDS).power();
+    m_SensorData.lds_value = m_RobotBody.getSensor(conf::RDS).power();
+    m_SensorData.rds_value = m_RobotBody.getSensor(conf::RFS).power();
     m_processTime = m_timer.getElapsedTime();
     return m_SensorData;
   }
