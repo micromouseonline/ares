@@ -1,5 +1,5 @@
-#ifndef _OBJECT_H
-#define _OBJECT_H
+#ifndef OBJECT_H
+#define OBJECT_H
 
 #include <SFML/Graphics.hpp>
 #include <cmath>
@@ -41,7 +41,16 @@ class RobotBody {
     m_sensors[conf::LDS].SetGeometry(conf::SensorDefaultOffsets[conf::LDS]);
     m_sensors[conf::RDS].SetGeometry(conf::SensorDefaultOffsets[conf::RDS]);
     m_sensors[conf::RFS].SetGeometry(conf::SensorDefaultOffsets[conf::RFS]);
-  };
+
+    // Initialize static obstacles outside draw
+    block.setSize({720, 90});
+    block.setPosition(800, 1090);
+    block.setFillColor(sf::Color::Cyan);
+
+    block2.setSize({90, 90});
+    block2.setPosition(90 * 12, 90 * 17);
+    block2.setFillColor(sf::Color::Cyan);
+  }
 
   void createBody() {
     auto head = std::make_unique<sf::CircleShape>(38);
@@ -53,6 +62,11 @@ class RobotBody {
     body->setFillColor(sf::Color(90, 76, 0, 255));
     body->setOrigin(38, 38);
     addShape(std::move(body), sf::Vector2f(0, 0));
+
+    auto dot = std::make_unique<sf::CircleShape>(8);
+    dot->setOrigin(8, 8);
+    dot->setFillColor(m_colour);
+    addShape(std::move(dot), sf::Vector2f(0, 0));
   }
 
   void setRobot(Robot& robot) { m_Robot = &robot; }
@@ -94,7 +108,7 @@ class RobotBody {
 
   sf::Vector2f position() const { return m_center; }
 
-  void updateSensorGeometry(Robot& robot) {
+  void updateSensorGeometry() {
     float angle = 0;
     if (m_Robot) {
       /// angle is negative because the screen y-axis is inverted
@@ -114,39 +128,29 @@ class RobotBody {
       pos = m_Robot->getPose();
       angle = -(m_Robot->getOrientation());
     }
+
     setPosition(pos);
     setRotation(angle);
-    updateSensorGeometry(*m_Robot);
+    updateSensorGeometry();
+
     for (const auto& item : bodyShapes) {
       window.draw(*item.shape);
     }
-    sf::CircleShape dot(8);
-    dot.setOrigin(8, 8);
-    dot.setFillColor(m_colour);
-    dot.setPosition(m_center);
-    window.draw(dot);
 
-    sf::RectangleShape block({720, 90});
-    block.setPosition(800, 1090);
-    block.setFillColor(sf::Color::Cyan);
+    // Draw static obstacles
+    /// TODO: these will come from the maze
     window.draw(block);
-
-    sf::RectangleShape block2({90, 90});
-    block2.setPosition(90 * 12, 90 * 17);
-    block2.setFillColor(sf::Color::Cyan);
     window.draw(block2);
+    std::vector<sf::RectangleShape> obstacles{block, block2};
 
-    std::vector<sf::RectangleShape> obstacles;
-    obstacles.clear();
-    obstacles.push_back(block);
-    obstacles.push_back(block2);
-
+    // Update and draw sensors
     for (auto& sensor : m_sensors) {
       sensor.set_origin(pos);
       sensor.update(obstacles);
       sensor.draw(window);
     }
 
+    // Draw the direction arrow
     Vec2 pointer = Vec2::fromDegrees(angle) * 100;
     Drawing::draw_vector_arrow(window, m_center, sf::Vector2f(pointer), 15.0);
   }
@@ -166,14 +170,22 @@ class RobotBody {
     return false;
   }
 
-  RobotWallSensor m_sensors[conf::SENSOR_COUNT];
+  const RobotWallSensor& getSensor(int i) {
+    if (i >= conf::SENSOR_COUNT) {
+      throw std::out_of_range("Sensor index out of range");
+    }
+    return m_sensors[i];  //
+  }
 
  private:
+  RobotWallSensor m_sensors[conf::SENSOR_COUNT];
   sf::Vector2f m_center;
   float m_angle = 0;
   sf::Color m_colour = sf::Color::White;
   std::vector<ShapeData> bodyShapes;  // List of shapes and their offsets
   Robot* m_Robot = nullptr;
+  sf::RectangleShape block;
+  sf::RectangleShape block2;
 };
 
-#endif  // _OBJECT_H
+#endif  // OBJECT_H
