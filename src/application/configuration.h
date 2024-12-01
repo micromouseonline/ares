@@ -33,12 +33,16 @@ namespace conf {
   // NOTE: this might be better in its own namespace to support different robots
   //       at build time. Or even in the Robot class?
   const int SENSOR_COUNT = 4;
+  const float SENSOR_MAX_RANGE = 255.0f;
+  const uint8_t SENSOR_ALPHA = 128;
+  const sf::Color SENSOR_COLOUR(255, 0, 255, SENSOR_ALPHA);
+
   enum WallSensorName { LFS, LDS, RDS, RFS };
   const SensorGeometry SensorDefaultOffsets[SENSOR_COUNT] = {
-      {.x = -30, .y = -40, .theta = -10, .halfAngle = 5.0f, .rayCount = 32},
-      {.x = -10, .y = -50, .theta = -30, .halfAngle = 5.0f, .rayCount = 32},
-      {.x = +10, .y = -50, .theta = +30, .halfAngle = 5.0f, .rayCount = 32},
-      {.x = +30, .y = -40, .theta = +10, .halfAngle = 5.0f, .rayCount = 32},
+      {.x = 25, .y = -30, .theta = -10, .halfAngle = 5.0f, .rayCount = 32},
+      {.x = 50, .y = -10, .theta = -60, .halfAngle = 5.0f, .rayCount = 32},
+      {.x = 50, .y = +10, .theta = +60, .halfAngle = 5.0f, .rayCount = 32},
+      {.x = 25, .y = 30, .theta = +10, .halfAngle = 5.0f, .rayCount = 32},
   };
 
 }  // namespace conf

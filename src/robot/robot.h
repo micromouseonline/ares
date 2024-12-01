@@ -206,7 +206,7 @@ class Robot {
           m_state.theta += 360.0f;
         }
         m_state.x += m_state.v * std::cos(m_state.theta * RADIANS) * m_loopTime;
-        m_state.y += m_state.v * std::sin(m_state.theta * RADIANS) * m_loopTime;
+        m_state.y -= m_state.v * std::sin(m_state.theta * RADIANS) * m_loopTime;
       }
       /// TODO: switching to an asynchronous method in Behaviour would call
       ///       systick directly from delays through the yield function??

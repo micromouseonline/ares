@@ -43,9 +43,9 @@ class RobotWallSensor {
     m_vertices.resize(m_rays);
     m_vertices.setPrimitiveType(sf::TriangleFan);
     m_vertices[0].position = m_origin;  // First vertex is the origin
-    m_vertices[0].color = sf::Color(128, 0, 128);
+    m_vertices[0].color = conf::SENSOR_COLOUR;
 
-    m_max_range = 500.0f;
+    m_max_range = conf::SENSOR_MAX_RANGE;
     m_power = 0.0f;
     m_distance = 0.0f;
   }
@@ -103,7 +103,7 @@ class RobotWallSensor {
       // Update the ray endpoint
       sf::Vector2f hitPosition = m_origin + dir * closestHit;
       m_vertices[i].position = hitPosition;
-      m_vertices[i].color = sf::Color(128, 0, 128, 255 * (1.0f - closestHit / m_max_range));
+      m_vertices[i].color.a = conf::SENSOR_ALPHA * (1.0f - closestHit / m_max_range);
 
       /// Accumulate distance and power for averaging
       /// you cannot do te power afterwards form the average distance

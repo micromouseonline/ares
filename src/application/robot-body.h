@@ -39,11 +39,13 @@ class RobotBody {
     auto head = std::make_unique<sf::CircleShape>(38);
     head->setOrigin(38, 38);
     head->setFillColor(sf::Color(0, 66, 0, 255));
-    addShape(std::move(head), sf::Vector2f(0, -31));
-    auto body = std::make_unique<sf::RectangleShape>(sf::Vector2f(76, 62));
-    body->setFillColor(sf::Color(0, 76, 0, 255));
-    body->setOrigin(38, 31);
+    addShape(std::move(head), sf::Vector2f(22, 0));
+
+    auto body = std::make_unique<sf::RectangleShape>(sf::Vector2f(60, 76));
+    body->setFillColor(sf::Color(90, 76, 0, 255));
+    body->setOrigin(38, 38);
     addShape(std::move(body), sf::Vector2f(0, 0));
+
     sensor_lfs.SetGeometry(conf::SensorDefaultOffsets[0]);
     sensor_lds.SetGeometry(conf::SensorDefaultOffsets[1]);
     sensor_rds.SetGeometry(conf::SensorDefaultOffsets[2]);
