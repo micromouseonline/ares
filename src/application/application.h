@@ -25,6 +25,12 @@ class Application : public IEventObserver {
     m_elapsed = sf::Time::Zero;
     mStatisticsUpdateTime = sf::Time::Zero;
 
+    m_appFont.loadFromFile("assets/fonts/ubuntu-mono-r.ttf");
+
+    m_adhocText.setFont(m_appFont);
+    m_adhocText.setCharacterSize(16);
+    m_adhocText.setFillColor(sf::Color::Yellow);
+
     /// The UI components are defined in world pixels in the window's default view
     m_textbox.Setup(5, 14, 600, sf::Vector2f(1000, 10));
     m_textbox.Add("Hello World!");
@@ -176,6 +182,18 @@ class Application : public IEventObserver {
 
     window.setView(window.getDefaultView());
     // we can draw anything else we want here.
+    m_adhocText.setString("sensor update: " + std::to_string(m_processTime.asMicroseconds()) + " us");
+    m_adhocText.setPosition(1000, 200);
+    window.draw(m_adhocText);
+
+    SensorData sensors = m_robot.getSensorData();
+    char str[100];
+    sprintf(str, "%4d %4d %4d %4d ", (int)sensors.lfs_value, (int)sensors.lds_value, (int)sensors.rds_value, (int)sensors.rfs_value);
+    std::string msg = std::to_string(sensors.lfs_value) + " " + std::to_string(sensors.rfs_value);
+    m_adhocText.setString(str);
+    m_adhocText.setPosition(1000, 220);
+    window.draw(m_adhocText);
+
     m_textbox.Render(window);
     /// ALWAYS do this last
     m_window.EndDraw();
@@ -217,12 +235,14 @@ class Application : public IEventObserver {
    * @return a copy of the local sensor data
    */
   SensorData CallbackCalculateSensorData(float x, float y, float theta) {
+    m_timer.restart();
     static uint32_t ticks = 0;
     m_RobotBody.updateSensorGeometry(x, y, -theta);
     // TODO: now we must update the values
     /// TODO: these will come from the maze
-    std::vector<sf::RectangleShape> obstacles{};
-    m_RobotBody.updateSensors(obstacles);
+    //    std::vector<sf::RectangleShape> obstacles{};
+    //    obstacles = m_mazeManager.GetObstacles();
+    m_RobotBody.updateSensors(m_mazeManager.GetObstacles());
     /// just modify the sensor values a bit to see that they change
     float v = 50.0f + (++ticks % 1000) / 10.0f;
     {
@@ -236,6 +256,7 @@ class Application : public IEventObserver {
       m_SensorData.lds_dist = sqrtf(v);
       m_SensorData.rds_dist = sqrtf(v);
     }
+    m_processTime = m_timer.getElapsedTime();
     return m_SensorData;
   }
 
@@ -252,7 +273,11 @@ class Application : public IEventObserver {
   Window m_window;
   sf::Clock m_clock;
   sf::Clock m_timer;
+  sf::Time m_processTime;  // used for timing code fragments
   sf::Time m_elapsed;
+
+  sf::Font m_appFont;
+  sf::Text m_adhocText;  // use this for adhoc messages, overlays and the like
 
   //  sf::Font mFont;
   sf::Text mStatisticsText;
