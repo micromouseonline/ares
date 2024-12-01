@@ -36,6 +36,14 @@ class RobotBody {
   };
 
   RobotBody() {
+    createBody();
+    m_sensors[conf::LFS].SetGeometry(conf::SensorDefaultOffsets[conf::LFS]);
+    m_sensors[conf::LDS].SetGeometry(conf::SensorDefaultOffsets[conf::LDS]);
+    m_sensors[conf::RDS].SetGeometry(conf::SensorDefaultOffsets[conf::RDS]);
+    m_sensors[conf::RFS].SetGeometry(conf::SensorDefaultOffsets[conf::RFS]);
+  };
+
+  void createBody() {
     auto head = std::make_unique<sf::CircleShape>(38);
     head->setOrigin(38, 38);
     head->setFillColor(sf::Color(0, 66, 0, 255));
@@ -45,12 +53,7 @@ class RobotBody {
     body->setFillColor(sf::Color(90, 76, 0, 255));
     body->setOrigin(38, 38);
     addShape(std::move(body), sf::Vector2f(0, 0));
-
-    m_sensors[conf::LFS].SetGeometry(conf::SensorDefaultOffsets[conf::LFS]);
-    m_sensors[conf::LDS].SetGeometry(conf::SensorDefaultOffsets[conf::LDS]);
-    m_sensors[conf::RDS].SetGeometry(conf::SensorDefaultOffsets[conf::RDS]);
-    m_sensors[conf::RFS].SetGeometry(conf::SensorDefaultOffsets[conf::RFS]);
-  };
+  }
 
   void setRobot(Robot& robot) { m_Robot = &robot; }
 
@@ -58,19 +61,8 @@ class RobotBody {
     shape->setPosition(m_center + offset);
     bodyShapes.push_back({std::move(shape), offset, offset});
   }
-  void set_colour(sf::Color colour) { m_colour = colour; }
 
-  //  void rotate(float angle) {
-  //    // Convert angle from degrees to radians
-  //    m_angle += angle;
-  //    while (m_angle > 360) {
-  //      m_angle -= 360;
-  //    }
-  //    while (m_angle < 0) {
-  //      m_angle += 360;
-  //    }
-  //    setRotation(m_angle);
-  //  }
+  void set_colour(sf::Color colour) { m_colour = colour; }
 
   void setPosition(float x, float y) { setPosition(sf::Vector2f(x, y)); }
 
@@ -103,11 +95,9 @@ class RobotBody {
   sf::Vector2f position() const { return m_center; }
 
   void updateSensorGeometry(Robot& robot) {
-    //    (void)robot;
     float angle = 0;
-    sf::Vector2f pos{90, 90};
     if (m_Robot) {
-      pos = m_Robot->getPose();
+      /// angle is negative because the screen y-axis is inverted
       angle = -(m_Robot->getOrientation());
     }
 
@@ -184,7 +174,6 @@ class RobotBody {
   sf::Color m_colour = sf::Color::White;
   std::vector<ShapeData> bodyShapes;  // List of shapes and their offsets
   Robot* m_Robot = nullptr;
-  std::mutex m_BodyMutex;
 };
 
 #endif  // _OBJECT_H
