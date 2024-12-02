@@ -38,13 +38,11 @@
  */
 class RobotWallSensor {
  public:
-  RobotWallSensor(sf::Vector2f origin = {0, 0}, float angle = 0, float half_angle = 5.0f, int ray_count = 16)
-      : m_origin(origin), m_angle(angle), m_half_angle(half_angle), m_rays(ray_count + 1) {
-    m_vertices.resize(m_rays);
+  RobotWallSensor(sf::Vector2f origin = {0, 0}, float angle = 0) : m_origin(origin), m_angle(angle) {
+    m_vertices.resize(m_geometry.rayCount);
     m_vertices.setPrimitiveType(sf::TriangleFan);
     m_vertices[0].position = m_origin;  // First vertex is the origin
     m_vertices[0].color = conf::SENSOR_COLOUR;
-
     m_max_range = conf::SENSOR_MAX_RANGE;
     m_power = 0.0f;
   }
@@ -57,14 +55,17 @@ class RobotWallSensor {
   /// The sensor fan will be centered on this angle and spread +/- the half-angle
   void set_angle(float angle) { m_angle = angle; }
 
-  void set_half_angle(float half_angle) { m_half_angle = half_angle; }
+  void set_half_angle(float half_angle) { m_geometry.halfAngle = half_angle; }
 
   void set_ray_count(int ray_count) {
-    m_rays = ray_count;
-    m_vertices.resize(m_rays);
+    m_geometry.rayCount = ray_count;
+    m_vertices.resize(ray_count);
   }
 
-  void SetGeometry(SensorGeometry geometry) { m_geometry = geometry; }
+  void SetGeometry(SensorGeometry geometry) {
+    m_geometry = geometry;
+    m_vertices.resize(geometry.rayCount);
+  }
 
   SensorGeometry& getGeometry() { return m_geometry; }
 
@@ -80,12 +81,12 @@ class RobotWallSensor {
    */
   void update(const std::vector<sf::RectangleShape>& obstacles) {
     // Calculate angular increment for rays
-    float startAngle = (m_angle - m_half_angle) * RADIANS;
-    float endAngle = (m_angle + m_half_angle) * RADIANS;
-    float angleIncrement = (endAngle - startAngle) / float(m_rays - 1);
+    float startAngle = (m_angle - m_geometry.halfAngle) * RADIANS;
+    float endAngle = (m_angle + m_geometry.halfAngle) * RADIANS;
+    float angleIncrement = (endAngle - startAngle) / float(m_geometry.rayCount - 1);
 
     float total_distance = 0;
-    for (int i = 1; i < m_rays; ++i) {  // Remember to skip origin (index 0)
+    for (int i = 1; i < m_geometry.rayCount; ++i) {  // Remember to skip origin (index 0)
       float angle = startAngle + float(i - 1) * angleIncrement;
       sf::Vector2f dir = {std::cos(angle), std::sin(angle)};
 
@@ -105,7 +106,7 @@ class RobotWallSensor {
       /// Accumulate distance and power for averaging
       total_distance += closestHit;
     }
-    float a = total_distance / m_rays;
+    float a = total_distance / m_geometry.rayCount;
     m_power = 1600.0f * expf(-0.025f * a);
   }
 
@@ -167,12 +168,10 @@ class RobotWallSensor {
     return std::min(tmin >= 0 ? tmin : tmax, m_max_range);  // Intersection behind the ray origin
   }
 
-  SensorGeometry m_geometry;
+  SensorGeometry m_geometry = {.x = 0, .y = 0, .theta = 0, .halfAngle = 5.0f, .rayCount = 16};
   sf::Vector2f m_origin = {0, 0};
   float m_angle;
-  float m_half_angle;
   float m_max_range;
-  int m_rays;
   float m_power;
 
   sf::VertexArray m_vertices;
