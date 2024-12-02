@@ -39,8 +39,8 @@ class Application : public IEventObserver {
     m_window.AddObserver(this);
     m_RobotBody.setRobot(m_robot);
 
-    m_robot.setPosition(7 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f, 8 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f);
-    m_robot.setOrientation(0.0);
+    m_robot.setPosition(0 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f, 0 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f);
+    m_robot.setOrientation(90.0);
     /// The Lambda expression here serves to bind the callback to the application instance
     m_robot.setSensorCallback([this](float x, float y, float theta) -> SensorData { return this->CallbackCalculateSensorData(x, y, theta); });
     m_robot.Start();

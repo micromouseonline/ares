@@ -45,7 +45,8 @@ enum class WallState {
   KnownAbsent,   //
   KnownPresent,  //
   Unknown,       //
-  Virtual        //
+  Virtual,       //
+  Mystery
 };
 
 struct Wall {
@@ -87,13 +88,17 @@ class MazeManager {
  public:
   /// these constants are mostly needed for testing
 
-  MazeManager() {
+  MazeManager()
+      : m_vertexArrayPosts(sf::Quads, NUMBER_OF_POSTS * 4),  //
+        m_vertexArrayWalls(sf::Quads, NUMBER_OF_WALLS * 4)   //
+  {
     m_MazeBase.setSize({2892.0f, 2892.0f});
     m_MazeBase.setPosition(0.0f, 0.0f);
     m_MazeBase.setFillColor(conf::MazeBaseColour);
 
-    InitMaze();  //
-    InitPosts();
+    createWalls();  //
+    createPosts();
+    InitMaze();
     loadFromMemory(japan2007ef, MAZE_WIDTH);
   };
 
@@ -114,22 +119,23 @@ class MazeManager {
   }
 
   bool loadFromMemory(const uint8_t* data, int mazeWidth) {
-    for (int y = 0; y < mazeWidth; y++) {
-      for (int x = 0; x < mazeWidth; x++) {
+    InitMaze();
+    for (int y = 0; y < mazeWidth - 1; y++) {
+      for (int x = 0; x < mazeWidth - 1; x++) {
         int index = x * mazeWidth + y;
         int walls = data[index];
         for (int d = 0; d < 4; d++) {
           // we need only do the North and East walls
           if (walls & BIT(0)) {
-            SetWallState(x, y, Direction::North, WallState::KnownPresent);
+            SetWallState(x, y, Direction::North, WallState::Mystery);
           }
           if (walls & BIT(1)) {
-            SetWallState(x, y, Direction::East, WallState::KnownPresent);
+            SetWallState(x, y, Direction::East, WallState::Mystery);
           }
         }
       }
     }
-    m_vertexArrayWalls = MakeVertexArrayFromWalls(m_walls);
+    SetWallState(0, 0, Direction::East, WallState::KnownPresent);
     return true;
   }
 
@@ -169,7 +175,7 @@ class MazeManager {
   sf::Color GetWallColor(WallState state) {
     switch (state) {
       case WallState::KnownAbsent:
-        return conf::knownAbsentColour;
+        return conf::KnownAbsentColour;
       case WallState::KnownPresent:
         return conf::KnownPresentColour;
       case WallState::Unknown:
@@ -182,8 +188,11 @@ class MazeManager {
   }
 
   void SetWallState(int index, WallState state) {
-    m_walls[index].state = state;
-    m_walls[index].shape.setFillColor(GetWallColor(state));
+    wallState[index] = state;  //
+    m_vertexArrayWalls[index * 4 + 0].color = conf::WallStateColors[(int)state];
+    m_vertexArrayWalls[index * 4 + 1].color = conf::WallStateColors[(int)state];
+    m_vertexArrayWalls[index * 4 + 2].color = conf::WallStateColors[(int)state];
+    m_vertexArrayWalls[index * 4 + 3].color = conf::WallStateColors[(int)state];
   }
 
   void SetWallState(int x, int y, Direction direction, WallState state) {
@@ -196,48 +205,17 @@ class MazeManager {
   }
 
   void InitWall(int x, int y, Direction direction, WallState state) {
-    sf::RectangleShape wall_shape;
-    sf::RectangleShape hWall({WALL_LENGTH, WALL_THICKNESS});
-    sf::RectangleShape vWall({WALL_THICKNESS, WALL_LENGTH});
-    sf::Vector2f origin = getCellOrigin(x, y);
-    /// get the bottom left for the cell
-    float offsX = 0;
-    float offsY = 0;
-    switch (direction) {
-      case Direction::North:
-        offsX = WALL_THICKNESS;
-        offsY = CELL_SIZE + WALL_THICKNESS;
-        wall_shape = hWall;
-        break;
-      case Direction::East:
-        offsX = CELL_SIZE;
-        offsY = CELL_SIZE;
-        wall_shape = vWall;
-        break;
-      case Direction::South:
-        offsX = WALL_THICKNESS;
-        offsY = WALL_THICKNESS;
-        wall_shape = hWall;
-        break;
-      case Direction::West:
-        offsX = 0;
-        offsY = CELL_SIZE;
-        wall_shape = vWall;
-        break;
-      default:
-        break;  // this is actually an error.
-    }
-    int index = GetWallIndex(x, y, direction);
-    sf::Vector2f offset(offsX, offsY);
-    wall_shape.setPosition(origin);
-    m_walls[index].shape = wall_shape;
-    SetWallState(index, state);
+    (void)x;
+    (void)y;
+    (void)direction;
+    (void)state;
   }
 
-  void InitPosts() {
-    // the posts are static so just make them once
-
-    sf::RectangleShape post({WALL_THICKNESS, WALL_THICKNESS});
+  /**
+   * The posts are static so just make them once
+   */
+  void createPosts() {
+    //    sf::RectangleShape post({WALL_THICKNESS, WALL_THICKNESS});
     for (int y = 0; y <= MAZE_WIDTH; y++) {
       for (int x = 0; x <= MAZE_WIDTH; x++) {
         float ox = (float)x * CELL_SIZE;
@@ -246,49 +224,142 @@ class MazeManager {
         m_postRects[index] = {{ox, oy}, {WALL_THICKNESS, WALL_THICKNESS}};
       }
     }
-    m_vertexArrayPosts = MakeVertexArrayFromPosts(m_postRects, conf::KnownPresentColour);
+    sf::Color color = conf::KnownPresentColour;
+    for (std::size_t i = 0; i < NUMBER_OF_POSTS; ++i) {
+      const sf::FloatRect& rect = m_postRects[i];
+      const sf::Vector2f& position = Drawing::toWindowCoords(rect.getPosition(), conf::MazeSize);
+      const sf::Vector2f& size = rect.getSize();
+
+      m_vertexArrayPosts[i * 4 + 0].position = position;
+      m_vertexArrayPosts[i * 4 + 1].position = sf::Vector2f(position.x + size.x, position.y);
+      m_vertexArrayPosts[i * 4 + 2].position = sf::Vector2f(position.x + size.x, position.y + size.y);
+      m_vertexArrayPosts[i * 4 + 3].position = sf::Vector2f(position.x, position.y + size.y);
+      m_vertexArrayPosts[i * 4 + 0].color = color;
+      m_vertexArrayPosts[i * 4 + 1].color = color;
+      m_vertexArrayPosts[i * 4 + 2].color = color;
+      m_vertexArrayPosts[i * 4 + 3].color = color;
+    }
+  }
+
+  /***
+   * Like the posts, we can create all the wall rectangles and their
+   * associated vertex array entries when the maze if first created.
+   * These positions do not change so the cost of creation is saved
+   * on every frame.
+   *
+   * Walls can be set or cleared just by changing the state and then
+   * applying the relevant colour
+   */
+  void createWalls() {
+    sf::FloatRect wall_shape;
+    sf::FloatRect hWall({0, 0}, {WALL_LENGTH, WALL_THICKNESS});
+    sf::FloatRect vWall({0, 0}, {WALL_THICKNESS, WALL_LENGTH});
+    for (int y = 0; y < MAZE_WIDTH; y++) {
+      for (int x = 0; x < MAZE_WIDTH; x++) {
+        sf::Vector2f origin = getCellOrigin(x, y);
+        int index;
+        sf::Vector2f offset;
+        // North Wall
+        offset.x = WALL_THICKNESS;
+        offset.y = CELL_SIZE + WALL_THICKNESS;
+        wall_shape = hWall;
+        wall_shape.left = origin.x + offset.x;
+        wall_shape.top = origin.y + offset.y;
+        index = GetWallIndex(x, y, Direction::North);
+        m_wallRects[index] = wall_shape;
+        SetWallState(index, WallState::Unknown);
+        // West Wall
+        offset.x = 0;
+        offset.y = CELL_SIZE;
+        wall_shape = vWall;
+        wall_shape.left = origin.x + offset.x;
+        wall_shape.top = origin.y + offset.y;
+        index = GetWallIndex(x, y, Direction::West);
+        m_wallRects[index] = wall_shape;
+        SetWallState(index, WallState::Unknown);
+      }
+    }
+    // now the South and East border
+    sf::Vector2f origin;
+    for (int i = 0; i < MAZE_WIDTH; i++) {
+      int index;
+      origin = getCellOrigin(i, 0);
+      sf::Vector2f offset;
+      // South Wall
+      offset.x = WALL_THICKNESS;
+      offset.y = WALL_THICKNESS;
+      wall_shape = hWall;
+      wall_shape.left = origin.x + offset.x;
+      wall_shape.top = origin.y + offset.y;
+      index = GetWallIndex(i, 0, Direction::South);
+      m_wallRects[index] = wall_shape;
+      SetWallState(index, WallState::Unknown);
+
+      // East Wall
+      origin = getCellOrigin(MAZE_WIDTH - 1, i);
+      offset.x = CELL_SIZE;
+      offset.y = CELL_SIZE;
+      wall_shape = vWall;
+      wall_shape.left = origin.x + offset.x;
+      wall_shape.top = origin.y + offset.y;
+      index = GetWallIndex(MAZE_WIDTH - 1, i, Direction::East);
+      std::cout << i << " > " << index << std::endl;
+      m_wallRects[index] = wall_shape;
+      SetWallState(index, WallState::Unknown);
+    }
+    sf::Color colour = conf::UnknownColour;
+    for (std::size_t i = 0; i < NUMBER_OF_WALLS; ++i) {
+      sf::FloatRect& rect = m_wallRects[i];
+      sf::Vector2f position = rect.getPosition();
+      position = Drawing::toWindowCoords(position, conf::MazeSize);
+      sf::Vector2f size = rect.getSize();
+      m_vertexArrayWalls[i * 4 + 0].position = position;
+      m_vertexArrayWalls[i * 4 + 1].position = sf::Vector2f(position.x + size.x, position.y);
+      m_vertexArrayWalls[i * 4 + 2].position = sf::Vector2f(position.x + size.x, position.y + size.y);
+      m_vertexArrayWalls[i * 4 + 3].position = sf::Vector2f(position.x, position.y + size.y);
+      m_vertexArrayWalls[i * 4 + 0].color = colour;
+      m_vertexArrayWalls[i * 4 + 1].color = colour;
+      m_vertexArrayWalls[i * 4 + 2].color = colour;
+      m_vertexArrayWalls[i * 4 + 3].color = colour;
+    }
   }
 
   void InitMaze() {
     for (int y = 0; y < MAZE_WIDTH; y++) {
       for (int x = 0; x < MAZE_WIDTH; x++) {
-        InitWall(x, y, Direction::North, WallState::Unknown);
-        InitWall(x, y, Direction::West, WallState::Unknown);
+        SetWallState(x, y, Direction::North, WallState::Unknown);
+        SetWallState(x, y, Direction::West, WallState::Unknown);
       }
     }
     for (int i = 0; i < MAZE_WIDTH; i++) {
-      InitWall(i, 0, Direction::South, WallState::KnownPresent);
-      InitWall(i, MAZE_WIDTH - 1, Direction::North, WallState::KnownPresent);
-      InitWall(0, i, Direction::West, WallState::KnownPresent);
-      InitWall(MAZE_WIDTH - 1, i, Direction::East, WallState::KnownPresent);
+      SetWallState(i, 0, Direction::South, WallState::KnownPresent);
+      SetWallState(i, MAZE_WIDTH - 1, Direction::North, WallState::KnownPresent);
+      SetWallState(0, i, Direction::West, WallState::KnownPresent);
+      SetWallState(MAZE_WIDTH - 1, i, Direction::East, WallState::KnownPresent);
     }
-    InitWall(0, 0, Direction::East, WallState::KnownPresent);
-    InitWall(0, 0, Direction::North, WallState::KnownAbsent);
-
-    std::cout << "Maze Width " << MAZE_WIDTH << std::endl;
-    std::cout << "Wall Length " << WALL_LENGTH << std::endl;
-    std::cout << "Wall Width " << WALL_THICKNESS << std::endl;
-    m_vertexArrayWalls = MakeVertexArrayFromWalls(m_walls);
+    SetWallState(0, 0, Direction::East, WallState::KnownPresent);
+    SetWallState(0, 0, Direction::North, WallState::KnownAbsent);
   }
 
   void Render(sf::RenderWindow& window) {
     window.draw(m_MazeBase);
-    window.draw(Drawing::convertToWindowCoords(m_vertexArrayWalls, conf::MazeSize));
+    window.draw(m_vertexArrayWalls);
     window.draw(m_vertexArrayPosts);
   }
 
   void UpdateObstacles() {
-    std::lock_guard<std::mutex> lock(m_ObstacleMutex);
-    m_Obstacles.clear();
-    int c = 40;
-    for (auto& wall : m_walls) {
-      if (wall.state == WallState::KnownPresent) {
-        m_Obstacles.push_back(wall.shape);
-      }
-      if (--c <= 0) {
-        return;
-      }
-    }
+    return;
+    //    std::lock_guard<std::mutex> lock(m_ObstacleMutex);
+    //    m_Obstacles.clear();
+    //    int c = 40;
+    //    for (auto& wall : m_walls) {
+    //      if (wall.state == WallState::KnownPresent) {
+    //        m_Obstacles.push_back(wall.shape);
+    //      }
+    //      if (--c <= 0) {
+    //        return;
+    //      }
+    //    }
   }
 
   const std::vector<sf::RectangleShape>& GetObstacles() {
@@ -297,72 +368,12 @@ class MazeManager {
   }
 
  private:
-  /***
-   * This utility will take a list of float rectangles (should be ints?) and create a vertex array
-   * for faster rendering.
-   *
-   * I think all the walls need to go in one list and all the posts in another list. The posts are
-   * static and never change so it can be done once..
-   * The walls are dynamic and need to be updated whenever they change.
-   *
-   * @param posts
-   * @param color
-   * @return
-   */
-  sf::VertexArray MakeVertexArrayFromPosts(const sf::FloatRect* posts, const sf::Color& color = conf::KnownPresentColour) {
-    sf::VertexArray vertexArray(sf::Quads, NUMBER_OF_POSTS * 4);
-
-    for (std::size_t i = 0; i < NUMBER_OF_POSTS; ++i) {
-      const sf::FloatRect& rect = posts[i];
-      const sf::Vector2f& position = Drawing::toWindowCoords(rect.getPosition(), conf::MazeSize);
-      const sf::Vector2f& size = rect.getSize();
-
-      vertexArray[i * 4 + 0].position = position;
-      vertexArray[i * 4 + 1].position = sf::Vector2f(position.x + size.x, position.y);
-      vertexArray[i * 4 + 2].position = sf::Vector2f(position.x + size.x, position.y + size.y);
-      vertexArray[i * 4 + 3].position = sf::Vector2f(position.x, position.y + size.y);
-
-      vertexArray[i * 4 + 0].color = color;
-      vertexArray[i * 4 + 1].color = color;
-      vertexArray[i * 4 + 2].color = color;
-      vertexArray[i * 4 + 3].color = color;
-    }
-
-    return vertexArray;
-  }
-
-  /***
-   * While waiting to convert the walls/posts to plain rectangles, we need to make
-   * a vertex array from the vector of walls that we have now.
-   *
-   * This method does that.
-   */
-  //  sf::VertexArray MakeVertexArrayFromShapes(const std::vector<sf::RectangleShape>& shapes) {
-  sf::VertexArray MakeVertexArrayFromWalls(const Wall* walls) {
-    sf::VertexArray vertexArray(sf::Quads, NUMBER_OF_WALLS * 4);
-    for (std::size_t i = 0; i < NUMBER_OF_WALLS; ++i) {
-      const sf::RectangleShape& shape = walls[i].shape;
-      const sf::Vector2f& position = shape.getPosition();
-      const sf::Vector2f& size = shape.getSize();
-      const sf::Color& color = shape.getFillColor();
-
-      vertexArray[i * 4 + 0].position = position;
-      vertexArray[i * 4 + 1].position = sf::Vector2f(position.x + size.x, position.y);
-      vertexArray[i * 4 + 2].position = sf::Vector2f(position.x + size.x, position.y + size.y);
-      vertexArray[i * 4 + 3].position = sf::Vector2f(position.x, position.y + size.y);
-
-      vertexArray[i * 4 + 0].color = color;
-      vertexArray[i * 4 + 1].color = color;
-      vertexArray[i * 4 + 2].color = color;
-      vertexArray[i * 4 + 3].color = color;
-    }
-    return vertexArray;
-  }
-
-  sf::VertexArray m_vertexArrayWalls;
   sf::VertexArray m_vertexArrayPosts;
-  Wall m_walls[NUMBER_OF_WALLS];  // Array of wall states
-  /// we need to retain the rectangles for sensors and collisions
+  sf::VertexArray m_vertexArrayWalls;
+  //  Wall m_walls[NUMBER_OF_WALLS];  // Array of wall states
+  WallState wallState[NUMBER_OF_WALLS];
+  sf::FloatRect m_wallRects[NUMBER_OF_WALLS];
+  sf::FloatRect m_postRects[NUMBER_OF_POSTS];
 
   std::string mazeDataString;
   sf::RectangleShape m_MazeBase;
@@ -370,9 +381,6 @@ class MazeManager {
   mutable std::mutex m_ObstacleMutex;  // Protects access to m_pose and m_orientation
 
   std::vector<sf::RectangleShape> m_Obstacles;
-  sf::FloatRect wallRects[NUMBER_OF_WALLS];
-  sf::FloatRect m_postRects[NUMBER_OF_POSTS];
-  int wallState[NUMBER_OF_WALLS];
 };
 
 #endif  // MAZE_H
