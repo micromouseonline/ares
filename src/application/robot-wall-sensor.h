@@ -5,6 +5,7 @@
 #include "SFML/Graphics.hpp"
 #include "common/utils.h"
 #include "configuration.h"
+#include "drawing.h"
 /**
  * The RobotWallSensor is a mocked device that calculates sensor data for the simulated
  * robot. Instances of the lass represent a single sensor that can calculate the
@@ -112,7 +113,9 @@ class RobotWallSensor {
 
   /// The sensor will be drawn as a triangle fan. This is really
   /// fast because the GPU does all the work from the vertex list
-  void draw(sf::RenderTarget& renderTarget) const { renderTarget.draw(m_vertices); }
+  void draw(sf::RenderTarget& renderTarget) const {
+    renderTarget.draw(Drawing::convertToWindowCoords(m_vertices, 2892));  //
+  }
 
  private:
   /***

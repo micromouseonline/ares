@@ -10,6 +10,18 @@
 
 class Drawing {
  public:
+  static sf::Vector2f toWindowCoords(const sf::Vector2f& appCoords, float windowHeight) {
+    return sf::Vector2f(appCoords.x, windowHeight - appCoords.y);  //
+  }
+
+  static sf::VertexArray convertToWindowCoords(const sf::VertexArray& va, float windowHeight) {
+    sf::VertexArray sa = va;
+    for (size_t i = 0; i < sa.getVertexCount(); i++) {
+      sa[i].position = toWindowCoords(sa[i].position, windowHeight);
+    }
+    return sa;
+  }
+
   static void draw_line(sf::RenderTarget& target, sf::Vector2f start, sf::Vector2f end, sf::Color color = sf::Color::White) {
     sf::Vertex line[2];
     line[0].position = start;

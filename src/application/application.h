@@ -170,6 +170,11 @@ class Application : public IEventObserver {
     msg += str;
     msg += "\n";
     msg += "sensor update: " + std::to_string(m_processTime.asMicroseconds()) + " us";
+    msg += "\n";
+    float angle = m_robot.getOrientation();
+    sf::Vector2f pos = m_robot.getPose();
+    sprintf(str, "Robot: (%4d,%4d) %4d\n", (int)pos.x, (int)pos.y, (int)angle);
+    msg += str;
     m_adhocText.setString(msg);
   }
 
@@ -236,7 +241,7 @@ class Application : public IEventObserver {
    */
   SensorData CallbackCalculateSensorData(float x, float y, float theta) {
     m_timer.restart();
-    m_RobotBody.updateSensorGeometry(x, y, -theta);
+    m_RobotBody.updateSensorGeometry(x, y, theta);
     m_RobotBody.updateSensors(m_mazeManager.GetObstacles());
     m_SensorData.lfs_value = m_RobotBody.getSensor(conf::LFS).power();
     m_SensorData.rds_value = m_RobotBody.getSensor(conf::LDS).power();

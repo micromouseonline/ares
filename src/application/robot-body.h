@@ -80,7 +80,7 @@ class RobotBody {
 
   void setRotation(float angle) {
     m_angle = angle;
-    float radAngle = m_angle * (3.14159265359f / 180.f);
+    float radAngle = -m_angle * (3.14159265359f / 180.f);
     float cosAngle = std::cos(radAngle);
     float sinAngle = std::sin(radAngle);
 
@@ -95,7 +95,9 @@ class RobotBody {
     }
   }
 
-  float angle() const { return m_angle; }
+  float angle() const {
+    return m_angle;  //
+  }
 
   sf::Vector2f position() const { return m_worldPosition; }
 
@@ -117,10 +119,11 @@ class RobotBody {
 
     setPosition(worldPos);
     setRotation(angle);
-    //    updateSensorGeometry(pos.x, pos.y, angle);
 
     for (const auto& item : m_bodyShapes) {
-      window.draw(*item.shape);
+      sf::Shape& s = *item.shape;
+      s.setPosition(Drawing::toWindowCoords(s.getPosition(), conf::MazeSize));
+      window.draw(s);
     }
     for (auto& sensor : m_sensors) {
       sensor.draw(window);
@@ -128,7 +131,7 @@ class RobotBody {
 
     // Draw the direction arrow
     Vec2 pointer = Vec2::fromDegrees(angle) * 100;
-    Drawing::draw_vector_arrow(window, m_worldPosition, sf::Vector2f(pointer), 15.0);
+    Drawing::draw_vector_arrow(window, Drawing::toWindowCoords(m_worldPosition, conf::MazeSize), sf::Vector2f(pointer), 15.0);
   }
 
   void updateSensors(const std::vector<sf::RectangleShape>& obstacles) {
