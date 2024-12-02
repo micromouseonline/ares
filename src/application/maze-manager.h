@@ -13,6 +13,7 @@
 #include <string>
 #include "common/core.h"
 #include "configuration.h"
+#include "drawing.h"
 #include "world/mazedata.h"
 
 const int MAZE_WIDTH = (16);
@@ -139,7 +140,7 @@ class MazeManager {
     //
   }
 
-  bool IsHorizontal(int wall_index) {
+  bool isHorizontalWall(int wall_index) {
     return ((wall_index % LOCATION_DELTA_NORTH) < NUMBER_OF_HORIZ_WALLS);  //
   }
 
@@ -190,35 +191,45 @@ class MazeManager {
     SetWallState(index, state);
   }
 
+  sf::Vector2f getCellOrigin(int x, int y) {
+    return {(float)x * CELL_SIZE, (float)y * CELL_SIZE};  //
+  }
+
   void InitWall(int x, int y, Direction direction, WallState state) {
     sf::RectangleShape wall_shape;
-    /// get the top left
-    float cx = float(x) * CELL_SIZE;
-    float cy = (CELL_SIZE * MAZE_WIDTH) - (float)(y + 1) * CELL_SIZE;
+    sf::RectangleShape hWall({WALL_LENGTH, WALL_THICKNESS});
+    sf::RectangleShape vWall({WALL_THICKNESS, WALL_LENGTH});
+    sf::Vector2f origin = getCellOrigin(x, y);
+    /// get the bottom left for the cell
+    float offsX = 0;
+    float offsY = 0;
     switch (direction) {
       case Direction::North:
-        cx += WALL_THICKNESS + 1;
-        wall_shape.setSize({WALL_LENGTH, WALL_THICKNESS});
+        offsX = WALL_THICKNESS;
+        offsY = CELL_SIZE + WALL_THICKNESS;
+        wall_shape = hWall;
         break;
       case Direction::East:
-        cx += CELL_SIZE;
-        cy += WALL_THICKNESS + 1;
-        wall_shape.setSize({WALL_THICKNESS, WALL_LENGTH});
+        offsX = CELL_SIZE;
+        offsY = CELL_SIZE;
+        wall_shape = vWall;
         break;
       case Direction::South:
-        cx += WALL_THICKNESS + 1;
-        cy += CELL_SIZE;
-        wall_shape.setSize({WALL_LENGTH, WALL_THICKNESS});
+        offsX = WALL_THICKNESS;
+        offsY = WALL_THICKNESS;
+        wall_shape = hWall;
         break;
       case Direction::West:
-        cy += WALL_THICKNESS + 1;
-        wall_shape.setSize({WALL_THICKNESS, WALL_LENGTH});
+        offsX = 0;
+        offsY = CELL_SIZE;
+        wall_shape = vWall;
         break;
       default:
         break;  // this is actually an error.
     }
     int index = GetWallIndex(x, y, direction);
-    wall_shape.setPosition(cx, cy);
+    sf::Vector2f offset(offsX, offsY);
+    wall_shape.setPosition(origin);
     m_walls[index].shape = wall_shape;
     SetWallState(index, state);
   }
@@ -226,17 +237,16 @@ class MazeManager {
   void InitPosts() {
     // the posts are static so just make them once
 
+    sf::RectangleShape post({WALL_THICKNESS, WALL_THICKNESS});
     for (int y = 0; y <= MAZE_WIDTH; y++) {
       for (int x = 0; x <= MAZE_WIDTH; x++) {
-        float left = (float)x * CELL_SIZE;
-        float top = (CELL_SIZE * MAZE_WIDTH) - (float)(y)*CELL_SIZE;
-
-        sf::FloatRect post_rect(left + GAP / 2.0f, top + GAP / 2.0f, WALL_THICKNESS - GAP, WALL_THICKNESS - GAP);
+        float ox = (float)x * CELL_SIZE;
+        float oy = (float)y * CELL_SIZE + WALL_THICKNESS;
         int index = x * (MAZE_WIDTH + 1) + y;
-        m_posts[index] = post_rect;
+        m_postRects[index] = {{ox, oy}, {WALL_THICKNESS, WALL_THICKNESS}};
       }
     }
-    m_vertexArrayPosts = MakeVertexArrayFromPosts(m_posts, conf::KnownPresentColour);
+    m_vertexArrayPosts = MakeVertexArrayFromPosts(m_postRects, conf::KnownPresentColour);
   }
 
   void InitMaze() {
@@ -263,8 +273,7 @@ class MazeManager {
 
   void Render(sf::RenderWindow& window) {
     window.draw(m_MazeBase);
-
-    window.draw(m_vertexArrayWalls);
+    window.draw(Drawing::convertToWindowCoords(m_vertexArrayWalls, conf::MazeSize));
     window.draw(m_vertexArrayPosts);
   }
 
@@ -296,22 +305,22 @@ class MazeManager {
    * static and never change so it can be done once..
    * The walls are dynamic and need to be updated whenever they change.
    *
-   * @param rectangles
+   * @param posts
    * @param color
    * @return
    */
-  //    sf::VertexArray MakeVertexArray(const std::vector<sf::FloatRect>& rects, const sf::Color& color = sf::Color::Red) {
-  sf::VertexArray MakeVertexArrayFromPosts(const sf::FloatRect* rectangles, const sf::Color& color = conf::KnownPresentColour) {
+  sf::VertexArray MakeVertexArrayFromPosts(const sf::FloatRect* posts, const sf::Color& color = conf::KnownPresentColour) {
     sf::VertexArray vertexArray(sf::Quads, NUMBER_OF_POSTS * 4);
 
     for (std::size_t i = 0; i < NUMBER_OF_POSTS; ++i) {
-      const sf::FloatRect& rect = rectangles[i];
-      float left = rect.left;
-      float top = rect.top;
-      vertexArray[i * 4 + 0].position = sf::Vector2f(left, top);
-      vertexArray[i * 4 + 1].position = sf::Vector2f(left + rect.width, top);
-      vertexArray[i * 4 + 2].position = sf::Vector2f(left + rect.width, top + rect.height);
-      vertexArray[i * 4 + 3].position = sf::Vector2f(left, top + rect.height);
+      const sf::FloatRect& rect = posts[i];
+      const sf::Vector2f& position = Drawing::toWindowCoords(rect.getPosition(), conf::MazeSize);
+      const sf::Vector2f& size = rect.getSize();
+
+      vertexArray[i * 4 + 0].position = position;
+      vertexArray[i * 4 + 1].position = sf::Vector2f(position.x + size.x, position.y);
+      vertexArray[i * 4 + 2].position = sf::Vector2f(position.x + size.x, position.y + size.y);
+      vertexArray[i * 4 + 3].position = sf::Vector2f(position.x, position.y + size.y);
 
       vertexArray[i * 4 + 0].color = color;
       vertexArray[i * 4 + 1].color = color;
@@ -354,7 +363,6 @@ class MazeManager {
   sf::VertexArray m_vertexArrayPosts;
   Wall m_walls[NUMBER_OF_WALLS];  // Array of wall states
   /// we need to retain the rectangles for sensors and collisions
-  sf::FloatRect m_posts[NUMBER_OF_POSTS];  // Array of post shapes
 
   std::string mazeDataString;
   sf::RectangleShape m_MazeBase;
@@ -362,6 +370,9 @@ class MazeManager {
   mutable std::mutex m_ObstacleMutex;  // Protects access to m_pose and m_orientation
 
   std::vector<sf::RectangleShape> m_Obstacles;
+  sf::FloatRect wallRects[NUMBER_OF_WALLS];
+  sf::FloatRect m_postRects[NUMBER_OF_POSTS];
+  int wallState[NUMBER_OF_WALLS];
 };
 
 #endif  // MAZE_H
