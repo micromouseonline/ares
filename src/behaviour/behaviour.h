@@ -50,35 +50,35 @@
 
 class Behaviour {
  public:
-  Behaviour() : m_linearVelocity(0.0f), m_angularVelocity(0.0f), m_center(0.0f, 0.0f), m_radius(0.0f){};
+  Behaviour() : m_velocity(0.0f), m_omega(0.0f), m_center(0.0f, 0.0f), m_radius(0.0f) {};
 
   // Updates the control logic with the current sensor data
-  void Update() {};
+  void update() {};
 
   // Get the current velocities (linear and angular)
-  float GetLinearVelocity() const {
-    return m_linearVelocity;  //
+  float getLinearVelocity() const {
+    return m_velocity;  //
   };
 
-  float GetAngularVelocity() const {
-    return m_angularVelocity;  //
+  float getAngularVelocity() const {
+    return m_omega;  //
   };
 
   // Set a circular trajectory for the robot
-  void SetCircularTrajectory(const sf::Vector2f& center, float radius, float angularSpeedDegrees) {
+  void setCircularTrajectory(const sf::Vector2f& center, float radius, float angularSpeedDegrees) {
     m_center = center;
     m_radius = radius;
-    m_angularVelocity = angularSpeedDegrees;  // Store angular speed in degrees per second
-    m_linearVelocity = radius * (m_angularVelocity * 3.14159f / 180.0f);
+    m_omega = angularSpeedDegrees;  // Store angular speed in degrees per second
+    m_velocity = radius * (m_omega * 3.14159f / 180.0f);
     // Convert angular speed to radians for calculation
   }
 
  private:
   // Current control outputs
-  float m_linearVelocity;   // Forward velocity (units per second)
-  float m_angularVelocity;  // Angular velocity (radians per second)
-  sf::Vector2f m_center;    // Center of the circular trajectory
-  float m_radius;           // Radius of the circular trajectory
+  float m_velocity;       // Forward velocity (units per second)
+  float m_omega;          // Angular velocity (radians per second)
+  sf::Vector2f m_center;  // Center of the circular trajectory
+  float m_radius;         // Radius of the circular trajectory
 };
 
 #endif  // ROBOT_CONTROL_H
