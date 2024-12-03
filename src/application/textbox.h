@@ -21,18 +21,18 @@
 class Textbox {
  public:
   Textbox() {
-    Setup(5, 9, 200, sf::Vector2f(conf::WindowPadding, 8 * conf::WindowPadding));  //
+    initialise(5, 9, 200, sf::Vector2f(conf::WindowPadding, 8 * conf::WindowPadding));  //
   }
 
   Textbox(int l_visible, int l_charSize, int l_width, sf::Vector2f l_screenPos) {
-    Setup(l_visible, l_charSize, l_width, l_screenPos);  //
+    initialise(l_visible, l_charSize, l_width, l_screenPos);  //
   }
 
   ~Textbox() {
-    Clear();  //
+    clear();  //
   };
 
-  void Setup(int lines, int charSize, int width, sf::Vector2f position) {
+  void initialise(int lines, int charSize, int width, sf::Vector2f position) {
     m_visible_lines = lines;
     m_font.loadFromFile("assets/fonts/ubuntu-mono-r.ttf");
     m_text.setFont(m_font);
@@ -44,25 +44,25 @@ class Textbox {
     m_background.setSize(sf::Vector2f(width + 2 * padding.x, (lines * (charSize * 1.2f) + 2 * padding.y)));
     m_background.setPosition(position);
 
-    SetTextColor(sf::Color::White);
-    SetBackgroundColor(sf::Color(90, 90, 90, 90));
-    SetBorderColor(sf::Color(90, 90, 0, 190));
+    setTextColour(sf::Color::White);
+    setBackgroundColour(sf::Color(90, 90, 90, 90));
+    setBorderColour(sf::Color(90, 90, 0, 190));
   }
 
-  void SetTextColor(sf::Color color) {
+  void setTextColour(sf::Color color) {
     m_text.setFillColor(color);  //
   }
 
-  void SetBackgroundColor(sf::Color color) {
+  void setBackgroundColour(sf::Color color) {
     m_background.setFillColor(color);  //
   }
 
-  void SetBorderColor(sf::Color color) {
+  void setBorderColour(sf::Color color) {
     m_background.setOutlineColor(color);
     m_background.setOutlineThickness(1.0f);
   }
 
-  void Add(std::string str) {
+  void addString(std::string str) {
     m_messages.push_back(str);
     if (m_messages.size() <= m_visible_lines) {
       return;
@@ -70,11 +70,11 @@ class Textbox {
     m_messages.erase(m_messages.begin());
   }
 
-  void Clear() {
+  void clear() {
     m_messages.clear();  //
   };
 
-  void Render(sf::RenderWindow& l_wind) {
+  void draw(sf::RenderWindow& l_wind) {
     std::string content;
     for (auto& itr : m_messages) {
       content.append(itr + "\n");

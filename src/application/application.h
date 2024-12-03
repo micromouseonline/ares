@@ -30,9 +30,9 @@ class Application : public IEventObserver {
     m_adhoc_text.setFillColor(sf::Color::Yellow);
 
     /// The UI components are defined in world pixels in the window's default view
-    m_textbox.Setup(5, 14, 600, sf::Vector2f(1000, 10));
-    m_textbox.Add("Hello World!");
-    m_textbox.Add("WASD keys to move robot");
+    m_textbox.initialise(5, 14, 600, sf::Vector2f(1000, 10));
+    m_textbox.addString("Hello World!");
+    m_textbox.addString("WASD keys to move robot");
 
     m_window.AddObserver(this);
     m_robot_body.setRobot(m_robot);
@@ -87,14 +87,14 @@ class Application : public IEventObserver {
             msg << " (OTHER BUTTON) ";
           }
           msg << " @ " << Vec2(mazePos) << " =  " << Vec2(pixelPos);
-          m_textbox.Add(msg.str());
+          m_textbox.addString(msg.str());
         }
         break;
       case EventType::USER_EVENT:
-        m_textbox.Add("USER Event");
+        m_textbox.addString("USER Event");
         break;
       default:
-        m_textbox.Add("UNHANDLED Event");
+        m_textbox.addString("UNHANDLED Event");
         break;
     }
   }
@@ -117,9 +117,9 @@ class Application : public IEventObserver {
   void handleInput() {
     /// This is a silly example of how HandleInput can be used
     if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
-      m_textbox.SetBackgroundColor(sf::Color(255, 255, 0, 48));
+      m_textbox.setBackgroundColour(sf::Color(255, 255, 0, 48));
     } else {
-      m_textbox.SetBackgroundColor(sf::Color(255, 255, 255, 48));
+      m_textbox.setBackgroundColour(sf::Color(255, 255, 255, 48));
     }
     float v = 0;
     float w = 0;
@@ -196,7 +196,7 @@ class Application : public IEventObserver {
     m_adhoc_text.setPosition(1000, 200);
     window.draw(m_adhoc_text);
 
-    m_textbox.Render(window);
+    m_textbox.draw(window);
     /// ALWAYS do this last
     m_window.EndDraw();
   }
