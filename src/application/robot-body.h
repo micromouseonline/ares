@@ -143,11 +143,11 @@ class RobotBody {
   bool collides_with(const sf::RectangleShape& rect) const {
     for (const auto& item : m_bodyShapes) {
       if (auto* circle = dynamic_cast<sf::CircleShape*>(item.shape.get())) {
-        if (Collisions::circle_hits_aligned_rect(*circle, rect)) {  /// only axis aligned rectangles
+        if (Collisions::circleHitsAlignedRect(*circle, rect)) {  /// only axis aligned rectangles
           return true;
         }
       } else if (auto* this_rect = dynamic_cast<sf::RectangleShape*>(item.shape.get())) {
-        if (Collisions::rectangles_overlap(rect, *this_rect)) {
+        if (Collisions::rectanglesOverlap(rect, *this_rect)) {
           return true;
         }
       }
