@@ -31,44 +31,50 @@ class Window {
   void SetTitle(const std::string& title);
 
   /// Clears the window background
-  void BeginDraw();
+  void beginDraw();
 
   /// Displays the changes made to the window
-  void EndDraw();
+  void endDraw();
 
   /// This seems to suck up the events. needs more work?
   /// Process any events
-  void Update();
+  void update();
 
   /// The normal close events merely set a flag that can be tested with this getter.
   /// That allows the application to do some cleanup before exiting.
-  bool IsDone() const;
+  bool isDone() const;
 
-  void ToggleFullscreen();
-  bool IsFullscreen() const;
+  sf::Vector2u getWindowSize();
 
-  sf::Vector2u GetWindowSize();
-  sf::RenderWindow* GetRenderWindow() { return &m_window; }
+  sf::RenderWindow* getRenderWindow() {
+    return &m_window;  //
+  }
 
   /// Used to draw any drawable object into the window. The actual window variable
   /// is private so we do not have direct access to it
-  void Draw(sf::Drawable& l_drawable);
+  void draw(sf::Drawable& l_drawable);
 
-  sf::View& getMazeView() { return m_MazeView; }
+  sf::View& getMazeView() {
+    return m_maze_view;  //
+  }
+
   /// Any class that inherits from IEventObserver can register as an observer
-  void AddObserver(IEventObserver* observer);
+  void addObserver(IEventObserver* observer);
 
  private:
-  void Setup(const std::string title, const sf::Vector2u& size);
-  void Create();
-  void Destroy();
-  void NotifyObservers(const Event& event);
+  void setup(const std::string title, const sf::Vector2u& size);
+
+  void create();
+
+  void destroy();
+
+  void notifyObservers(const Event& event);
 
   sf::RenderWindow m_window;
-  sf::Vector2u m_windowSize;
-  std::string m_windowTitle;
-  sf::View m_MazeView;
-  bool m_isDone;
+  sf::Vector2u m_window_size;
+  std::string m_window_title;
+  sf::View m_maze_view;
+  bool m_is_done;
   /// Note that there will be trouble if an observer registers and then gets destroyed
   /// because the vector will still have a pointer to it. The solution is to use a shared_ptr
   std::vector<IEventObserver*> m_observers;

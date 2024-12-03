@@ -34,7 +34,7 @@ class Application : public IEventObserver {
     m_textbox.addString("Hello World!");
     m_textbox.addString("WASD keys to move robot");
 
-    m_window.AddObserver(this);
+    m_window.addObserver(this);
     m_robot_body.setRobot(m_robot);
 
     m_robot.setPosition(0 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f, 0 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f);
@@ -49,7 +49,7 @@ class Application : public IEventObserver {
   }
 
   void run() {
-    while (!getWindow()->IsDone()) {
+    while (!getWindow()->isDone()) {
       handleInput();
       update();
       render();
@@ -70,7 +70,7 @@ class Application : public IEventObserver {
     switch (event.type) {
       case EventType::SFML_EVENT:
         if (event.event.type == sf::Event::MouseButtonPressed) {
-          sf::RenderWindow* window = m_window.GetRenderWindow();
+          sf::RenderWindow* window = m_window.getRenderWindow();
           sf::Vector2i pixelPos(sf::Mouse::getPosition(*window));
           sf::Vector2f mazePos{0, 0};
           window->setView(m_window.getMazeView());
@@ -158,7 +158,7 @@ class Application : public IEventObserver {
    * @param deltaTime
    */
   void update(sf::Time deltaTime = sf::seconds(0.01)) {
-    m_window.Update();  // call this first to process window events
+    m_window.update();  // call this first to process window events
     m_elapsed += deltaTime;
     std::string msg;
     SensorData sensors = m_robot.getSensorData();
@@ -182,9 +182,9 @@ class Application : public IEventObserver {
 
   void render() {
     /// ALWAYS do this first
-    m_window.BeginDraw();
+    m_window.beginDraw();
     // grab the window reference to save typing
-    sf::RenderWindow& window = *m_window.GetRenderWindow();
+    sf::RenderWindow& window = *m_window.getRenderWindow();
     window.setView(m_window.getMazeView());
     // Render the physical maze TODO: think about how to add and distinguish the robot map from the physical maze
     m_maze_manager.draw(window);
@@ -198,7 +198,7 @@ class Application : public IEventObserver {
 
     m_textbox.draw(window);
     /// ALWAYS do this last
-    m_window.EndDraw();
+    m_window.endDraw();
   }
 
   Window* getWindow() { return &m_window; }
