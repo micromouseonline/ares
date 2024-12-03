@@ -7,6 +7,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <cmath>
+#include "common/core.h"
 
 inline float exponential_filter(float var, float new_value, float alpha = 0.5) {
   var = alpha * var + (1 - alpha) * new_value;
@@ -14,7 +15,7 @@ inline float exponential_filter(float var, float new_value, float alpha = 0.5) {
 }
 
 // Returns distance between points
-inline float distance(const sf::Vector2f& a, const sf::Vector2f& b) {
+inline float getDistanceBetween(const sf::Vector2f& a, const sf::Vector2f& b) {
   float dx = a.x - b.x;
   float dy = a.y - b.y;
   return std::sqrt(dx * dx + dy * dy);
@@ -43,7 +44,7 @@ inline sf::Color getColorAtPixel(const sf::Image& image, sf::Vector2f point) {
 
 inline sf::Vector2f rotatePoint(const sf::Vector2f& point, const sf::Vector2f& center, float angle) {
   // Convert angle from degrees to radians
-  float radian = angle * (3.14159265 / 180.0);
+  float radian = angle * RADIANS;
 
   // Calculate the new x and y positions using the rotation matrix
   float newX = std::cos(radian) * (point.x - center.x) - std::sin(radian) * (point.y - center.y) + center.x;

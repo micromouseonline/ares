@@ -42,12 +42,12 @@ struct Vec2 {
 
   [[nodiscard]] Vec2 normal() const { return {-y, x}; }
 
-  [[nodiscard]] Vec2 left_normal() const {
+  [[nodiscard]] Vec2 leftNormal() const {
     Vec2 v(-y, x);
     return v;
   }
 
-  [[nodiscard]] Vec2 right_normal() const {
+  [[nodiscard]] Vec2 rightNormal() const {
     Vec2 v(y, -x);
     return v;
   }
@@ -97,11 +97,11 @@ struct Vec2 {
   bool operator==(const Vec2& v) const { return (std::fabs(x - v.x) < EPSILON) && (std::fabs(y - v.y) < EPSILON); }
 
   // Calculate the magnitude of the vector
-  float mag() const { return std::sqrt(x * x + y * y); }
+  float magnitude() const { return std::sqrt(x * x + y * y); }
 
   // Normalize the vector to a unit vector
   Vec2& normalize() {
-    float m = mag();
+    float m = magnitude();
     if (m > EPSILON) {
       *this /= m;
     }
@@ -115,7 +115,7 @@ struct Vec2 {
   }
 
   Vec2& limit(float lim) {
-    if (mag() > lim) {
+    if (magnitude() > lim) {
       set_magnitude(lim);
     }
     return *this;
@@ -128,21 +128,21 @@ struct Vec2 {
 
   float angle() { return atan2f(y, x); }
 
-  float angle_to(Vec2& v2) { return acosf(dot(v2) / (mag() * v2.mag())); }
+  float angleTo(Vec2& v2) { return acosf(dot(v2) / (magnitude() * v2.magnitude())); }
 
-  float signed_angle_to(const Vec2& v) const { return atan2f(v.y, v.x) - atan2f(y, x); }
+  float signedAngleTo(const Vec2& v) const { return atan2f(v.y, v.x) - atan2f(y, x); }
 
   float cross(const Vec2& v) const { return x * v.y - y * v.x; }
 
-  Vec2& rotate_to(float theta) {
-    float m = mag();
+  Vec2& rotateTo(float theta) {
+    float m = magnitude();
     x = m * cosf(theta);
     y = m * sinf(theta);
     return *this;
   }
 
-  Vec2& rotate_by(float theta) {
-    rotate_to(angle() + theta);
+  Vec2& rotateBy(float theta) {
+    rotateTo(angle() + theta);
     return *this;
   }
 
@@ -151,23 +151,25 @@ struct Vec2 {
     return os;
   }
 
-  static float getDistance(const Vec2& v1, const Vec2& v2) { return (v1 - v2).length(); }
+  static float getDistanceBetween(const Vec2& v1, const Vec2& v2) {
+    return (v1 - v2).length();  //
+  }
 
   // line is from v to w
   // point is p
-  inline float minimum_distance(Vec2 v, Vec2 w, Vec2 p) {
+  inline float getMinimumDistance(Vec2 v, Vec2 w, Vec2 p) {
     // Return minimum distance between line segment vw and point p
     Vec2 line = w - v;
     const float l2 = line.length();  // i.e. |w-v|^2 -  avoid a sqrt
     if (std::fabs(l2) <= std::numeric_limits<float>::epsilon())
-      return getDistance(p, v);  // v == w case
+      return getDistanceBetween(p, v);  // v == w case
     // Consider the line extending the segment, parameterized as v + t (w - v).
     // We find projection of point p onto the line.
     // It falls where t = [(p-v) . (w-v)] / |w-v|^2
     // We clamp t from [0,1] to handle points outside the segment vw.
     const float t = std::max(0.0f, std::min(1.0f, dot(p - v, w - v) / l2));
     const Vec2 projection = v + line * t;  // Projection falls on the segment
-    return getDistance(p, projection);
+    return getDistanceBetween(p, projection);
   }
 };
 
