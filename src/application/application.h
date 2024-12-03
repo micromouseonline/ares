@@ -187,7 +187,7 @@ class Application : public IEventObserver {
     sf::RenderWindow& window = *m_window.GetRenderWindow();
     window.setView(m_window.getMazeView());
     // Render the physical maze TODO: think about how to add and distinguish the robot map from the physical maze
-    m_maze_manager.Render(window);
+    m_maze_manager.draw(window);
     m_robot_body.draw(window);
 
     window.setView(window.getDefaultView());
