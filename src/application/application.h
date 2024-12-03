@@ -20,16 +20,14 @@
 
 class Application : public IEventObserver {
  public:
-  Application() : m_window(conf::AppName, conf::WindowSize), m_elapsed(sf::Time::Zero), mStatisticsUpdateTime(sf::Time::Zero) {
-    RestartClock();
+  Application() : m_window(conf::AppName, conf::WindowSize), m_elapsed(sf::Time::Zero) {
     m_elapsed = sf::Time::Zero;
-    mStatisticsUpdateTime = sf::Time::Zero;
 
-    m_appFont.loadFromFile("assets/fonts/ubuntu-mono-r.ttf");
+    m_default_font.loadFromFile("assets/fonts/ubuntu-mono-r.ttf");
 
-    m_adhocText.setFont(m_appFont);
-    m_adhocText.setCharacterSize(16);
-    m_adhocText.setFillColor(sf::Color::Yellow);
+    m_adhoc_text.setFont(m_default_font);
+    m_adhoc_text.setCharacterSize(16);
+    m_adhoc_text.setFillColor(sf::Color::Yellow);
 
     /// The UI components are defined in world pixels in the window's default view
     m_textbox.Setup(5, 14, 600, sf::Vector2f(1000, 10));
@@ -37,12 +35,12 @@ class Application : public IEventObserver {
     m_textbox.Add("WASD keys to move robot");
 
     m_window.AddObserver(this);
-    m_RobotBody.setRobot(m_robot);
+    m_robot_body.setRobot(m_robot);
 
     m_robot.setPosition(0 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f, 0 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f);
     m_robot.setOrientation(90.0);
     /// The Lambda expression here serves to bind the callback to the application instance
-    m_robot.setSensorCallback([this](float x, float y, float theta) -> SensorData { return this->CallbackCalculateSensorData(x, y, theta); });
+    m_robot.setSensorCallback([this](float x, float y, float theta) -> SensorData { return this->callbackCalculateSensorData(x, y, theta); });
     m_robot.Start();
   }
 
@@ -50,12 +48,11 @@ class Application : public IEventObserver {
     m_robot.Stop();  // Ensure the robot thread stops
   }
 
-  void Run() {
-    while (!GetWindow()->IsDone()) {
-      HandleInput();
-      Update();
-      Render();
-      RestartClock();
+  void run() {
+    while (!getWindow()->IsDone()) {
+      handleInput();
+      update();
+      render();
     }
   }
 
@@ -69,7 +66,7 @@ class Application : public IEventObserver {
    *    }
    */
 
-  void OnEvent(const Event& event) override {
+  void onEvent(const Event& event) override {
     switch (event.type) {
       case EventType::SFML_EVENT:
         if (event.event.type == sf::Event::MouseButtonPressed) {
@@ -78,7 +75,7 @@ class Application : public IEventObserver {
           sf::Vector2f mazePos{0, 0};
           window->setView(m_window.getMazeView());
           sf::View mazeView = m_window.getMazeView();  // TODO: where should we store the mazeView? In config?
-          sf::FloatRect mazeBounds = getViewBounds(conf::MazeView);
+          sf::FloatRect mazeBounds = getBoundingRectangle(conf::MazeView);
           if (mazeBounds.contains(float(pixelPos.x), float(pixelPos.y))) {
             mazePos = (window->mapPixelToCoords(pixelPos, mazeView));
           }
@@ -117,7 +114,7 @@ class Application : public IEventObserver {
    *        // move forward
    *    }
    */
-  void HandleInput() {
+  void handleInput() {
     /// This is a silly example of how HandleInput can be used
     if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
       m_textbox.SetBackgroundColor(sf::Color(255, 255, 0, 48));
@@ -160,7 +157,7 @@ class Application : public IEventObserver {
    * that they can be displayed in a text box
    * @param deltaTime
    */
-  void Update(sf::Time deltaTime = sf::seconds(0.01)) {
+  void update(sf::Time deltaTime = sf::seconds(0.01)) {
     m_window.Update();  // call this first to process window events
     m_elapsed += deltaTime;
     std::string msg;
@@ -169,13 +166,13 @@ class Application : public IEventObserver {
     sprintf(str, "%4d %4d %4d %4d ", (int)sensors.lfs_value, (int)sensors.lds_value, (int)sensors.rds_value, (int)sensors.rfs_value);
     msg += str;
     msg += "\n";
-    msg += "sensor update: " + std::to_string(m_processTime.asMicroseconds()) + " us";
+    msg += "sensor update: " + std::to_string(m_process_time.asMicroseconds()) + " us";
     msg += "\n";
     float angle = m_robot.getOrientation();
     sf::Vector2f pos = m_robot.getPose();
     sprintf(str, "Robot: (%4d,%4d) %4d\n", (int)pos.x, (int)pos.y, (int)angle);
     msg += str;
-    m_adhocText.setString(msg);
+    m_adhoc_text.setString(msg);
   }
 
   /// The Render() method is the only place that output is generated for the
@@ -183,34 +180,30 @@ class Application : public IEventObserver {
   /// method and will may be called once per frame or after every update depending
   /// on the underlying update strategy.
 
-  void Render() {
+  void render() {
     /// ALWAYS do this first
     m_window.BeginDraw();
     // grab the window reference to save typing
     sf::RenderWindow& window = *m_window.GetRenderWindow();
     window.setView(m_window.getMazeView());
     // Render the physical maze TODO: think about how to add and distinguish the robot map from the physical maze
-    m_mazeManager.Render(window);
-    m_RobotBody.draw(window);
+    m_maze_manager.Render(window);
+    m_robot_body.draw(window);
 
     window.setView(window.getDefaultView());
     // we can draw anything else we want here.
 
-    m_adhocText.setPosition(1000, 200);
-    window.draw(m_adhocText);
+    m_adhoc_text.setPosition(1000, 200);
+    window.draw(m_adhoc_text);
 
     m_textbox.Render(window);
     /// ALWAYS do this last
     m_window.EndDraw();
   }
 
-  Window* GetWindow() { return &m_window; }
+  Window* getWindow() { return &m_window; }
 
-  sf::Time GetElapsed() { return m_elapsed; }
-
-  void RestartClock() {
-    m_clock.restart();  //
-  }
+  sf::Time getElapsed() { return m_elapsed; }
 
   /// This would be a good place to create any overlay information or to log
   /// performance data for example.
@@ -239,48 +232,35 @@ class Application : public IEventObserver {
    *
    * @return a copy of the local sensor data
    */
-  SensorData CallbackCalculateSensorData(float x, float y, float theta) {
+  SensorData callbackCalculateSensorData(float x, float y, float theta) {
     m_timer.restart();
-    m_RobotBody.updateSensorGeometry(x, y, theta);
-    m_RobotBody.updateSensors(m_mazeManager.GetObstacles());
-    m_SensorData.lfs_value = m_RobotBody.getSensor(conf::LFS).power();
-    m_SensorData.rds_value = m_RobotBody.getSensor(conf::LDS).power();
-    m_SensorData.lds_value = m_RobotBody.getSensor(conf::RDS).power();
-    m_SensorData.rfs_value = m_RobotBody.getSensor(conf::RFS).power();
-    m_processTime = m_timer.getElapsedTime();
-    return m_SensorData;
+    m_robot_body.updateSensorGeometry(x, y, theta);
+    m_robot_body.updateSensors(m_maze_manager.GetObstacles());
+    m_sensor_data.lfs_value = m_robot_body.getSensor(conf::LFS).power();
+    m_sensor_data.rds_value = m_robot_body.getSensor(conf::LDS).power();
+    m_sensor_data.lds_value = m_robot_body.getSensor(conf::RDS).power();
+    m_sensor_data.rfs_value = m_robot_body.getSensor(conf::RFS).power();
+    m_process_time = m_timer.getElapsedTime();
+    return m_sensor_data;
   }
 
  private:
-  sf::FloatRect getViewBounds(const sf::View& view) {
-    sf::Vector2f viewSize = view.getSize();
-    sf::Vector2f viewCenter = view.getCenter();
-    sf::Vector2f viewCorner = viewCenter - (viewSize / 2.0f);
-    return {viewCorner, viewSize};
-  }
-
-  sf::Vector2f mp = {0, 0};
-  static const sf::Time TimePerFrame;
   Window m_window;
-  sf::Clock m_clock;
+  Robot m_robot;  // The robot instance
+  RobotBody m_robot_body;
+
+  SensorData m_sensor_data;  // sensor readings we pass back to the robot
+  MazeManager m_maze_manager;
+
+  // used for timing code fragments
   sf::Clock m_timer;
-  sf::Time m_processTime;  // used for timing code fragments
+  sf::Time m_process_time;
   sf::Time m_elapsed;
 
-  sf::Font m_appFont;
-  sf::Text m_adhocText;  // use this for adhoc messages, overlays and the like
-
-  //  sf::Font mFont;
-  sf::Text mStatisticsText;
-  sf::Time mStatisticsUpdateTime;
+  // use these for adhoc messages, overlays and the like
+  sf::Font m_default_font;
+  sf::Text m_adhoc_text;
   Textbox m_textbox;
-  Robot m_robot;  // The robot instance
-  RobotBody m_RobotBody;
-
-  std::mutex m_sensorDataMutex;  // Protects sensor data updates
-  SensorData m_SensorData;       // Current sensor reading that are read by robot
-  MazeManager m_mazeManager;     // This is the maze manager
-  std::mutex appMutex;
 };
 
 #endif  // APPLICATION_H

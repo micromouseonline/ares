@@ -103,6 +103,6 @@ void Window::AddObserver(IEventObserver* observer) {
 
 void Window::NotifyObservers(const Event& event) {
   for (auto& observer : m_observers) {
-    observer->OnEvent(event);
+    observer->onEvent(event);
   }
 }

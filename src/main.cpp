@@ -30,10 +30,10 @@ int main() {
   Application app;
   auto image = sf::Image{};
   if (image.loadFromFile("assets/images/mouse-a.png")) {
-    app.GetWindow()->GetRenderWindow()->setIcon(image.getSize().x, image.getSize().y, image.getPixelsPtr());
+    app.getWindow()->GetRenderWindow()->setIcon(image.getSize().x, image.getSize().y, image.getPixelsPtr());
   }
 
-  app.Run();
+  app.run();
   return 0;
 #if 0
   // Create the window

@@ -44,7 +44,7 @@ struct Event {
 class IEventObserver {
  public:
   virtual ~IEventObserver() = default;
-  virtual void OnEvent(const Event& event) = 0;
+  virtual void onEvent(const Event& event) = 0;
 };
 
 #endif  // EVENT_OBSERVER_H

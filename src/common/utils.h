@@ -20,6 +20,13 @@ inline float distance(const sf::Vector2f& a, const sf::Vector2f& b) {
   return std::sqrt(dx * dx + dy * dy);
 }
 
+sf::FloatRect getBoundingRectangle(const sf::View& view) {
+  sf::Vector2f view_size = view.getSize();
+  sf::Vector2f view_center = view.getCenter();
+  sf::Vector2f view_top_left = view_center - (view_size / 2.0f);
+  return {view_top_left, view_size};
+}
+
 inline bool isWithinBounds(const sf::Vector2u& size, int x, int y) {
   return x >= 0 && x < static_cast<int>(size.x) && y >= 0 && y < static_cast<int>(size.y);
 }
