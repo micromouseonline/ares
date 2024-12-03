@@ -30,7 +30,7 @@ int main() {
   Application app;
   auto image = sf::Image{};
   if (image.loadFromFile("assets/images/mouse-a.png")) {
-    app.getWindow()->GetRenderWindow()->setIcon(image.getSize().x, image.getSize().y, image.getPixelsPtr());
+    app.getWindow()->getRenderWindow()->setIcon(image.getSize().x, image.getSize().y, image.getPixelsPtr());
   }
 
   app.run();
