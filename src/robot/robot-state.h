@@ -15,7 +15,6 @@
  *
  */
 struct RobotState {
-  sf::Vector2f pos{96.0f, 96.0f};
   float x;
   float y;
   float v;

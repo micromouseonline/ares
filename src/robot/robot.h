@@ -114,54 +114,54 @@ class Robot {
 
   ////// Accessors
   sf::Vector2f getPose() const {
-    std::lock_guard<std::mutex> lock(m_systickMutex);
+    std::lock_guard<std::mutex> lock(m_systick_mutex);
     return sf::Vector2f(m_state.x, m_state.y);
   }
 
   RobotState getState() const {
-    std::lock_guard<std::mutex> lock(m_systickMutex);
+    std::lock_guard<std::mutex> lock(m_systick_mutex);
     return m_state;
   }
 
   RobotState setState() const {
-    std::lock_guard<std::mutex> lock(m_systickMutex);
+    std::lock_guard<std::mutex> lock(m_systick_mutex);
     return m_state;
   }
 
   float getOrientation() const {
-    std::lock_guard<std::mutex> lock(m_systickMutex);
+    std::lock_guard<std::mutex> lock(m_systick_mutex);
     return m_state.theta;
   }
 
   void setPosition(float x, float y) {
-    std::lock_guard<std::mutex> lock(m_systickMutex);
+    std::lock_guard<std::mutex> lock(m_systick_mutex);
     m_state.x = x;
     m_state.y = y;
   }
 
   void setOrientation(float theta) {
-    std::lock_guard<std::mutex> lock(m_systickMutex);
+    std::lock_guard<std::mutex> lock(m_systick_mutex);
     m_state.theta = theta;  //
   }
 
   void setVelocity(float velocity) {
-    std::lock_guard<std::mutex> lock(m_systickMutex);
+    std::lock_guard<std::mutex> lock(m_systick_mutex);
     m_state.v = velocity;  //
   }
 
   void setOmega(float omega) {
-    std::lock_guard<std::mutex> lock(m_systickMutex);
+    std::lock_guard<std::mutex> lock(m_systick_mutex);
     m_state.omega = omega;  //
   }
 
   ///////////// Sensors
   void setSensorCallback(SensorDataCallback callback) {
-    m_sensorCallback = callback;  //
+    m_sensor_callback = callback;  //
   }
 
   SensorData& getSensorData() {
-    std::lock_guard<std::mutex> lock(m_systickMutex);
-    return m_sensorData;
+    std::lock_guard<std::mutex> lock(m_systick_mutex);
+    return m_sensor_data;
   }
 
   /***
@@ -189,24 +189,24 @@ class Robot {
   void systick() {
     using namespace std::chrono;
     /// NOTE: this runs a little fast on linux
-    auto interval_us = duration_cast<microseconds>(duration<float>(m_loopTime));
+    auto interval_us = duration_cast<microseconds>(duration<float>(m_loop_time));
     auto next_time = steady_clock::now() + interval_us;
     while (m_running) {
       // The mutex will lock out the main thread while this block runs.
-      CRITICAL_SECTION(m_systickMutex) {
+      CRITICAL_SECTION(m_systick_mutex) {
         m_ticks++;
-        if (m_sensorCallback) {
-          m_sensorData = m_sensorCallback(m_state.x, m_state.y, m_state.theta);
+        if (m_sensor_callback) {
+          m_sensor_data = m_sensor_callback(m_state.x, m_state.y, m_state.theta);
         }
         // updateMotionControllers();
-        m_state.theta += m_state.omega * m_loopTime;
+        m_state.theta += m_state.omega * m_loop_time;
         if (m_state.theta >= 360.0f) {
           m_state.theta -= 360.0f;
         } else if (m_state.theta < 0.0f) {
           m_state.theta += 360.0f;
         }
-        m_state.x += m_state.v * std::cos(m_state.theta * RADIANS) * m_loopTime;
-        m_state.y += m_state.v * std::sin(m_state.theta * RADIANS) * m_loopTime;
+        m_state.x += m_state.v * std::cos(m_state.theta * RADIANS) * m_loop_time;
+        m_state.y += m_state.v * std::sin(m_state.theta * RADIANS) * m_loop_time;
       }
       /// TODO: switching to an asynchronous method in Behaviour would call
       ///       systick directly from delays through the yield function??
@@ -216,7 +216,7 @@ class Robot {
   }
 
   uint32_t millis() {
-    std::lock_guard<std::mutex> lock(m_systickMutex);
+    std::lock_guard<std::mutex> lock(m_systick_mutex);
     return m_ticks;
   }
 
@@ -236,11 +236,11 @@ class Robot {
   std::thread m_systick_thread;
   std::thread m_thread;
   std::atomic<bool> m_running;  // Thread control flag
-  float m_loopTime = 0.001f;
+  float m_loop_time = 0.001f;
 
-  SensorDataCallback m_sensorCallback = nullptr;
-  mutable std::mutex m_systickMutex;  // Protects access to m_pose and m_orientation
-  SensorData m_sensorData;            // Current sensor readings
+  SensorDataCallback m_sensor_callback = nullptr;
+  mutable std::mutex m_systick_mutex;  // Protects access to m_pose and m_orientation
+  SensorData m_sensor_data;            // Current sensor readings
   RobotState m_state;
 };
 

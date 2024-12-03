@@ -21,44 +21,44 @@ using SensorDataCallback = std::function<SensorData(float, float, float)>;
 class SensorDataClass {
  public:
   // Constructor
-  SensorDataClass() : frontDistance(0.0f), leftDistance(0.0f), rightDistance(0.0f) {}
+  SensorDataClass() : m_front_distance(0.0f), m_left_distance(0.0f), m_right_distance(0.0f) {}
 
   // Setters
   void setFrontDistance(float distance) {
     std::lock_guard<std::mutex> lock(mMutex);
-    frontDistance = distance;
+    m_front_distance = distance;
   }
 
   void setLeftDistance(float distance) {
     std::lock_guard<std::mutex> lock(mMutex);
-    leftDistance = distance;
+    m_left_distance = distance;
   }
 
   void setRightDistance(float distance) {
     std::lock_guard<std::mutex> lock(mMutex);
-    rightDistance = distance;
+    m_right_distance = distance;
   }
 
   // Getters
   float getFrontDistance() const {
     std::lock_guard<std::mutex> lock(mMutex);
-    return frontDistance;
+    return m_front_distance;
   }
 
   float getLeftDistance() const {
     std::lock_guard<std::mutex> lock(mMutex);
-    return leftDistance;
+    return m_left_distance;
   }
 
   float getRightDistance() const {
     std::lock_guard<std::mutex> lock(mMutex);
-    return rightDistance;
+    return m_right_distance;
   }
 
  private:
-  float frontDistance;
-  float leftDistance;
-  float rightDistance;
+  float m_front_distance;
+  float m_left_distance;
+  float m_right_distance;
 
   mutable std::mutex mMutex;  // mutable to allow const getters to lock the mutex
 };
