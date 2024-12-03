@@ -63,18 +63,18 @@ class RobotBody {
   void setRobot(Robot& robot) { m_robot = &robot; }
 
   void addShape(std::unique_ptr<sf::Shape> shape, const sf::Vector2f& offset) {
-    shape->setPosition(m_worldPosition + offset);
-    m_bodyShapes.push_back({std::move(shape), offset, offset});
+    shape->setPosition(m_position + offset);
+    m_body_shapes.push_back({std::move(shape), offset, offset});
   }
 
-  void set_colour(sf::Color colour) { m_colour = colour; }
+  void setColour(sf::Color colour) { m_colour = colour; }
 
   void setPosition(float x, float y) { setPosition(sf::Vector2f(x, y)); }
 
   void setPosition(const sf::Vector2f& position) {
-    m_worldPosition = position;
-    for (const auto& item : m_bodyShapes) {
-      item.shape->setPosition(m_worldPosition + item.rotatedOffset);
+    m_position = position;
+    for (const auto& item : m_body_shapes) {
+      item.shape->setPosition(m_position + item.rotatedOffset);
     }
   }
 
@@ -84,22 +84,24 @@ class RobotBody {
     float cosAngle = std::cos(radAngle);
     float sinAngle = std::sin(radAngle);
 
-    for (auto& shape_data : m_bodyShapes) {
+    for (auto& shape_data : m_body_shapes) {
       auto& shape = shape_data.shape;
       auto& initialOffset = shape_data.originalOffset;
       auto& rotatedOffset = shape_data.rotatedOffset;
       rotatedOffset.x = initialOffset.x * cosAngle - initialOffset.y * sinAngle;
       rotatedOffset.y = initialOffset.x * sinAngle + initialOffset.y * cosAngle;
-      shape->setPosition(m_worldPosition + rotatedOffset);
+      shape->setPosition(m_position + rotatedOffset);
       shape->setRotation(angle);
     }
   }
 
-  float angle() const {
+  float getAngle() const {
     return m_angle;  //
   }
 
-  sf::Vector2f position() const { return m_worldPosition; }
+  sf::Vector2f getPosition() const {
+    return m_position;  //
+  }
 
   void updateSensorGeometry(float x, float y, float angle) {
     sf::Vector2f pos{x, y};
@@ -120,7 +122,7 @@ class RobotBody {
     setPosition(worldPos);
     setRotation(angle);
 
-    for (const auto& item : m_bodyShapes) {
+    for (const auto& item : m_body_shapes) {
       sf::Shape& s = *item.shape;
       s.setPosition(Drawing::toWindowCoords(s.getPosition(), conf::MazeSize));
       window.draw(s);
@@ -131,7 +133,7 @@ class RobotBody {
 
     // Draw the direction arrow
     Vec2 pointer = Vec2::fromDegrees(angle) * 100;
-    Drawing::draw_vector_arrow(window, Drawing::toWindowCoords(m_worldPosition, conf::MazeSize), sf::Vector2f(pointer), 15.0);
+    Drawing::draw_vector_arrow(window, Drawing::toWindowCoords(m_position, conf::MazeSize), sf::Vector2f(pointer), 15.0);
   }
 
   void updateSensors(const std::vector<sf::RectangleShape>& obstacles) {
@@ -140,8 +142,8 @@ class RobotBody {
     }
   }
 
-  bool collides_with(const sf::RectangleShape& rect) const {
-    for (const auto& item : m_bodyShapes) {
+  bool collidesWith(const sf::RectangleShape& rect) const {
+    for (const auto& item : m_body_shapes) {
       if (auto* circle = dynamic_cast<sf::CircleShape*>(item.shape.get())) {
         if (Collisions::circleHitsAlignedRect(*circle, rect)) {  /// only axis aligned rectangles
           return true;
@@ -164,11 +166,10 @@ class RobotBody {
 
  private:
   RobotWallSensor m_sensors[conf::SENSOR_COUNT];
-  sf::Vector2f m_worldPosition;
-  sf::Vector2f m_screenPosition;
+  sf::Vector2f m_position;
   float m_angle = 0;
   sf::Color m_colour = sf::Color::White;
-  std::vector<ShapeData> m_bodyShapes;  // List of shapes and their offsets
+  std::vector<ShapeData> m_body_shapes;  // List of shapes and their offsets
   Robot* m_robot = nullptr;
 };
 
