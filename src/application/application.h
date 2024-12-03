@@ -44,10 +44,6 @@ class Application : public IEventObserver {
     /// The Lambda expression here serves to bind the callback to the application instance
     m_robot.setSensorCallback([this](float x, float y, float theta) -> SensorData { return this->CallbackCalculateSensorData(x, y, theta); });
     m_robot.Start();
-    std::cout << Vec2(m_mazeManager.getCellOrigin(0, 0)) << std::endl;
-    std::cout << Vec2(m_mazeManager.getCellOrigin(0, 1)) << std::endl;
-    std::cout << Vec2(m_mazeManager.getCellOrigin(1, 0)) << std::endl;
-    std::cout << Vec2(m_mazeManager.getCellOrigin(1, 1)) << std::endl;
   }
 
   ~Application() {

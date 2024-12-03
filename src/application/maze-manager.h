@@ -303,7 +303,6 @@ class MazeManager {
       wall_shape.left = origin.x + offset.x;
       wall_shape.top = origin.y + offset.y;
       index = GetWallIndex(MAZE_WIDTH - 1, i, Direction::East);
-      std::cout << i << " > " << index << std::endl;
       m_wallRects[index] = wall_shape;
       SetWallState(index, WallState::Unknown);
     }
