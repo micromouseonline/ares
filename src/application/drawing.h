@@ -22,7 +22,7 @@ class Drawing {
     return sa;
   }
 
-  static void draw_line(sf::RenderTarget& target, sf::Vector2f start, sf::Vector2f end, sf::Color color = sf::Color::White) {
+  static void drawLine(sf::RenderTarget& target, sf::Vector2f start, sf::Vector2f end, sf::Color color = sf::Color::White) {
     sf::Vertex line[2];
     line[0].position = start;
     line[0].color = color;
@@ -31,7 +31,7 @@ class Drawing {
     target.draw(line, 2, sf::Lines);
   }
 
-  static void draw_vector(sf::RenderTarget& target, sf::Vector2f pos, sf::Vector2f vec, sf::Color color = sf::Color::White) {
+  static void drawVector(sf::RenderTarget& target, sf::Vector2f pos, sf::Vector2f vec, sf::Color color = sf::Color::White) {
     sf::Vertex line[2];
     line[0].position = pos;
     line[0].color = color;
@@ -41,7 +41,7 @@ class Drawing {
   }
 
   // Function to draw a vector with an arrowhead
-  static void draw_vector_arrow(sf::RenderTarget& target, sf::Vector2f pos, sf::Vector2f vec, float arrowheadSizePercent, sf::Color color = sf::Color::White) {
+  static void drawVectorArrow(sf::RenderTarget& target, sf::Vector2f pos, sf::Vector2f vec, float arrowheadSizePercent, sf::Color color = sf::Color::White) {
     // Calculate the arrowhead size
     float vectorLength = std::sqrt(vec.x * vec.x + vec.y * vec.y);
     float arrowLength = vectorLength * (arrowheadSizePercent / 100.0f);  // Arrowhead length as a percentage of the vector length

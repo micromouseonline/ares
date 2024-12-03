@@ -133,7 +133,7 @@ class RobotBody {
 
     // Draw the direction arrow
     Vec2 pointer = Vec2::fromDegrees(angle) * 100;
-    Drawing::draw_vector_arrow(window, Drawing::toWindowCoords(m_position, conf::MazeSize), sf::Vector2f(pointer), 15.0);
+    Drawing::drawVectorArrow(window, Drawing::toWindowCoords(m_position, conf::MazeSize), sf::Vector2f(pointer), 15.0);
   }
 
   void updateSensors(const std::vector<sf::RectangleShape>& obstacles) {
