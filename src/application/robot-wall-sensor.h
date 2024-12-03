@@ -48,17 +48,21 @@ class RobotWallSensor {
     m_power = 0.0f;
   }
 
-  void set_origin(const sf::Vector2f& origin) {
+  void setOrigin(const sf::Vector2f& origin) {
     m_origin = origin;
     m_vertices[0].position = m_origin;  // Update origin vertex
   }
 
   /// The sensor fan will be centered on this angle and spread +/- the half-angle
-  void set_angle(float angle) { m_angle = angle; }
+  void setAngle(float angle) {
+    m_angle = angle;  //
+  }
 
-  void set_half_angle(float half_angle) { m_geometry.halfAngle = half_angle; }
+  void setHalfAngle(float half_angle) {
+    m_geometry.halfAngle = half_angle;  //
+  }
 
-  void set_ray_count(int ray_count) {
+  void setRayCount(int ray_count) {
     m_geometry.rayCount = ray_count;
     m_vertices.resize(ray_count);
   }
@@ -68,9 +72,13 @@ class RobotWallSensor {
     m_vertices.resize(geometry.rayCount);
   }
 
-  SensorGeometry& getGeometry() { return m_geometry; }
+  SensorGeometry& getGeometry() {
+    return m_geometry;  //
+  }
 
-  [[nodiscard]] float power() const { return m_power; }
+  [[nodiscard]] float getPower() const {
+    return m_power;  //
+  }
 
   /***
    * generate a complete sensor fan for every rectangle in the supplied
@@ -93,7 +101,7 @@ class RobotWallSensor {
 
       float closestHit = m_max_range;
       for (const auto& rect : obstacles) {
-        float distance = test_to_rect(rect, dir);
+        float distance = getDistanceToAlignedRectangle(rect, dir);
         if (distance < closestHit) {
           closestHit = distance;
         }
@@ -130,7 +138,7 @@ class RobotWallSensor {
    * @return the distance to the closest intersection or the maze range if
    * there is no intersection
    */
-  float test_to_rect(const sf::RectangleShape& rectangle, const sf::Vector2f& ray_dir) {
+  float getDistanceToAlignedRectangle(const sf::RectangleShape& rectangle, const sf::Vector2f& ray_dir) {
     sf::FloatRect bounds = rectangle.getGlobalBounds();
     sf::Vector2f rectMin(bounds.left, bounds.top);
     sf::Vector2f rectMax(bounds.left + bounds.width, bounds.top + bounds.height);

@@ -104,8 +104,8 @@ class RobotBody {
   void updateSensorGeometry(float x, float y, float angle) {
     sf::Vector2f pos{x, y};
     for (auto& sensor : m_sensors) {
-      sensor.set_origin(pos + rotatePoint({sensor.getGeometry().x, sensor.getGeometry().y}, {0, 0}, angle));
-      sensor.set_angle(angle + sensor.getGeometry().theta);
+      sensor.setOrigin(pos + rotatePoint({sensor.getGeometry().x, sensor.getGeometry().y}, {0, 0}, angle));
+      sensor.setAngle(angle + sensor.getGeometry().theta);
     }
   }
 
