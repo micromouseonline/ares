@@ -419,32 +419,38 @@ class MazeManager {
 
   const std::vector<sf::FloatRect>& GetObstacles(float robot_x, float robot_y) {
     std::vector<sf::FloatRect> obstacles;
+    std::vector<int> walls_seen;
     m_obstacles.clear();
     int cell_x = robot_x / CELL_SIZE;
     int cell_y = robot_y / CELL_SIZE;
-    int x = cell_x;
-    int y = cell_y;
-    //    for (int x = cell_x - 1; x <= cell_x + 1; x++) {
-    //      for (int y = cell_y - 1; y <= cell_y + 1; y++) {
-    int wall_index;
-    wall_index = getWallIndex(x, y, Direction::North);
-    if (wallState[wall_index] == WallState::KnownPresent) {
-      m_obstacles.push_back(m_wall_rectangles[wall_index]);
+    int start_wall = getWallIndex(cell_x, cell_y, Direction::South);  // the 'base' wall for this cell
+    for (int i : conf::SensorWallOffsets) {
+      int wall_index = start_wall + i;
+      if (wall_index >= 0 && wall_index < NUMBER_OF_WALLS) {
+        if (getWallState(wall_index) == WallState::KnownPresent) {
+          m_obstacles.push_back(m_wall_rectangles[wall_index]);
+          walls_seen.push_back(wall_index);
+        }
+      }
     }
-    wall_index = getWallIndex(x, y, Direction::East);
-    if (wallState[wall_index] == WallState::KnownPresent) {
-      m_obstacles.push_back(m_wall_rectangles[wall_index]);
+    if (conf::DebugHighlightTestedWalls) {
+      for (auto i : walls_seen) {
+        setWallColour(i, conf::WallHighlightColour);
+      }
     }
-    wall_index = getWallIndex(x, y, Direction::South);
-    if (wallState[wall_index] == WallState::KnownPresent) {
-      m_obstacles.push_back(m_wall_rectangles[wall_index]);
+
+    // now the posts
+    int start_post = cell_x * (MAZE_WIDTH + 1) + cell_y;
+    for (int i : conf::SensorPostOffsets) {
+      int post_index = start_post + i;
+      if (post_index >= 0 && post_index < NUMBER_OF_POSTS) {
+        obstacles.push_back(m_post_rectangles[post_index]);
+        if (conf::DebugHighlightTestedWalls) {
+          setPostColour(post_index, conf::WallHighlightColour);
+        }
+      }
     }
-    wall_index = getWallIndex(x, y, Direction::West);
-    if (wallState[wall_index] == WallState::KnownPresent) {
-      m_obstacles.push_back(m_wall_rectangles[wall_index]);
-    }
-    //      }
-    //    }
+
     return m_obstacles;  //
   }
 
