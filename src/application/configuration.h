@@ -51,4 +51,17 @@ namespace conf {
   const uint8_t SENSOR_ALPHA = 128;
   const sf::Color SENSOR_COLOUR(255, 0, 255, SENSOR_ALPHA);
 
+  /// describes the offsets of all the neighbouring walls for the sensor checks
+  // clang-format off
+  const int SensorWallOffsets[] = {
+         65,    66,    67,
+     48,     49,    50,    51,
+         32,    33,    34,
+     15,     16,    17,    18,
+         -1,     0,     1,
+    -18,    -17,   -16,   -15,
+        -34,   -33,    -32
+  };
+  // clang-format on
+
 }  // namespace conf
