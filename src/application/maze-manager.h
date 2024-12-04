@@ -147,10 +147,10 @@ class MazeManager {
         for (int d = 0; d < 4; d++) {
           // we need only do the North and East walls
           if (walls & BIT(0)) {
-            setWallState(x, y, Direction::North, WallState::Mystery);
+            setWallState(x, y, Direction::North, WallState::KnownPresent);
           }
           if (walls & BIT(1)) {
-            setWallState(x, y, Direction::East, WallState::Mystery);
+            setWallState(x, y, Direction::East, WallState::KnownPresent);
           }
         }
       }
