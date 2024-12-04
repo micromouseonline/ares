@@ -204,6 +204,60 @@ struct Collisions {
   }
   /////////////////////////////////////////////////////////////////////
 
+  /***
+   * This is the meat of the sensor simulation. A single ray is tested for intersection
+   * with an axis-aligned rectangle. Two such tests are needed, one for the far
+   * side and one for the near side. We only care about the closest one and we
+   * do not know if it is the first one found or the second so we find both
+   * and work it out after.
+   * TODO: I do not fully understand this function.
+   * @param rectangle
+   * @param ray_start - the location of the start of the ray
+   * @param ray_dir - as a normalised vector
+   * @return the distance to the closest intersection or the max range if
+   * there is no intersection
+   */
+  static float getRayDistanceToAlignedRectangle(const sf::Vector2f& ray_start, const sf::Vector2f& ray_dir, const sf::FloatRect& rectangle, float max_range) {
+    sf::FloatRect bounds = rectangle;
+    sf::Vector2f rectMin(bounds.left, bounds.top);
+    sf::Vector2f rectMax(bounds.left + bounds.width, bounds.top + bounds.height);
+
+    float tmin = -std::numeric_limits<float>::infinity();
+    float tmax = std::numeric_limits<float>::infinity();
+
+    for (int i = 0; i < 2; ++i) {
+      float origin = (i == 0) ? ray_start.x : ray_start.y;
+      float dir = (i == 0) ? ray_dir.x : ray_dir.y;
+      float min = (i == 0) ? rectMin.x : rectMin.y;
+      float max = (i == 0) ? rectMax.x : rectMax.y;
+
+      if (std::abs(dir) < 1e-6) {  // i.e. straight up/down
+        if (origin < min || origin > max) {
+          // No intersection
+          return max_range;
+        }
+      } else {
+        float t1 = (min - origin) / dir;
+        float t2 = (max - origin) / dir;
+
+        if (t1 > t2)
+          std::swap(t1, t2);
+        tmin = std::max(tmin, t1);
+        tmax = std::min(tmax, t2);
+
+        if (tmin > tmax) {
+          // No intersection
+          return max_range;
+        }
+      }
+    }
+    if (tmax < 0) {
+      // Intersection behind the ray origin. Are we INSIDE the box?
+      return max_range;
+    }
+    return std::min(tmin >= 0 ? tmin : tmax, max_range);  // Intersection behind the ray origin
+  }
+
 };  // struct Collisions
 
 #endif  // COLLISIONS_H
