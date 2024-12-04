@@ -62,6 +62,14 @@ namespace conf {
     -18,    -17,   -16,   -15,
         -34,   -33,    -32
   };
+
+const int SensorPostOffsets[] = {
+  -15,      2,    19,    36,
+  -16,      1,    18,    35,
+  -17,      0,    17,    34,
+  -18,     -1,    16,    33,
+};
+
   // clang-format on
 
 }  // namespace conf
