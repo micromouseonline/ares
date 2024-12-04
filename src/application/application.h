@@ -91,6 +91,11 @@ class Application : public IEventObserver {
           msg << " @ " << Vec2(mazePos) << " =  " << Vec2(pixelPos);
           m_textbox.addString(msg.str());
         }
+        if (event.event.type == sf::Event::KeyReleased) {
+          if (event.event.key.code == sf::Keyboard::A || event.event.key.code == sf::Keyboard::D) {
+            snapped = false;
+          }
+        }
         break;
       case EventType::USER_EVENT:
         m_textbox.addString("USER Event");
@@ -99,6 +104,19 @@ class Application : public IEventObserver {
         m_textbox.addString("UNHANDLED Event");
         break;
     }
+  }
+
+  float snapToNearest45(float angle) {
+    return std::round(angle / 45.0f) * 45.0f;  //
+  }
+
+  // Function to snap to the next lower multiple of 45 degrees
+  float snapToLower45(float angle) {
+    return std::floor(angle / 45.0f) * 45.0f;  //
+  }
+  // Function to/ snap to the next higher multiple of 45 degrees
+  float snapToHigher45(float angle) {
+    return std::ceil(angle / 45.0f) * 45.0f;  //
   }
 
   /***
@@ -125,11 +143,22 @@ class Application : public IEventObserver {
     }
     float v = 0;
     float w = 0;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-      w = 90;
+
+    if (!snapped && sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::RControl)) {
+        m_robot.setOrientation(snapToHigher45(m_robot.getOrientation() + 1));
+        snapped = true;
+      } else {
+        w = 90;
+      }
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-      w = -90;
+    if (!snapped && sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::RControl)) {
+        m_robot.setOrientation(snapToLower45(m_robot.getOrientation() - 1));
+        snapped = true;
+      } else {
+        w = -90;
+      }
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
       v = 540;
@@ -181,6 +210,9 @@ class Application : public IEventObserver {
     std::vector<int> wall_list = getLocalWallList(cell_x, cell_y);
     for (auto& wall : wall_list) {
       msg += getWallInfo(wall);
+    }
+    if (snapped) {
+      msg += "\nSNAPPED";
     }
 
     m_adhoc_text.setString(msg);
