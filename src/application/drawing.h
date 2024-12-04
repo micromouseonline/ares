@@ -28,6 +28,19 @@ class Drawing {
     return sa;
   }
 
+  static sf::RectangleShape createRectangleShape(const sf::FloatRect& rect) {
+    sf::RectangleShape rectangle;
+    rectangle.setSize(sf::Vector2f(rect.width, rect.height));
+    rectangle.setPosition(rect.left, rect.top);
+    return rectangle;
+  }
+
+  static void drawFloatRect(sf::RenderTarget& target, sf::FloatRect& r, sf::Color colour = sf::Color::White) {
+    sf::RectangleShape rectangleShape = createRectangleShape(r);
+    rectangleShape.setFillColor(colour);
+    target.draw(rectangleShape);
+  }
+
   static void drawLine(sf::RenderTarget& target, sf::Vector2f start, sf::Vector2f end, sf::Color color = sf::Color::White) {
     sf::Vertex line[2];
     line[0].position = start;
