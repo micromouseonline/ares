@@ -34,6 +34,8 @@ class Application : public IEventObserver {
     m_textbox.addString("Hello World!");
     m_textbox.addString("WASD keys to move robot");
 
+    //    m_maze_manager.loadFromMemory(japan2007ef, MAZE_WIDTH);
+    m_maze_manager.setWallState(3, 3, Direction::East, WallState::KnownPresent);
     m_window.addObserver(this);
     m_robot_body.setRobot(m_robot);
 
