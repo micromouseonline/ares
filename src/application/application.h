@@ -170,8 +170,17 @@ class Application : public IEventObserver {
     msg += "\n";
     float angle = m_robot.getOrientation();
     sf::Vector2f pos = m_robot.getPose();
-    sprintf(str, "Robot: (%4d,%4d) %4d\n", (int)pos.x, (int)pos.y, (int)angle);
+    int cell = m_maze_manager.getCellFromPosition(pos.x, pos.y);
+    int cell_x = int(pos.x / CELL_SIZE);
+    int cell_y = int(pos.y / CELL_SIZE);
+    sprintf(str, "Robot: (%4d,%4d) %4d  cell:%3d = %2d,%2d\n", (int)pos.x, (int)pos.y, (int)angle, cell, cell_x, cell_y);
     msg += str;
+
+    std::vector<int> wall_list = getLocalWallList(cell_x, cell_y);
+    for (auto& wall : wall_list) {
+      msg += getWallInfo(wall);
+    }
+
     m_adhoc_text.setString(msg);
   }
 
