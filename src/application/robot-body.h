@@ -80,7 +80,7 @@ class RobotBody {
 
   void setRotation(float angle) {
     m_angle = angle;
-    float radAngle = -m_angle * (3.14159265359f / 180.f);
+    float radAngle = m_angle * (3.14159265359f / 180.f);
     float cosAngle = std::cos(radAngle);
     float sinAngle = std::sin(radAngle);
 
@@ -116,7 +116,7 @@ class RobotBody {
     sf::Vector2f worldPos{90, 90};
     if (m_robot) {
       worldPos = m_robot->getPose();
-      angle = -(m_robot->getOrientation());
+      angle = (m_robot->getOrientation());
     }
 
     setPosition(worldPos);
