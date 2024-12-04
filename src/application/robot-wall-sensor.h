@@ -123,7 +123,7 @@ class RobotWallSensor {
   /// The sensor will be drawn as a triangle fan. This is really
   /// fast because the GPU does all the work from the vertex list
   void draw(sf::RenderTarget& renderTarget) const {
-    renderTarget.draw(Drawing::toWindowCoords(m_vertices, conf::MazeSize));  //
+    renderTarget.draw(m_vertices);  //
   }
 
  private:

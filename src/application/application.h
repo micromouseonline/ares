@@ -233,9 +233,8 @@ class Application : public IEventObserver {
       sf::Vector2f ray{cosf((float)a * RADIANS), sinf((float)a * RADIANS)};
       sf::FloatRect wall = m_maze_manager.getWallRect(m_maze_manager.getWallIndex(3, 3, Direction::East));
       float d = Collisions::getRayDistanceToAlignedRectangle(origin, ray, wall, 600);
-      sf::Vector2f p = Drawing::toWindowCoords(origin, conf::MazeSize);
+      sf::Vector2f p = origin;
       sf::Vector2f q = origin + ray * d;
-      q = Drawing::toWindowCoords(q, conf::MazeSize);
       Drawing::drawLine(window, p, q, sf::Color(255, 255, 255, 32));
     }
   }
@@ -254,6 +253,10 @@ class Application : public IEventObserver {
     m_maze_manager.draw(window);
     m_robot_body.draw(window);
     drawLidar(window);
+    float angle = 45.0f * RADIANS;
+    float length = 180.0f;
+    sf::Vector2f v(cosf(angle), sinf(angle));
+    Drawing::drawVectorArrow(window, {0, 0}, v * length, 10, sf::Color::Green);
 
     window.setView(m_window.getUIView());
     // we can draw anything else we want here.

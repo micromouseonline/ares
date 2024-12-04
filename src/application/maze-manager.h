@@ -248,13 +248,13 @@ class MazeManager {
         float ox = (float)x * CELL_SIZE;
         float oy = (float)y * CELL_SIZE + WALL_THICKNESS;
         int index = x * (MAZE_WIDTH + 1) + y;
-        m_post_rectangles[index] = {{ox, oy}, {WALL_THICKNESS, WALL_THICKNESS}};
+        m_post_rectangles[index] = {{ox, oy}, {WALL_THICKNESS, -WALL_THICKNESS}};
       }
     }
     sf::Color colour = conf::KnownPresentColour;
     for (std::size_t i = 0; i < NUMBER_OF_POSTS; ++i) {
       const sf::FloatRect& rect = m_post_rectangles[i];
-      const sf::Vector2f& position = Drawing::toWindowCoords(rect.getPosition(), conf::MazeSize);
+      const sf::Vector2f& position = rect.getPosition();
       const sf::Vector2f& size = rect.getSize();
 
       m_posts_vertex_array[i * 4 + 0].position = position;
@@ -279,8 +279,8 @@ class MazeManager {
    */
   void createWallGeometry() {
     sf::FloatRect wall_shape;
-    sf::FloatRect hWall({0, 0}, {WALL_LENGTH, WALL_THICKNESS});
-    sf::FloatRect vWall({0, 0}, {WALL_THICKNESS, WALL_LENGTH});
+    sf::FloatRect hWall({0, 0}, {WALL_LENGTH, -WALL_THICKNESS});
+    sf::FloatRect vWall({0, 0}, {WALL_THICKNESS, -WALL_LENGTH});
     for (int y = 0; y < MAZE_WIDTH; y++) {
       for (int x = 0; x < MAZE_WIDTH; x++) {
         sf::Vector2f origin = getCellOrigin(x, y);
@@ -337,7 +337,6 @@ class MazeManager {
     for (std::size_t i = 0; i < NUMBER_OF_WALLS; ++i) {
       sf::FloatRect& rect = m_wall_rectangles[i];
       sf::Vector2f position = rect.getPosition();
-      position = Drawing::toWindowCoords(position, conf::MazeSize);
       sf::Vector2f size = rect.getSize();
       m_walls_vertex_array[i * 4 + 0].position = position;
       m_walls_vertex_array[i * 4 + 1].position = sf::Vector2f(position.x + size.x, position.y);

@@ -124,7 +124,7 @@ class RobotBody {
 
     for (const auto& item : m_body_shapes) {
       sf::Shape& s = *item.shape;
-      s.setPosition(Drawing::toWindowCoords(s.getPosition(), conf::MazeSize));
+      s.setPosition(s.getPosition());
       window.draw(s);
     }
     for (auto& sensor : m_sensors) {
@@ -133,7 +133,7 @@ class RobotBody {
 
     // Draw the direction arrow
     Vec2 pointer = Vec2::fromDegrees(angle) * 100;
-    Drawing::drawVectorArrow(window, Drawing::toWindowCoords(m_position, conf::MazeSize), sf::Vector2f(pointer), 15.0);
+    Drawing::drawVectorArrow(window, m_position, sf::Vector2f(pointer), 15.0);
   }
 
   void updateSensors(const std::vector<sf::FloatRect>& obstacles) {

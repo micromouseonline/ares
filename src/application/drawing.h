@@ -10,24 +10,6 @@
 
 class Drawing {
  public:
-  static sf::Vector2f toWindowCoords(const sf::Vector2f& appCoords, float windowHeight) {
-    return sf::Vector2f(appCoords.x, windowHeight - appCoords.y);  //
-  }
-
-  static sf::FloatRect toWindowCoords(const sf::FloatRect& rect, float windowHeight) {
-    sf::FloatRect r(rect.left, rect.top, rect.width, rect.height);
-    r.top = windowHeight - r.top - r.height;
-    return r;  //
-  }
-
-  static sf::VertexArray toWindowCoords(const sf::VertexArray& va, float windowHeight) {
-    sf::VertexArray sa = va;
-    for (size_t i = 0; i < sa.getVertexCount(); i++) {
-      sa[i].position = toWindowCoords(sa[i].position, windowHeight);
-    }
-    return sa;
-  }
-
   static sf::RectangleShape createRectangleShape(const sf::FloatRect& rect) {
     sf::RectangleShape rectangle;
     rectangle.setSize(sf::Vector2f(rect.width, rect.height));
