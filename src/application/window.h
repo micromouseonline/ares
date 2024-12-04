@@ -58,6 +58,10 @@ class Window {
     return m_maze_view;  //
   }
 
+  sf::View& getUIView() {
+    return m_default_view;  //
+  }
+
   /// Any class that inherits from IEventObserver can register as an observer
   void addObserver(IEventObserver* observer);
 
@@ -68,12 +72,16 @@ class Window {
 
   void destroy();
 
+  void updateViews();
+
   void notifyObservers(const Event& event);
 
   sf::RenderWindow m_window;
   sf::Vector2u m_window_size;
   std::string m_window_title;
   sf::View m_maze_view;
+  sf::View m_ui_view;
+  sf::View m_default_view;
   bool m_is_done;
   /// Note that there will be trouble if an observer registers and then gets destroyed
   /// because the vector will still have a pointer to it. The solution is to use a shared_ptr

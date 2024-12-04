@@ -255,7 +255,7 @@ class Application : public IEventObserver {
     m_robot_body.draw(window);
     drawLidar(window);
 
-    window.setView(window.getDefaultView());
+    window.setView(m_window.getUIView());
     // we can draw anything else we want here.
 
     m_adhoc_text.setPosition(1000, 200);

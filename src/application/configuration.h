@@ -10,12 +10,13 @@ namespace conf {
 
   // Window configuration
   const std::string AppName = "ARES Simulator for Micromouse";
-  const sf::Vector2u WindowSize = {1900, 1050};
+  const sf::Vector2u WindowSize = {1900, 990};
   const sf::Vector2f WindoSizef = static_cast<sf::Vector2f>(WindowSize);
   const sf::VideoMode VideoMode = {WindowSize.x, WindowSize.y, 32};
   const sf::Color WindowBackGround = sf::Color(16, 16, 16, 255);
 
-  const sf::View MazeView({MazeSize / 2.0f, MazeSize / 2.0f}, {MazeSize, MazeSize});
+  const sf::View MazeView({MazeSize / 2.0f, MazeSize / 2.0f}, {MazeSize, -MazeSize});
+
   const uint32_t FrameRate = 60;
   const float FrameDeltaTime = 1.0f / static_cast<float>(FrameRate);
   const float WindowPadding = 10.0f;
