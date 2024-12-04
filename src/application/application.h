@@ -266,11 +266,7 @@ class Application : public IEventObserver {
     // Render the physical maze TODO: think about how to add and distinguish the robot map from the physical maze
     m_maze_manager.draw(window);
     m_robot_body.draw(window);
-    drawLidar(window);
-    float angle = 45.0f * RADIANS;
-    float length = 180.0f;
-    sf::Vector2f v(cosf(angle), sinf(angle));
-    Drawing::drawVectorArrow(window, {0, 0}, v * length, 10, sf::Color::Green);
+    //    drawLidar(window);
 
     window.setView(m_window.getUIView());
     // we can draw anything else we want here.
