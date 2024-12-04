@@ -175,6 +175,46 @@ class Application : public IEventObserver {
     m_adhoc_text.setString(msg);
   }
 
+  std::string getWallInfo(int index) {
+    sf::FloatRect r = m_maze_manager.getWallRect(index);
+    char str[50];
+    sprintf(str, "%5d:  %5d  %5d  %5d  %5d  state:%2d\n", index, (int)r.left, (int)r.top, (int)r.width, (int)r.height, (int)m_maze_manager.getWallState(index));
+    return std::string(str);
+  }
+
+  std::vector<int> getLocalWallList(int x, int y) {
+    std::vector<int> wall_list;
+    int w_n = m_maze_manager.getWallIndex(x, y, Direction::North);
+    int w_e = m_maze_manager.getWallIndex(x, y, Direction::East);
+    int w_s = m_maze_manager.getWallIndex(x, y, Direction::South);
+    int w_w = m_maze_manager.getWallIndex(x, y, Direction::West);
+    wall_list.push_back(w_n);
+    wall_list.push_back(w_e);
+    wall_list.push_back(w_s);
+    wall_list.push_back(w_w);
+    return wall_list;
+  }
+
+  std::string showWallIDs() {
+    sf::Vector2f pos = m_robot.getPose();
+    int cell_x = pos.x / CELL_SIZE;
+    int cell_y = pos.y / CELL_SIZE;
+    int x = cell_x;
+    int y = cell_y;
+    //    for (int x = cell_x - 1; x <= cell_x + 1; x++) {
+    //      for (int y = cell_y - 1; y <= cell_y + 1; y++) {
+    int w_n = m_maze_manager.getWallIndex(x, y, Direction::North);
+    int w_e = m_maze_manager.getWallIndex(x, y, Direction::East);
+    int w_s = m_maze_manager.getWallIndex(x, y, Direction::South);
+    int w_w = m_maze_manager.getWallIndex(x, y, Direction::West);
+    WallState s_n = m_maze_manager.getWallState(w_n);
+    WallState s_e = m_maze_manager.getWallState(w_e);
+    WallState s_s = m_maze_manager.getWallState(w_s);
+    WallState s_w = m_maze_manager.getWallState(w_w);
+    char str[50];
+    sprintf(str, "%5d (%d) %5d (%d) %5d (%d) %5d (%d)\n", w_n, s_n, w_e, s_e, w_s, s_s, w_w, s_w);
+    return std::string(str);
+  }
   /// The Render() method is the only place that output is generated for the
   /// window - and any audio devices if used. It is called after the Update()
   /// method and will may be called once per frame or after every update depending
