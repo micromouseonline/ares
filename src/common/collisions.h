@@ -225,37 +225,55 @@ struct Collisions {
     float tmin = -std::numeric_limits<float>::infinity();
     float tmax = std::numeric_limits<float>::infinity();
 
-    for (int i = 0; i < 2; ++i) {
-      float origin = (i == 0) ? ray_start.x : ray_start.y;
-      float dir = (i == 0) ? ray_dir.x : ray_dir.y;
-      float min = (i == 0) ? rectMin.x : rectMin.y;
-      float max = (i == 0) ? rectMax.x : rectMax.y;
+    // Handle the x axis (left-right)
+    if (std::abs(ray_dir.x) > 1e-6) {  // Ray is not parallel to the y-axis
+      float t1 = (rectMin.x - ray_start.x) / ray_dir.x;
+      float t2 = (rectMax.x - ray_start.x) / ray_dir.x;
 
-      if (std::abs(dir) < 1e-6) {  // i.e. straight up/down
-        if (origin < min || origin > max) {
-          // No intersection
-          return max_range;
-        }
-      } else {
-        float t1 = (min - origin) / dir;
-        float t2 = (max - origin) / dir;
+      if (t1 > t2)
+        std::swap(t1, t2);
+      tmin = std::max(tmin, t1);
+      tmax = std::min(tmax, t2);
 
-        if (t1 > t2)
-          std::swap(t1, t2);
-        tmin = std::max(tmin, t1);
-        tmax = std::min(tmax, t2);
-
-        if (tmin > tmax) {
-          // No intersection
-          return max_range;
-        }
+      if (tmin > tmax) {
+        // No intersection on the x axis
+        return max_range;
+      }
+    } else {  // Ray is parallel to the x-axis
+      if (ray_start.x < rectMin.x || ray_start.x > rectMax.x) {
+        // No intersection if the ray is outside the x bounds
+        return max_range;
       }
     }
+
+    // Handle the y axis (top-bottom)
+    if (std::abs(ray_dir.y) > 1e-6) {  // Ray is not parallel to the y-axis
+      float t1 = (rectMin.y - ray_start.y) / ray_dir.y;
+      float t2 = (rectMax.y - ray_start.y) / ray_dir.y;
+
+      if (t1 > t2)
+        std::swap(t1, t2);
+      tmin = std::max(tmin, t1);
+      tmax = std::min(tmax, t2);
+
+      if (tmin > tmax) {
+        // No intersection on the y axis
+        return max_range;
+      }
+    } else {  // Ray is parallel to the y-axis
+      if (ray_start.y > rectMin.y || ray_start.y < rectMax.y) {
+        // No intersection if the ray is outside the y bounds
+        return max_range;
+      }
+    }
+
+    // If the intersection is behind the ray origin, return max_range
     if (tmax < 0) {
-      // Intersection behind the ray origin. Are we INSIDE the box?
       return max_range;
     }
-    return std::min(tmin >= 0 ? tmin : tmax, max_range);  // Intersection behind the ray origin
+
+    // Return the nearest intersection (either tmin or tmax), ensuring it's in front of the ray
+    return std::min(tmin >= 0 ? tmin : tmax, max_range);
   }
 
 };  // struct Collisions
