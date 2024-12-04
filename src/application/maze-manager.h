@@ -96,7 +96,6 @@ class MazeManager {
     createWallGeometry();  //
     createPostGeometry();
     initialiseWallStates();
-    loadFromMemory(japan2007ef, MAZE_WIDTH);
   };
 
   ~MazeManager() = default;
