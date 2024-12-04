@@ -84,12 +84,12 @@ class RobotWallSensor {
   /***
    * generate a complete sensor fan for every rectangle in the supplied
    * vector. This is surprisingly fast. Even so, in the actual simulation
-   * the rectangles passed in will only be those surrounding cells.
+   * the rectangles list passed in will only be those surrounding cells.
    * The eight immediate neighbours should be enough so a maximum of
-   * 32 rectangles is required.
+   * 40 rectangles is required, including the posts
    * @param obstacles
    */
-  void update(const std::vector<sf::RectangleShape>& obstacles) {
+  void update(const std::vector<sf::FloatRect>& obstacles) {
     // Calculate angular increment for rays
     float startAngle = (m_angle - m_geometry.halfAngle) * RADIANS;
     float endAngle = (m_angle + m_geometry.halfAngle) * RADIANS;
@@ -111,12 +111,12 @@ class RobotWallSensor {
       // Update the ray endpoint
       sf::Vector2f hitPosition = m_origin + dir * closestHit;
       m_vertices[i].position = hitPosition;
-      m_vertices[i].color.a = conf::SENSOR_ALPHA * (1.0f - closestHit / m_max_range);
+      m_vertices[i].color.a = uint8_t(conf::SENSOR_ALPHA * (1.0f - closestHit / m_max_range));
 
       /// Accumulate distance and power for averaging
       total_distance += closestHit;
     }
-    float a = total_distance / m_geometry.rayCount;
+    float a = total_distance / (float)m_geometry.rayCount;
     m_power = 1600.0f * expf(-0.025f * a);
   }
 

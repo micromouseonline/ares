@@ -136,7 +136,7 @@ class RobotBody {
     Drawing::drawVectorArrow(window, Drawing::toWindowCoords(m_position, conf::MazeSize), sf::Vector2f(pointer), 15.0);
   }
 
-  void updateSensors(const std::vector<sf::RectangleShape>& obstacles) {
+  void updateSensors(const std::vector<sf::FloatRect>& obstacles) {
     for (auto& sensor : m_sensors) {
       sensor.update(obstacles);
     }

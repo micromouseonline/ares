@@ -384,10 +384,44 @@ class MazeManager {
     //    }
   }
 
-  const std::vector<sf::RectangleShape>& GetObstacles() {
-    updateObstacles();
+  const std::vector<sf::FloatRect>& GetObstacles(float robot_x, float robot_y) {
+    std::vector<sf::FloatRect> obstacles;
+    m_obstacles.clear();
+    int cell_x = robot_x / CELL_SIZE;
+    int cell_y = robot_y / CELL_SIZE;
+    int x = cell_x;
+    int y = cell_y;
+    //    for (int x = cell_x - 1; x <= cell_x + 1; x++) {
+    //      for (int y = cell_y - 1; y <= cell_y + 1; y++) {
+    int wall_index;
+    wall_index = getWallIndex(x, y, Direction::North);
+    if (wallState[wall_index] == WallState::KnownPresent) {
+      m_obstacles.push_back(m_wall_rectangles[wall_index]);
+    }
+    wall_index = getWallIndex(x, y, Direction::East);
+    if (wallState[wall_index] == WallState::KnownPresent) {
+      m_obstacles.push_back(m_wall_rectangles[wall_index]);
+    }
+    wall_index = getWallIndex(x, y, Direction::South);
+    if (wallState[wall_index] == WallState::KnownPresent) {
+      m_obstacles.push_back(m_wall_rectangles[wall_index]);
+    }
+    wall_index = getWallIndex(x, y, Direction::West);
+    if (wallState[wall_index] == WallState::KnownPresent) {
+      m_obstacles.push_back(m_wall_rectangles[wall_index]);
+    }
+    //      }
+    //    }
     return m_obstacles;  //
   }
+
+  int getCellFromPosition(float x, float y) {
+    int cx = x / (float)CELL_SIZE;
+    int cy = y / (float)CELL_SIZE;
+    return cx * MAZE_WIDTH + cy;
+  }
+
+  sf::FloatRect getWallRect(int index) { return m_wall_rectangles[index]; }
 
  private:
   WallState wallState[NUMBER_OF_WALLS];  // the logical state of the walls in the world maze
@@ -403,8 +437,8 @@ class MazeManager {
   sf::VertexArray m_posts_vertex_array;
   sf::VertexArray m_walls_vertex_array;
 
-  mutable std::mutex m_mutex_obstacles;         // Protects access when building collision list
-  std::vector<sf::RectangleShape> m_obstacles;  // the things the robot can see or hit
+  mutable std::mutex m_mutex_obstacles;    // Protects access when building collision list
+  std::vector<sf::FloatRect> m_obstacles;  // the things the robot can see or hit
 };
 
 #endif  // MAZE_H

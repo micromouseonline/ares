@@ -235,7 +235,8 @@ class Application : public IEventObserver {
   SensorData callbackCalculateSensorData(float x, float y, float theta) {
     m_timer.restart();
     m_robot_body.updateSensorGeometry(x, y, theta);
-    m_robot_body.updateSensors(m_maze_manager.GetObstacles());
+    m_obstacles = m_maze_manager.GetObstacles(x, y);
+    m_robot_body.updateSensors(m_obstacles);
     m_sensor_data.lfs_value = m_robot_body.getSensor(conf::LFS).getPower();
     m_sensor_data.rds_value = m_robot_body.getSensor(conf::LDS).getPower();
     m_sensor_data.lds_value = m_robot_body.getSensor(conf::RDS).getPower();
@@ -248,6 +249,7 @@ class Application : public IEventObserver {
   Window m_window;
   Robot m_robot;  // The robot instance
   RobotBody m_robot_body;
+  std::vector<sf::FloatRect> m_obstacles;
 
   SensorData m_sensor_data;  // sensor readings we pass back to the robot
   MazeManager m_maze_manager;
