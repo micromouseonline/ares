@@ -228,14 +228,28 @@ class Application : public IEventObserver {
   }
 
   void drawLidar(sf::RenderTarget& window) {
+    float range = conf::SENSOR_MAX_RANGE;
     sf::Vector2f origin = m_robot.getPose();
-    for (int a = 0; a < 360; a += 1) {
-      sf::Vector2f ray{cosf((float)a * RADIANS), sinf((float)a * RADIANS)};
-      sf::FloatRect wall = m_maze_manager.getWallRect(m_maze_manager.getWallIndex(3, 3, Direction::East));
-      float d = Collisions::getRayDistanceToAlignedRectangle(origin, ray, wall, 600);
+    sf::FloatRect wall = m_maze_manager.getWallRect(m_maze_manager.getWallIndex(3, 3, Direction::East));
+    auto pos = m_robot.getPose();
+    auto walls = getLocalWallList(pos.x / CELL_SIZE, pos.y / CELL_SIZE);
+    for (int a = -179; a < 179; a += 1) {
+      float angle = a + m_robot.getOrientation();
+      sf::Vector2f ray{cosf((float)angle * RADIANS), sinf((float)angle * RADIANS)};
+      float min_d = range;
+      for (auto& i : walls) {
+        if (m_maze_manager.getWallState(i) == WallState::KnownPresent) {
+          sf::FloatRect w = m_maze_manager.getWallRect(i);
+          float d = Collisions::getRayDistanceToAlignedRectangle(origin, ray, w, range);
+          if (d < min_d) {
+            min_d = d;  //
+          }
+        }
+      }
       sf::Vector2f p = origin;
-      sf::Vector2f q = origin + ray * d;
-      Drawing::drawLine(window, p, q, sf::Color(255, 255, 255, 32));
+      sf::Vector2f q = origin + ray * min_d;
+      //      Drawing::drawLine(window, p, q, sf::Color(255, 255, 255, 32));
+      Drawing::drawDot(window, q);
     }
   }
   /// The Render() method is the only place that output is generated for the
