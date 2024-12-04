@@ -299,6 +299,10 @@ class Application : public IEventObserver {
     m_maze_manager.draw(window);
     m_robot_body.draw(window);
     //    drawLidar(window);
+    if (conf::DebugHighlightTestedWalls) {
+      m_maze_manager.resetPostColours();
+      m_maze_manager.resetWallColours();
+    }
 
     window.setView(m_window.getUIView());
     // we can draw anything else we want here.
