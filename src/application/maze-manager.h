@@ -37,7 +37,7 @@ const int LOCATION_DELTA_NORTH_WEST = (MAZE_WIDTH);
 
 const float Scale = 16.0f / (float)MAZE_WIDTH;
 const float WALL_THICKNESS = 12.0f * Scale;
-const float WALL_LENGTH = 166.0f * Scale;
+const float WALL_LENGTH = 168.0f * Scale;
 const float CELL_SIZE = 180.0 * Scale;
 const float GAP = 2.0f;
 
