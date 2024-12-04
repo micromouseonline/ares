@@ -377,6 +377,7 @@ class Application : public IEventObserver {
   sf::Font m_default_font;
   sf::Text m_adhoc_text;
   Textbox m_textbox;
+  bool snapped = false;
 };
 
 #endif  // APPLICATION_H
