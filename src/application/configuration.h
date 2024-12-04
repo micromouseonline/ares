@@ -5,6 +5,9 @@
 
 namespace conf {
 
+  // Debug flags
+  const bool DebugHighlightTestedWalls = true;
+
   // Maze Dimensions
   const float MazeSize = (16 * 180.0f) + 12.0f;  // 2892.0f;
 
@@ -30,6 +33,8 @@ namespace conf {
   const sf::Color MysteryColour = (sf::Color(255, 0, 0, 32));
   const sf::Color ErrorColour = (sf::Color(255, 0, 255, 128));
   const sf::Color MazeBaseColour = sf::Color(30, 30, 30, 64);
+  const sf::Color PostColour = sf::Color(192, 0, 0);
+  const sf::Color WallHighlightColour = sf::Color(192, 64, 0);
 
   const sf::Color WallStateColors[] = {KnownAbsentColour, KnownPresentColour, UnknownColour, VirtualColour, MysteryColour};
 
