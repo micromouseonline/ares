@@ -215,6 +215,19 @@ class Application : public IEventObserver {
     sprintf(str, "%5d (%d) %5d (%d) %5d (%d) %5d (%d)\n", w_n, s_n, w_e, s_e, w_s, s_s, w_w, s_w);
     return std::string(str);
   }
+
+  void drawLidar(sf::RenderTarget& window) {
+    sf::Vector2f origin = m_robot.getPose();
+    for (int a = 0; a < 360; a += 1) {
+      sf::Vector2f ray{cosf((float)a * RADIANS), sinf((float)a * RADIANS)};
+      sf::FloatRect wall = m_maze_manager.getWallRect(m_maze_manager.getWallIndex(3, 3, Direction::East));
+      float d = Collisions::getRayDistanceToAlignedRectangle(origin, ray, wall, 600);
+      sf::Vector2f p = Drawing::toWindowCoords(origin, conf::MazeSize);
+      sf::Vector2f q = origin + ray * d;
+      q = Drawing::toWindowCoords(q, conf::MazeSize);
+      Drawing::drawLine(window, p, q, sf::Color(255, 255, 255, 32));
+    }
+  }
   /// The Render() method is the only place that output is generated for the
   /// window - and any audio devices if used. It is called after the Update()
   /// method and will may be called once per frame or after every update depending
@@ -229,6 +242,7 @@ class Application : public IEventObserver {
     // Render the physical maze TODO: think about how to add and distinguish the robot map from the physical maze
     m_maze_manager.draw(window);
     m_robot_body.draw(window);
+    drawLidar(window);
 
     window.setView(window.getDefaultView());
     // we can draw anything else we want here.
