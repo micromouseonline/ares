@@ -251,7 +251,8 @@ class MazeManager {
         m_post_rectangles[index] = {{ox, oy}, {WALL_THICKNESS, -WALL_THICKNESS}};
       }
     }
-    sf::Color colour = conf::KnownPresentColour;
+    sf::Color colour = conf::PostColour;
+
     for (std::size_t i = 0; i < NUMBER_OF_POSTS; ++i) {
       const sf::FloatRect& rect = m_post_rectangles[i];
       const sf::Vector2f& position = rect.getPosition();
@@ -265,6 +266,22 @@ class MazeManager {
       m_posts_vertex_array[i * 4 + 1].color = colour;
       m_posts_vertex_array[i * 4 + 2].color = colour;
       m_posts_vertex_array[i * 4 + 3].color = colour;
+    }
+  }
+
+  void setPostColour(int index, sf::Color colour) {
+    m_posts_vertex_array[index * 4 + 0].color = colour;
+    m_posts_vertex_array[index * 4 + 1].color = colour;
+    m_posts_vertex_array[index * 4 + 2].color = colour;
+    m_posts_vertex_array[index * 4 + 3].color = colour;
+  }
+
+  void resetPostColours() {
+    for (std::size_t i = 0; i < NUMBER_OF_POSTS; ++i) {
+      m_posts_vertex_array[i * 4 + 0].color = conf::PostColour;
+      m_posts_vertex_array[i * 4 + 1].color = conf::PostColour;
+      m_posts_vertex_array[i * 4 + 2].color = conf::PostColour;
+      m_posts_vertex_array[i * 4 + 3].color = conf::PostColour;
     }
   }
 
@@ -343,6 +360,22 @@ class MazeManager {
       m_walls_vertex_array[i * 4 + 1].position = sf::Vector2f(position.x + size.x, position.y);
       m_walls_vertex_array[i * 4 + 2].position = sf::Vector2f(position.x + size.x, position.y + size.y);
       m_walls_vertex_array[i * 4 + 3].position = sf::Vector2f(position.x, position.y + size.y);
+    }
+  }
+
+  void setWallColour(int index, sf::Color colour) {
+    m_walls_vertex_array[index * 4 + 0].color = colour;
+    m_walls_vertex_array[index * 4 + 1].color = colour;
+    m_walls_vertex_array[index * 4 + 2].color = colour;
+    m_walls_vertex_array[index * 4 + 3].color = colour;
+  }
+
+  void resetWallColours() {
+    for (std::size_t i = 0; i < NUMBER_OF_WALLS; i++) {
+      m_walls_vertex_array[i * 4 + 0].color = conf::WallStateColors[(int)wallState[i]];
+      m_walls_vertex_array[i * 4 + 1].color = conf::WallStateColors[(int)wallState[i]];
+      m_walls_vertex_array[i * 4 + 2].color = conf::WallStateColors[(int)wallState[i]];
+      m_walls_vertex_array[i * 4 + 3].color = conf::WallStateColors[(int)wallState[i]];
     }
   }
 
