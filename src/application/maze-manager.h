@@ -279,8 +279,8 @@ class MazeManager {
    */
   void createWallGeometry() {
     sf::FloatRect wall_shape;
-    sf::FloatRect hWall({0, 0}, {WALL_LENGTH, -WALL_THICKNESS});
-    sf::FloatRect vWall({0, 0}, {WALL_THICKNESS, -WALL_LENGTH});
+    sf::FloatRect hWall({0, 0}, {WALL_LENGTH, WALL_THICKNESS});
+    sf::FloatRect vWall({0, 0}, {WALL_THICKNESS, WALL_LENGTH});
     for (int y = 0; y < MAZE_WIDTH; y++) {
       for (int x = 0; x < MAZE_WIDTH; x++) {
         sf::Vector2f origin = getCellOrigin(x, y);
@@ -288,7 +288,8 @@ class MazeManager {
         sf::Vector2f offset;
         // North Wall
         offset.x = WALL_THICKNESS;
-        offset.y = CELL_SIZE + WALL_THICKNESS;
+        offset.y = CELL_SIZE;
+        ;
         wall_shape = hWall;
         wall_shape.left = origin.x + offset.x;
         wall_shape.top = origin.y + offset.y;
@@ -297,7 +298,7 @@ class MazeManager {
         setWallState(index, WallState::Unknown);
         // West Wall
         offset.x = 0;
-        offset.y = CELL_SIZE;
+        offset.y = WALL_THICKNESS;
         wall_shape = vWall;
         wall_shape.left = origin.x + offset.x;
         wall_shape.top = origin.y + offset.y;
@@ -314,7 +315,7 @@ class MazeManager {
       sf::Vector2f offset;
       // South Wall
       offset.x = WALL_THICKNESS;
-      offset.y = WALL_THICKNESS;
+      offset.y = 0;
       wall_shape = hWall;
       wall_shape.left = origin.x + offset.x;
       wall_shape.top = origin.y + offset.y;
@@ -325,7 +326,7 @@ class MazeManager {
       // East Wall
       origin = getCellOrigin(MAZE_WIDTH - 1, i);
       offset.x = CELL_SIZE;
-      offset.y = CELL_SIZE;
+      offset.y = WALL_THICKNESS;
       wall_shape = vWall;
       wall_shape.left = origin.x + offset.x;
       wall_shape.top = origin.y + offset.y;
