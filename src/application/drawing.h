@@ -41,6 +41,14 @@ class Drawing {
     target.draw(line, 2, sf::Lines);
   }
 
+  static void drawDot(sf::RenderTarget& target, sf::Vector2f pos, float radius = 3, sf::Color colour = sf::Color(0, 255, 0, 192)) {
+    sf::CircleShape c(radius);
+    c.setOrigin(radius, radius);
+    c.setFillColor(colour);
+    c.setPosition(pos);
+    target.draw(c);
+  }
+
   // Function to draw a vector with an arrowhead
   static void drawVectorArrow(sf::RenderTarget& target, sf::Vector2f pos, sf::Vector2f vec, float arrowheadSizePercent, sf::Color color = sf::Color::White) {
     // Calculate the arrowhead size
