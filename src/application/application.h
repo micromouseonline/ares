@@ -34,12 +34,17 @@ class Application : public IEventObserver {
     m_textbox.addString("Hello World!");
     m_textbox.addString("WASD keys to move robot");
 
-    m_maze_manager.loadFromMemory(japan2007ef, MAZE_WIDTH);
+    m_maze_manager.loadFromMemory(japan2007ef, 16);
+    //    m_maze_manager.loadFromMemory(japan2016ef_half, 32);
+
     //    m_maze_manager.setWallState(3, 3, Direction::East, WallState::KnownPresent);
     m_window.addObserver(this);
     m_robot_body.setRobot(m_robot);
 
-    m_robot.setPosition(0 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f, 0 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f);
+    //    m_robot.setPosition(0 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f, 0 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f);
+    sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
+    m_robot.setPosition(start_pos.x, start_pos.y);
+
     m_robot.setOrientation(90.0);
     /// The Lambda expression here serves to bind the callback to the application instance
     m_robot.setSensorCallback([this](float x, float y, float theta) -> SensorData { return this->callbackCalculateSensorData(x, y, theta); });
@@ -202,8 +207,8 @@ class Application : public IEventObserver {
     float angle = m_robot.getOrientation();
     sf::Vector2f pos = m_robot.getPose();
     int cell = m_maze_manager.getCellFromPosition(pos.x, pos.y);
-    int cell_x = int(pos.x / CELL_SIZE);
-    int cell_y = int(pos.y / CELL_SIZE);
+    int cell_x = int(pos.x / m_maze_manager.getCellSize());
+    int cell_y = int(pos.y / m_maze_manager.getCellSize());
     sprintf(str, "Robot: (%4d,%4d) %4d  cell:%3d = %2d,%2d\n", (int)pos.x, (int)pos.y, (int)angle, cell, cell_x, cell_y);
     msg += str;
 
@@ -240,8 +245,8 @@ class Application : public IEventObserver {
 
   std::string showWallIDs() {
     sf::Vector2f pos = m_robot.getPose();
-    int cell_x = pos.x / CELL_SIZE;
-    int cell_y = pos.y / CELL_SIZE;
+    int cell_x = pos.x / m_maze_manager.getCellSize();
+    int cell_y = pos.y / m_maze_manager.getCellSize();
     int x = cell_x;
     int y = cell_y;
     //    for (int x = cell_x - 1; x <= cell_x + 1; x++) {
@@ -264,7 +269,7 @@ class Application : public IEventObserver {
     sf::Vector2f origin = m_robot.getPose();
     sf::FloatRect wall = m_maze_manager.getWallRect(m_maze_manager.getWallIndex(3, 3, Direction::East));
     auto pos = m_robot.getPose();
-    auto walls = getLocalWallList(pos.x / CELL_SIZE, pos.y / CELL_SIZE);
+    auto walls = getLocalWallList(pos.x / m_maze_manager.getCellSize(), pos.y / m_maze_manager.getCellSize());
     for (int a = -179; a < 179; a += 1) {
       float angle = a + m_robot.getOrientation();
       sf::Vector2f ray{cosf((float)angle * RADIANS), sinf((float)angle * RADIANS)};

@@ -16,31 +16,6 @@
 #include "drawing.h"
 #include "world/mazedata.h"
 
-const int MAZE_WIDTH = (16);
-const int NODES_PER_HORIZ_WALL_ROW = (MAZE_WIDTH);
-const int NODES_PER_VERT_WALL_ROW = (MAZE_WIDTH - 1);
-const int NUMBER_OF_HORIZ_WALLS = (NODES_PER_HORIZ_WALL_ROW);
-const int NUMBER_OF_VERT_WALLS = (NODES_PER_VERT_WALL_ROW + 2);
-const int NUMBER_OF_HORIZ_WALL_ROWS = (MAZE_WIDTH + 1);
-const int NUMBER_OF_VERT_WALL_ROWS = (MAZE_WIDTH);
-const int NUMBER_OF_WALLS = ((NUMBER_OF_HORIZ_WALLS * NUMBER_OF_HORIZ_WALL_ROWS) + (NUMBER_OF_VERT_WALLS * NUMBER_OF_VERT_WALL_ROWS));
-const int NUMBER_OF_POSTS = (MAZE_WIDTH + 1) * (MAZE_WIDTH + 1);
-
-const int LOCATION_DELTA_NORTH = (MAZE_WIDTH * 2 + 1);
-const int LOCATION_DELTA_NORTH_EAST = (MAZE_WIDTH + 1);
-const int LOCATION_DELTA_EAST = (1);
-const int LOCATION_DELTA_SOUTH_EAST = (-MAZE_WIDTH);
-const int LOCATION_DELTA_SOUTH = (-(MAZE_WIDTH * 2 + 1));
-const int LOCATION_DELTA_SOUTH_WEST = (-(MAZE_WIDTH + 1));
-const int LOCATION_DELTA_WEST = (-1);
-const int LOCATION_DELTA_NORTH_WEST = (MAZE_WIDTH);
-
-const float Scale = 16.0f / (float)MAZE_WIDTH;
-const float WALL_THICKNESS = 12.0f * Scale;
-const float WALL_LENGTH = 168.0f * Scale;
-const float CELL_SIZE = 180.0 * Scale;
-const float GAP = 2.0f;
-
 enum class WallState {
   KnownAbsent,   //
   KnownPresent,  //
@@ -86,19 +61,51 @@ enum class Direction { North, NorthEast, East, SouthEast, South, SouthWest, West
 class MazeManager {
  public:
   MazeManager()
-      : m_posts_vertex_array(sf::Quads, NUMBER_OF_POSTS * 4),  //
-        m_walls_vertex_array(sf::Quads, NUMBER_OF_WALLS * 4)   //
+      : m_posts_vertex_array(sf::Quads),  //
+        m_walls_vertex_array(sf::Quads)   //
   {
+    resize(32);
+
+    //    createWallGeometry();  //
+    //    createPostGeometry();
+    //    initialiseWallStates();
+  };
+
+  ~MazeManager() = default;
+
+  /**
+   * Change the dimensions of the maze. This is a destructive operation
+   * and all wall and geometry data will be lost and recalculated
+   *
+   * @param new_width - mazes are always square
+   */
+  void resize(int new_width) {
+    m_maze_width = new_width;
+    m_wall_count = (new_width + 1) * new_width + (new_width + 1) * new_width;
+    m_post_count = (new_width + 1) * (new_width + 1);
+    const float ClassicWall = 12.0f;
+    const float ClassicCell = 180.0f;
+
+    float Scale = 16.0f / (float)new_width;
+    m_wall_thickness = ClassicWall * Scale;
+    m_wall_length = (ClassicCell - ClassicWall) * Scale;
+    m_cell_size = ClassicCell * Scale;
+    m_maze_base_size = (float)new_width * ClassicCell * Scale + m_wall_length;
+
     m_maze_base_rectangle.setSize({conf::MazeSize, conf::MazeSize});
     m_maze_base_rectangle.setPosition(0.0f, 0.0f);
     m_maze_base_rectangle.setFillColor(conf::MazeBaseColour);
 
+    m_wall_states.resize(m_wall_count, WallState::Unknown);
+    m_wall_rectangles.resize(m_wall_count);
+    m_post_rectangles.resize(m_post_count);
+    m_walls_vertex_array.resize(m_wall_count * 4);
+    m_posts_vertex_array.resize(m_post_count * 4);
+
     createWallGeometry();  //
     createPostGeometry();
     initialiseWallStates();
-  };
-
-  ~MazeManager() = default;
+  }
 
   /***
    * Mazes stored in files are assumed to be in the common text format like:
@@ -139,6 +146,7 @@ class MazeManager {
    * TODO: Implement the special features
    */
   bool loadFromMemory(const uint8_t* data, int mazeWidth) {
+    resize(mazeWidth);
     initialiseWallStates();
     for (int y = 0; y < mazeWidth - 1; y++) {
       for (int x = 0; x < mazeWidth - 1; x++) {
@@ -162,8 +170,8 @@ class MazeManager {
   /***
    * A list (array) of previous contest mazes is held in the MazeDataSource struct.
    */
-  bool loadFromList(MazeDataSource& mazeData) {
-    return loadFromMemory(mazeData.data, MAZE_WIDTH);  //
+  bool loadFromList(MazeDataSource& mazeData, int width) {
+    return loadFromMemory(mazeData.data, width);  //
   }
 
   /***
@@ -175,23 +183,23 @@ class MazeManager {
   }
 
   bool isHorizontalWall(int wall_index) {
-    return ((wall_index % LOCATION_DELTA_NORTH) < NUMBER_OF_HORIZ_WALLS);  //
+    return ((wall_index % (m_maze_width * 2 + 1)) < m_maze_width);  //
   }
 
   int getWallIndex(int cellX, int cellY, Direction direction) const {
-    int index = cellX + LOCATION_DELTA_NORTH * cellY;
+    int index = cellX + (m_maze_width * 2 + 1) * cellY;
     switch (direction) {
       case Direction::North:
-        index += LOCATION_DELTA_NORTH;
+        index += (m_maze_width * 2 + 1);
         break;
       case Direction::East:
-        index += LOCATION_DELTA_NORTH_EAST;
+        index += (m_maze_width + 1);
         break;
       case Direction::South:
         index += 0;
         break;
       case Direction::West:
-        index += LOCATION_DELTA_NORTH_WEST;
+        index += m_maze_width;
         break;
       default:
         index = 0;  // even though this is wrong.
@@ -208,7 +216,7 @@ class MazeManager {
    * we update the VertexArray here rather than during the draw method.
    */
   void setWallState(int index, WallState state) {
-    wallState[index] = state;  //
+    m_wall_states[index] = state;  //
     m_walls_vertex_array[index * 4 + 0].color = conf::WallStateColors[(int)state];
     m_walls_vertex_array[index * 4 + 1].color = conf::WallStateColors[(int)state];
     m_walls_vertex_array[index * 4 + 2].color = conf::WallStateColors[(int)state];
@@ -221,7 +229,7 @@ class MazeManager {
   }
 
   WallState getWallState(int index) {
-    return wallState[index];  //
+    return m_wall_states[index];  //
   }
 
   WallState getWallState(int x, int y, Direction direction) {
@@ -235,25 +243,26 @@ class MazeManager {
    * of a cell
    */
   sf::Vector2f getCellOrigin(int x, int y) {
-    return {(float)x * CELL_SIZE, (float)y * CELL_SIZE};  //
+    return {(float)x * m_cell_size, (float)y * m_cell_size};  //
   }
 
+  float getCellSize() { return m_cell_size; }
   /**
    * The posts are static so just make them once.
    */
   void createPostGeometry() {
-    //    sf::RectangleShape post({WALL_THICKNESS, WALL_THICKNESS});
-    for (int y = 0; y <= MAZE_WIDTH; y++) {
-      for (int x = 0; x <= MAZE_WIDTH; x++) {
-        float ox = (float)x * CELL_SIZE;
-        float oy = (float)y * CELL_SIZE;
-        int index = x * (MAZE_WIDTH + 1) + y;
-        m_post_rectangles[index] = {{ox, oy}, {WALL_THICKNESS, WALL_THICKNESS}};
+    //    sf::RectangleShape post({m_wall_thickness, m_wall_thickness});
+    for (int y = 0; y <= m_maze_width; y++) {
+      for (int x = 0; x <= m_maze_width; x++) {
+        float ox = (float)x * m_cell_size;
+        float oy = (float)y * m_cell_size;
+        int index = x * (m_maze_width + 1) + y;
+        m_post_rectangles[index] = {{ox, oy}, {m_wall_thickness, m_wall_thickness}};
       }
     }
     sf::Color colour = conf::PostColour;
 
-    for (std::size_t i = 0; i < NUMBER_OF_POSTS; ++i) {
+    for (int i = 0; i < m_post_count; ++i) {
       const sf::FloatRect& rect = m_post_rectangles[i];
       const sf::Vector2f& position = rect.getPosition();
       const sf::Vector2f& size = rect.getSize();
@@ -277,7 +286,7 @@ class MazeManager {
   }
 
   void resetPostColours() {
-    for (std::size_t i = 0; i < NUMBER_OF_POSTS; ++i) {
+    for (int i = 0; i < m_post_count; ++i) {
       m_posts_vertex_array[i * 4 + 0].color = conf::PostColour;
       m_posts_vertex_array[i * 4 + 1].color = conf::PostColour;
       m_posts_vertex_array[i * 4 + 2].color = conf::PostColour;
@@ -296,16 +305,16 @@ class MazeManager {
    */
   void createWallGeometry() {
     sf::FloatRect wall_shape;
-    sf::FloatRect hWall({0, 0}, {WALL_LENGTH, WALL_THICKNESS});
-    sf::FloatRect vWall({0, 0}, {WALL_THICKNESS, WALL_LENGTH});
-    for (int y = 0; y < MAZE_WIDTH; y++) {
-      for (int x = 0; x < MAZE_WIDTH; x++) {
+    sf::FloatRect hWall({0, 0}, {m_wall_length, m_wall_thickness});
+    sf::FloatRect vWall({0, 0}, {m_wall_thickness, m_wall_length});
+    for (int y = 0; y < m_maze_width; y++) {
+      for (int x = 0; x < m_maze_width; x++) {
         sf::Vector2f origin = getCellOrigin(x, y);
         int index;
         sf::Vector2f offset;
         // North Wall
-        offset.x = WALL_THICKNESS;
-        offset.y = CELL_SIZE;
+        offset.x = m_wall_thickness;
+        offset.y = m_cell_size;
         ;
         wall_shape = hWall;
         wall_shape.left = origin.x + offset.x;
@@ -315,7 +324,7 @@ class MazeManager {
         setWallState(index, WallState::Unknown);
         // West Wall
         offset.x = 0;
-        offset.y = WALL_THICKNESS;
+        offset.y = m_wall_thickness;
         wall_shape = vWall;
         wall_shape.left = origin.x + offset.x;
         wall_shape.top = origin.y + offset.y;
@@ -326,12 +335,12 @@ class MazeManager {
     }
     // now the South and East border
     sf::Vector2f origin;
-    for (int i = 0; i < MAZE_WIDTH; i++) {
+    for (int i = 0; i < m_maze_width; i++) {
       int index;
       origin = getCellOrigin(i, 0);
       sf::Vector2f offset;
       // South Wall
-      offset.x = WALL_THICKNESS;
+      offset.x = m_wall_thickness;
       offset.y = 0;
       wall_shape = hWall;
       wall_shape.left = origin.x + offset.x;
@@ -341,18 +350,18 @@ class MazeManager {
       setWallState(index, WallState::Unknown);
 
       // East Wall
-      origin = getCellOrigin(MAZE_WIDTH - 1, i);
-      offset.x = CELL_SIZE;
-      offset.y = WALL_THICKNESS;
+      origin = getCellOrigin(m_maze_width - 1, i);
+      offset.x = m_cell_size;
+      offset.y = m_wall_thickness;
       wall_shape = vWall;
       wall_shape.left = origin.x + offset.x;
       wall_shape.top = origin.y + offset.y;
-      index = getWallIndex(MAZE_WIDTH - 1, i, Direction::East);
+      index = getWallIndex(m_maze_width - 1, i, Direction::East);
       m_wall_rectangles[index] = wall_shape;
       setWallState(index, WallState::Unknown);
     }
     // Now we have the geometry, we can create the vertex array positions
-    for (std::size_t i = 0; i < NUMBER_OF_WALLS; ++i) {
+    for (int i = 0; i < m_wall_count; ++i) {
       sf::FloatRect& rect = m_wall_rectangles[i];
       sf::Vector2f position = rect.getPosition();
       sf::Vector2f size = rect.getSize();
@@ -371,26 +380,26 @@ class MazeManager {
   }
 
   void resetWallColours() {
-    for (std::size_t i = 0; i < NUMBER_OF_WALLS; i++) {
-      m_walls_vertex_array[i * 4 + 0].color = conf::WallStateColors[(int)wallState[i]];
-      m_walls_vertex_array[i * 4 + 1].color = conf::WallStateColors[(int)wallState[i]];
-      m_walls_vertex_array[i * 4 + 2].color = conf::WallStateColors[(int)wallState[i]];
-      m_walls_vertex_array[i * 4 + 3].color = conf::WallStateColors[(int)wallState[i]];
+    for (int i = 0; i < m_wall_count; i++) {
+      m_walls_vertex_array[i * 4 + 0].color = conf::WallStateColors[(int)m_wall_states[i]];
+      m_walls_vertex_array[i * 4 + 1].color = conf::WallStateColors[(int)m_wall_states[i]];
+      m_walls_vertex_array[i * 4 + 2].color = conf::WallStateColors[(int)m_wall_states[i]];
+      m_walls_vertex_array[i * 4 + 3].color = conf::WallStateColors[(int)m_wall_states[i]];
     }
   }
 
   void initialiseWallStates() {
-    for (int y = 0; y < MAZE_WIDTH; y++) {
-      for (int x = 0; x < MAZE_WIDTH; x++) {
+    for (int y = 0; y < m_maze_width; y++) {
+      for (int x = 0; x < m_maze_width; x++) {
         setWallState(x, y, Direction::North, WallState::Unknown);
         setWallState(x, y, Direction::West, WallState::Unknown);
       }
     }
-    for (int i = 0; i < MAZE_WIDTH; i++) {
+    for (int i = 0; i < m_maze_width; i++) {
       setWallState(i, 0, Direction::South, WallState::KnownPresent);
-      setWallState(i, MAZE_WIDTH - 1, Direction::North, WallState::KnownPresent);
+      setWallState(i, m_maze_width - 1, Direction::North, WallState::KnownPresent);
       setWallState(0, i, Direction::West, WallState::KnownPresent);
-      setWallState(MAZE_WIDTH - 1, i, Direction::East, WallState::KnownPresent);
+      setWallState(m_maze_width - 1, i, Direction::East, WallState::KnownPresent);
     }
     setWallState(0, 0, Direction::East, WallState::KnownPresent);
     setWallState(0, 0, Direction::North, WallState::KnownAbsent);
@@ -419,13 +428,13 @@ class MazeManager {
 
   const std::vector<sf::FloatRect>& GetObstacles(float robot_x, float robot_y) {
     m_obstacles.clear();
-    int cell_x = robot_x / CELL_SIZE;
-    int cell_y = robot_y / CELL_SIZE;
+    int cell_x = robot_x / m_cell_size;
+    int cell_y = robot_y / m_cell_size;
     std::vector<int> walls_seen;
     int start_wall = getWallIndex(cell_x, cell_y, Direction::South);  // the 'base' wall for this cell
     for (int i : conf::SensorWallOffsets) {
       int wall_index = start_wall + i;
-      if (wall_index >= 0 && wall_index < NUMBER_OF_WALLS) {
+      if (wall_index >= 0 && wall_index < m_wall_count) {
         if (getWallState(wall_index) == WallState::KnownPresent) {
           m_obstacles.push_back(m_wall_rectangles[wall_index]);
           walls_seen.push_back(wall_index);
@@ -439,10 +448,10 @@ class MazeManager {
     }
 
     // now the posts
-    int start_post = cell_x * (MAZE_WIDTH + 1) + cell_y;
+    int start_post = cell_x * (m_maze_width + 1) + cell_y;
     for (int i : conf::SensorPostOffsets) {
       int post_index = start_post + i;
-      if (post_index >= 0 && post_index < NUMBER_OF_POSTS) {
+      if (post_index >= 0 && post_index < m_post_count) {
         m_obstacles.push_back(m_post_rectangles[post_index]);
         if (conf::DebugHighlightTestedWalls) {
           setPostColour(post_index, conf::WallHighlightColour);
@@ -453,30 +462,42 @@ class MazeManager {
     return m_obstacles;  //
   }
 
+  sf::Vector2f getCellCentre(int x, int y) {
+    return {(float)x * m_cell_size + m_cell_size / 2.0f + m_wall_thickness / 2.0f, (float)y * m_cell_size + m_cell_size / 2.0f + m_wall_thickness / 2.0f};
+  }
+
   int getCellFromPosition(float x, float y) {
-    int cx = x / (float)CELL_SIZE;
-    int cy = y / (float)CELL_SIZE;
-    return cx * MAZE_WIDTH + cy;
+    int cx = x / (float)m_cell_size;
+    int cy = y / (float)m_cell_size;
+    return cx * m_maze_width + cy;
   }
 
   sf::FloatRect getWallRect(int index) { return m_wall_rectangles[index]; }
 
  private:
-  WallState wallState[NUMBER_OF_WALLS];  // the logical state of the walls in the world maze
-
   // stuff to track edits and changes
   std::string m_maze_data_string;
   bool m_maze_changed = false;
 
-  // these hold the precalculated geometry o the maze
+  // these hold the precalculated geometry of
+  // the maze
+  std::vector<WallState> m_wall_states;  // the logical state of the walls in the world maze
   sf::RectangleShape m_maze_base_rectangle;
-  sf::FloatRect m_wall_rectangles[NUMBER_OF_WALLS];
-  sf::FloatRect m_post_rectangles[NUMBER_OF_POSTS];
+  std::vector<sf::FloatRect> m_wall_rectangles;
+  std::vector<sf::FloatRect> m_post_rectangles;
   sf::VertexArray m_posts_vertex_array;
   sf::VertexArray m_walls_vertex_array;
 
   mutable std::mutex m_mutex_obstacles;    // Protects access when building collision list
   std::vector<sf::FloatRect> m_obstacles;  // the things the robot can see or hit
+
+  int m_maze_width;
+  float m_cell_size;
+  float m_maze_base_size;
+  float m_wall_length;
+  float m_wall_thickness;
+  int m_wall_count;
+  int m_post_count;
 };
 
 #endif  // MAZE_H

@@ -62,6 +62,16 @@ namespace conf {
     -18,    -17,   -16,   -15,
         -34,   -33,    -32
   };
+//#define W (MAZE_WIDTH)
+//  const int SensorWallOffsets[] = {
+//         65,    66,    67,
+//     48,     49,    50,    51,
+//         32,    33,    34,
+//     15,     W,    17,    18,
+//         -1,     0,     1,
+//    -18,    -17,   -16,   -15,
+//        -34,   -33,    -32
+//  };
 
 const int SensorPostOffsets[] = {
   -15,      2,    19,    36,
