@@ -102,10 +102,6 @@ class MazeManager {
     m_walls_vertex_array.resize(m_wall_count * 4);
     m_posts_vertex_array.resize(m_post_count * 4);
 
-    calculateSensorWallOffsets();
-    for (auto& i : m_wall_offsets) {
-      std::cout << i << "  ";
-    }
     std::cout << std::endl;
     createWallGeometry();  //
     createPostGeometry();
@@ -416,51 +412,94 @@ class MazeManager {
     window.draw(m_posts_vertex_array);
   }
 
-  void updateObstacles() {
-    return;
-    //    std::lock_guard<std::mutex> lock(m_mutex_obstacles);
-    //    m_obstacles.clear();
-    //    int c = 40;
-    //    for (auto& wall : m_walls) {
-    //      if (wall.state == WallState::KnownPresent) {
-    //        m_obstacles.push_back(wall.shape);
-    //      }
-    //      if (--c <= 0) {
-    //        return;
-    //      }
-    //    }
+  /// Just add the bottom left post of all the relevant cells
+  void addPostToList(std::vector<int>& list, int x, int y) {
+    if (x < 0 || x > m_maze_width) {
+      return;
+    }
+    if (y < 0 || y > m_maze_width) {
+      return;
+    }
+    int index = x * (m_maze_width + 1) + y;
+    list.push_back(index);
+  }
+
+  void addWallToList(std::vector<int>& list, int x, int y, Direction d) {
+    if (x < 0 && (d == Direction::West || d == Direction::North || d == Direction::South)) {
+      return;
+    }
+    if (x >= m_maze_width && (d == Direction::East || d == Direction::North || d == Direction::South)) {
+      return;
+    }
+    if (y < 0 && (d == Direction::East || d == Direction::South || d == Direction::West)) {
+      return;
+    }
+    if (y >= m_maze_width && (d == Direction::West || d == Direction::North || d == Direction::East)) {
+      return;
+    }
+
+    int index = getWallIndex(x, y, d);
+    if (m_wall_states[index] == WallState::KnownPresent) {
+      list.push_back(index);
+    }
   }
 
   const std::vector<sf::FloatRect>& GetObstacles(float robot_x, float robot_y) {
     m_obstacles.clear();
-    int cell_x = robot_x / m_cell_size;
-    int cell_y = robot_y / m_cell_size;
+    int x = robot_x / m_cell_size;
+    int y = robot_y / m_cell_size;
+
+    int index;
     std::vector<int> walls_seen;
-    int start_wall = getWallIndex(cell_x, cell_y, Direction::South);  // the 'base' wall for this cell
-    for (int i : m_wall_offsets) {
-      int wall_index = start_wall + i;
-      if (wall_index >= 0 && wall_index < m_wall_count) {
-        if (getWallState(wall_index) == WallState::KnownPresent) {
-          m_obstacles.push_back(m_wall_rectangles[wall_index]);
-          walls_seen.push_back(wall_index);
-        }
-      }
-    }
-    if (conf::DebugHighlightTestedWalls) {
-      for (auto i : walls_seen) {
+    addWallToList(walls_seen, x, y, Direction::North);
+    addWallToList(walls_seen, x, y, Direction::East);
+    addWallToList(walls_seen, x, y, Direction::South);
+    addWallToList(walls_seen, x, y, Direction::West);
+    //
+    addWallToList(walls_seen, x - 1, y + 1, Direction::North);
+    addWallToList(walls_seen, x - 1, y + 1, Direction::East);
+    addWallToList(walls_seen, x - 1, y + 1, Direction::South);
+    addWallToList(walls_seen, x - 1, y + 1, Direction::West);
+
+    addWallToList(walls_seen, x - 1, y - 1, Direction::North);
+    addWallToList(walls_seen, x - 1, y - 1, Direction::East);
+    addWallToList(walls_seen, x - 1, y - 1, Direction::South);
+    addWallToList(walls_seen, x - 1, y - 1, Direction::West);
+
+    addWallToList(walls_seen, x + 1, y + 1, Direction::North);
+    addWallToList(walls_seen, x + 1, y + 1, Direction::East);
+    addWallToList(walls_seen, x + 1, y + 1, Direction::South);
+    addWallToList(walls_seen, x + 1, y + 1, Direction::West);
+
+    addWallToList(walls_seen, x + 1, y - 1, Direction::North);
+    addWallToList(walls_seen, x + 1, y - 1, Direction::East);
+    addWallToList(walls_seen, x + 1, y - 1, Direction::South);
+    addWallToList(walls_seen, x + 1, y - 1, Direction::West);
+
+    addWallToList(walls_seen, x, y + 1, Direction::North);
+    addWallToList(walls_seen, x + 1, y, Direction::East);
+    addWallToList(walls_seen, x, y - 1, Direction::South);
+    addWallToList(walls_seen, x - 1, y, Direction::West);
+
+    for (auto i : walls_seen) {
+      m_obstacles.push_back(m_wall_rectangles[i]);
+      if (conf::DebugHighlightTestedWalls) {
         setWallColour(i, conf::WallHighlightColour);
+        setWallColour(i, sf::Color::Green);
       }
     }
 
-    // now the posts
-    int start_post = cell_x * (m_maze_width + 1) + cell_y;
-    for (int i : conf::SensorPostOffsets) {
-      int post_index = start_post + i;
-      if (post_index >= 0 && post_index < m_post_count) {
-        m_obstacles.push_back(m_post_rectangles[post_index]);
-        if (conf::DebugHighlightTestedWalls) {
-          setPostColour(post_index, conf::WallHighlightColour);
-        }
+    std::vector<int> posts_seen;
+    for (int xx = x - 1; xx <= x + 2; xx++) {
+      for (int yy = y - 1; yy <= y + 2; yy++) {
+        addPostToList(posts_seen, xx, yy);
+      }
+    }
+    for (auto& post_index : posts_seen) {
+      m_obstacles.push_back(m_post_rectangles[post_index]);
+      if (conf::DebugHighlightTestedWalls) {
+        setPostColour(post_index, conf::WallHighlightColour);
+        setPostColour(post_index, sf::Color::Green);
       }
     }
 
@@ -478,40 +517,6 @@ class MazeManager {
   }
 
   sf::FloatRect getWallRect(int index) { return m_wall_rectangles[index]; }
-
-  void calculateSensorWallOffsets() {
-    m_wall_offsets.clear();
-
-    // Define relative positions for the neighbors (row, col)
-    // clang-format off
-    const std::vector<std::pair<int, int>> relative_positions = {
-              { 4,  1},         { 4,  2},         { 4,  3},
-
-     { 3,  0},         { 3,  1},         { 3,  2},         { 3,  3},
-
-              { 2,  0},         { 2,  1},         { 2,  2},
-
-     { 1, -1},         { 1,  0},  /**/   { 1,  1},         { 1,  2},
-
-              { 0, -1},         { 0,  0},         { 0,  1},
-
-     {-1, -2},         {-1, -1},         {-1,  0},         {-1,  1},
-
-              {-2, -2},         {-2, -1},         {-2,  0},
-
-};
-
-    // clang-format on
-    // Calculate offsets for each position
-    for (const auto& pos : relative_positions) {
-      int delta_y = pos.first;
-      int delta_x = pos.second;
-
-      // Compute offset
-      int offset = delta_y * m_maze_width + delta_x;
-      m_wall_offsets.push_back(offset);
-    }
-  }
 
  private:
   // stuff to track edits and changes
@@ -538,17 +543,7 @@ class MazeManager {
   int m_wall_count;
   int m_post_count;
 
-  // clang-format off
-  std::vector<int> m_wall_offsets = {
-         65,    66,    67,
-     48,     49,    50,    51,
-         32,    33,    34,
-     15,     16,    17,    18,
-         -1,     0,     1,
-    -18,    -17,   -16,   -15,
-        -34,   -33,    -32
-  };
-// clang_format on
+  // clang_format on
 };
 
 #endif  // MAZE_H
