@@ -444,18 +444,35 @@ class MazeManager {
     }
   }
 
+  /**
+   * The obstacles are all the walls and posts that may be in range of the mouse sensors.
+   *
+   * While this will clearly depend on the nature of the sensors, a simple approach is taken
+   * here whereby the current cell and its immediate 8 neighbours have al their walls and
+   * posts added to the list. This matches typical behaviour in practical robots though
+   * half-size micromouse sensors may have a greater range. In that case, the brute-force
+   * approach will need some modification.
+   *
+   * For testing, the selected items are highlighted
+   *
+   * The returned list is passed to the sensor simulation method and the obstacle list is
+   * normally only used internally by the maze_manager.
+   *
+   * @param robot_x the current cell x coordinate
+   * @param robot_y  the current cel y coordinate
+   * @return  a list of rectangles representing objects in view of the sensors.
+   */
   const std::vector<sf::FloatRect>& GetObstacles(float robot_x, float robot_y) {
     m_obstacles.clear();
     int x = robot_x / m_cell_size;
     int y = robot_y / m_cell_size;
 
-    int index;
     std::vector<int> walls_seen;
     addWallToList(walls_seen, x, y, Direction::North);
     addWallToList(walls_seen, x, y, Direction::East);
     addWallToList(walls_seen, x, y, Direction::South);
     addWallToList(walls_seen, x, y, Direction::West);
-    //
+
     addWallToList(walls_seen, x - 1, y + 1, Direction::North);
     addWallToList(walls_seen, x - 1, y + 1, Direction::East);
     addWallToList(walls_seen, x - 1, y + 1, Direction::South);
