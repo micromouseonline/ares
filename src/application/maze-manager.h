@@ -453,6 +453,10 @@ class MazeManager {
    * half-size micromouse sensors may have a greater range. In that case, the brute-force
    * approach will need some modification.
    *
+   * TODO: rather han worry about special cases to avoid trying to put duplicates in the list
+   *       consider using a std::unordered_set. Just run through all the possible walls and
+   *       let the set take care of duplication.
+   *
    * For testing, the selected items are highlighted
    *
    * The returned list is passed to the sensor simulation method and the obstacle list is
