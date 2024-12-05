@@ -418,11 +418,10 @@ class MazeManager {
   }
 
   const std::vector<sf::FloatRect>& GetObstacles(float robot_x, float robot_y) {
-    std::vector<sf::FloatRect> obstacles;
-    std::vector<int> walls_seen;
     m_obstacles.clear();
     int cell_x = robot_x / CELL_SIZE;
     int cell_y = robot_y / CELL_SIZE;
+    std::vector<int> walls_seen;
     int start_wall = getWallIndex(cell_x, cell_y, Direction::South);  // the 'base' wall for this cell
     for (int i : conf::SensorWallOffsets) {
       int wall_index = start_wall + i;
@@ -444,7 +443,7 @@ class MazeManager {
     for (int i : conf::SensorPostOffsets) {
       int post_index = start_post + i;
       if (post_index >= 0 && post_index < NUMBER_OF_POSTS) {
-        obstacles.push_back(m_post_rectangles[post_index]);
+        m_obstacles.push_back(m_post_rectangles[post_index]);
         if (conf::DebugHighlightTestedWalls) {
           setPostColour(post_index, conf::WallHighlightColour);
         }
