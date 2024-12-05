@@ -246,9 +246,9 @@ class MazeManager {
     for (int y = 0; y <= MAZE_WIDTH; y++) {
       for (int x = 0; x <= MAZE_WIDTH; x++) {
         float ox = (float)x * CELL_SIZE;
-        float oy = (float)y * CELL_SIZE + WALL_THICKNESS;
+        float oy = (float)y * CELL_SIZE;
         int index = x * (MAZE_WIDTH + 1) + y;
-        m_post_rectangles[index] = {{ox, oy}, {WALL_THICKNESS, -WALL_THICKNESS}};
+        m_post_rectangles[index] = {{ox, oy}, {WALL_THICKNESS, WALL_THICKNESS}};
       }
     }
     sf::Color colour = conf::PostColour;
