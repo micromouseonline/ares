@@ -11,6 +11,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <unordered_set>
 #include "common/core.h"
 #include "configuration.h"
 #include "drawing.h"
@@ -443,6 +444,25 @@ class MazeManager {
       list.push_back(index);
     }
   }
+  void addWallToSet(std::unordered_set<int>& list, int x, int y, Direction d) {
+    if (x < 0 && (d == Direction::West || d == Direction::North || d == Direction::South)) {
+      return;
+    }
+    if (x >= m_maze_width && (d == Direction::East || d == Direction::North || d == Direction::South)) {
+      return;
+    }
+    if (y < 0 && (d == Direction::East || d == Direction::South || d == Direction::West)) {
+      return;
+    }
+    if (y >= m_maze_width && (d == Direction::West || d == Direction::North || d == Direction::East)) {
+      return;
+    }
+
+    int index = getWallIndex(x, y, d);
+    if (m_wall_states[index] == WallState::KnownPresent) {
+      list.insert(index);
+    }
+  }
 
   /**
    * The obstacles are all the walls and posts that may be in range of the mouse sensors.
@@ -452,10 +472,6 @@ class MazeManager {
    * posts added to the list. This matches typical behaviour in practical robots though
    * half-size micromouse sensors may have a greater range. In that case, the brute-force
    * approach will need some modification.
-   *
-   * TODO: rather han worry about special cases to avoid trying to put duplicates in the list
-   *       consider using a std::unordered_set. Just run through all the possible walls and
-   *       let the set take care of duplication.
    *
    * For testing, the selected items are highlighted
    *
@@ -467,42 +483,22 @@ class MazeManager {
    * @return  a list of rectangles representing objects in view of the sensors.
    */
   const std::vector<sf::FloatRect>& GetObstacles(float robot_x, float robot_y) {
-    m_obstacles.clear();
     int x = robot_x / m_cell_size;
     int y = robot_y / m_cell_size;
 
-    std::vector<int> walls_seen;
-    addWallToList(walls_seen, x, y, Direction::North);
-    addWallToList(walls_seen, x, y, Direction::East);
-    addWallToList(walls_seen, x, y, Direction::South);
-    addWallToList(walls_seen, x, y, Direction::West);
+    std::unordered_set<int> m_obstacle_set;
+    for (int xx = x - 1; xx <= x + 1; xx++) {
+      for (int yy = y - 1; yy <= y + 1; yy++) {
+        addWallToSet(m_obstacle_set, xx, yy, Direction::North);
+        addWallToSet(m_obstacle_set, xx, yy, Direction::East);
+        addWallToSet(m_obstacle_set, xx, yy, Direction::South);
+        addWallToSet(m_obstacle_set, xx, yy, Direction::West);
+      }
+    };
 
-    addWallToList(walls_seen, x - 1, y + 1, Direction::North);
-    addWallToList(walls_seen, x - 1, y + 1, Direction::East);
-    addWallToList(walls_seen, x - 1, y + 1, Direction::South);
-    addWallToList(walls_seen, x - 1, y + 1, Direction::West);
+    m_obstacles.clear();
 
-    addWallToList(walls_seen, x - 1, y - 1, Direction::North);
-    addWallToList(walls_seen, x - 1, y - 1, Direction::East);
-    addWallToList(walls_seen, x - 1, y - 1, Direction::South);
-    addWallToList(walls_seen, x - 1, y - 1, Direction::West);
-
-    addWallToList(walls_seen, x + 1, y + 1, Direction::North);
-    addWallToList(walls_seen, x + 1, y + 1, Direction::East);
-    addWallToList(walls_seen, x + 1, y + 1, Direction::South);
-    addWallToList(walls_seen, x + 1, y + 1, Direction::West);
-
-    addWallToList(walls_seen, x + 1, y - 1, Direction::North);
-    addWallToList(walls_seen, x + 1, y - 1, Direction::East);
-    addWallToList(walls_seen, x + 1, y - 1, Direction::South);
-    addWallToList(walls_seen, x + 1, y - 1, Direction::West);
-
-    addWallToList(walls_seen, x, y + 1, Direction::North);
-    addWallToList(walls_seen, x + 1, y, Direction::East);
-    addWallToList(walls_seen, x, y - 1, Direction::South);
-    addWallToList(walls_seen, x - 1, y, Direction::West);
-
-    for (auto i : walls_seen) {
+    for (auto i : m_obstacle_set) {
       m_obstacles.push_back(m_wall_rectangles[i]);
       if (conf::DebugHighlightTestedWalls) {
         setWallColour(i, conf::WallHighlightColour);
@@ -511,6 +507,7 @@ class MazeManager {
     }
 
     std::vector<int> posts_seen;
+    /// we just do the bottom left post for all required cells
     for (int xx = x - 1; xx <= x + 2; xx++) {
       for (int yy = y - 1; yy <= y + 2; yy++) {
         addPostToList(posts_seen, xx, yy);
