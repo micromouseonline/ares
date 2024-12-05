@@ -352,8 +352,8 @@ class Application : public IEventObserver {
     m_obstacles = m_maze_manager.GetObstacles(x, y);
     m_robot_body.updateSensors(m_obstacles);
     m_sensor_data.lfs_value = m_robot_body.getSensor(conf::LFS).getPower();
-    m_sensor_data.rds_value = m_robot_body.getSensor(conf::LDS).getPower();
-    m_sensor_data.lds_value = m_robot_body.getSensor(conf::RDS).getPower();
+    m_sensor_data.lds_value = m_robot_body.getSensor(conf::LDS).getPower();
+    m_sensor_data.rds_value = m_robot_body.getSensor(conf::RDS).getPower();
     m_sensor_data.rfs_value = m_robot_body.getSensor(conf::RFS).getPower();
     m_process_time = m_timer.getElapsedTime();
     return m_sensor_data;

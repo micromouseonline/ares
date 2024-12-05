@@ -42,10 +42,10 @@ namespace conf {
   // TODO: Add the body details
   enum WallSensorName { LFS = 0, LDS, RDS, RFS, SENSOR_COUNT };
   const SensorGeometry SensorDefaultOffsets[SENSOR_COUNT] = {
-      {.x = 25, .y = -30, .theta = -10, .halfAngle = 5.0f, .rayCount = 12},
+      {.x = 25, .y = 30, .theta = 10, .halfAngle = 5.0f, .rayCount = 12},
+      {.x = 50, .y = 10, .theta = 60, .halfAngle = 5.0f, .rayCount = 12},
       {.x = 50, .y = -10, .theta = -60, .halfAngle = 5.0f, .rayCount = 12},
-      {.x = 50, .y = +10, .theta = +60, .halfAngle = 5.0f, .rayCount = 12},
-      {.x = 25, .y = 30, .theta = +10, .halfAngle = 5.0f, .rayCount = 12},
+      {.x = 25, .y = -30, .theta = -10, .halfAngle = 5.0f, .rayCount = 12},
   };
   const float SENSOR_MAX_RANGE = 355.0f;
   const uint8_t SENSOR_ALPHA = 128;
