@@ -25,7 +25,7 @@ enum EventType {
  *
  * For example: A mouse event might carry the position of the mouse.
  */
-struct Event {
+struct AppEvent {
   EventType type;
   sf::Event event;
   // And other details as needed.
@@ -44,7 +44,7 @@ struct Event {
 class IEventObserver {
  public:
   virtual ~IEventObserver() = default;
-  virtual void onEvent(const Event& event) = 0;
+  virtual void onEvent(const AppEvent& event) = 0;
 };
 
 #endif  // EVENT_OBSERVER_H

@@ -87,7 +87,7 @@ void Window::update() {
     } else if (event.type == sf::Event::Resized) {
       updateViews();
     } else {
-      Event e = {EventType::SFML_EVENT, event, {}};
+      AppEvent e = {EventType::SFML_EVENT, event, {}};
       notifyObservers(e);
     }
   }
@@ -102,7 +102,7 @@ void Window::addObserver(IEventObserver* observer) {
   m_observers.push_back(observer);
 }
 
-void Window::notifyObservers(const Event& event) {
+void Window::notifyObservers(const AppEvent& event) {
   for (auto& observer : m_observers) {
     observer->onEvent(event);
   }

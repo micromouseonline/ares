@@ -47,17 +47,17 @@ class Button {
     label.setPosition(x - w / 2, y - h / 2 - 5);
   }
 
-  ButtonEvent handleEvent(const sf::Event& event, const sf::RenderWindow& window) {
+  ButtonEvent handleEvent(const sf::AppEvent& event, const sf::RenderWindow& window) {
     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
     bool isHovered = rect.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
 
-    if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left && isHovered) {
+    if (event.type == sf::AppEvent::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left && isHovered) {
       isPressed = true;
       rect.setFillColor(pressedColor);
       return ButtonEvent::Pressed;
     }
 
-    if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+    if (event.type == sf::AppEvent::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
       if (isHovered && isPressed) {
         isPressed = false;
         rect.setFillColor(normalColor);

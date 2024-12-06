@@ -74,7 +74,7 @@ class Window {
 
   void updateViews();
 
-  void notifyObservers(const Event& event);
+  void notifyObservers(const AppEvent& event);
 
   sf::RenderWindow m_window;
   sf::Vector2u m_window_size;

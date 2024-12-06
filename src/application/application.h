@@ -34,17 +34,16 @@ class Application : public IEventObserver {
     m_textbox.addString("Hello World!");
     m_textbox.addString("WASD keys to move robot");
 
-    m_maze_manager.loadFromMemory(japan2007ef, 16);
+    //    m_maze_manager.loadFromMemory(japan2007ef, 16);
     //    m_maze_manager.loadFromMemory(japan2016ef_half, 32);
 
-    //    m_maze_manager.setWallState(3, 3, Direction::East, WallState::KnownPresent);
+    /// Have the window inform us of any events
     m_window.addObserver(this);
-    m_robot_body.setRobot(m_robot);
 
-    //    m_robot.setPosition(0 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f, 0 * CELL_SIZE + (CELL_SIZE + WALL_THICKNESS) / 2.0f);
+    /// set up the robot
+    m_robot_body.setRobot(m_robot);
     sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
     m_robot.setPosition(start_pos.x, start_pos.y);
-
     m_robot.setOrientation(90.0);
     /// The Lambda expression here serves to bind the callback to the application instance
     m_robot.setSensorCallback([this](float x, float y, float theta) -> SensorData { return this->callbackCalculateSensorData(x, y, theta); });
@@ -73,7 +72,7 @@ class Application : public IEventObserver {
    *    }
    */
 
-  void onEvent(const Event& event) override {
+  void onEvent(const AppEvent& event) override {
     switch (event.type) {
       case EventType::SFML_EVENT:
         if (event.event.type == sf::Event::MouseButtonPressed) {
@@ -103,10 +102,10 @@ class Application : public IEventObserver {
         }
         break;
       case EventType::USER_EVENT:
-        m_textbox.addString("USER Event");
+        m_textbox.addString("USER AppEvent");
         break;
       default:
-        m_textbox.addString("UNHANDLED Event");
+        m_textbox.addString("UNHANDLED AppEvent");
         break;
     }
   }
@@ -301,7 +300,7 @@ class Application : public IEventObserver {
     sf::RenderWindow& window = *m_window.getRenderWindow();
     window.setView(m_window.getMazeView());
     // Render the physical maze TODO: think about how to add and distinguish the robot map from the physical maze
-    m_maze_manager.draw(window);
+    m_maze_manager.render(window);
     m_robot_body.draw(window);
     //    drawLidar(window);
     if (conf::DebugHighlightTestedWalls) {
