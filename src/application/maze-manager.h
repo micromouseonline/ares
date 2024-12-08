@@ -65,7 +65,7 @@ class MazeManager {
       : m_posts_vertex_array(sf::Quads),  //
         m_walls_vertex_array(sf::Quads)   //
   {
-    resize(32);
+    resize(16);
 
     //    createWallGeometry();  //
     //    createPostGeometry();

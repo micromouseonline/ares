@@ -14,13 +14,15 @@
 #include "application/window.h"
 #include "common/core.h"
 #include "common/vec2.h"
+#include "imgui-SFML.h"
+#include "imgui.h"
 #include "robot-body.h"
 #include "robot/robot.h"
 #include "robot/sensor-data.h"
 
 class Application : public IEventObserver {
  public:
-  Application() : m_window(conf::AppName, conf::WindowSize), m_elapsed(sf::Time::Zero) {
+  Application() : m_window(std::make_unique<Window>(conf::AppName, conf::WindowSize)), m_elapsed(sf::Time::Zero) {
     m_elapsed = sf::Time::Zero;
 
     m_default_font.loadFromFile("assets/fonts/ubuntu-mono-r.ttf");
@@ -28,6 +30,10 @@ class Application : public IEventObserver {
     m_adhoc_text.setFont(m_default_font);
     m_adhoc_text.setCharacterSize(16);
     m_adhoc_text.setFillColor(sf::Color::Yellow);
+    m_txt_maze_name.setFont(m_default_font);
+    m_txt_maze_name.setCharacterSize(16);
+    m_txt_maze_name.setFillColor(sf::Color::Yellow);
+    m_txt_maze_name.setPosition(10, 973);
 
     /// The UI components are defined in world pixels in the window's default view
     m_textbox.initialise(5, 14, 600, sf::Vector2f(1000, 10));
@@ -38,7 +44,16 @@ class Application : public IEventObserver {
     //    m_maze_manager.loadFromMemory(japan2016ef_half, 32);
 
     /// Have the window inform us of any events
-    m_window.addObserver(this);
+    m_window->addObserver(this);
+
+    if (!ImGui::SFML::Init(*m_window->getRenderWindow())) {
+      std::cerr << "ImGui failed to initialise" << std::endl;
+    }
+
+    for (int i = 0; i < mazeCount; i++) {
+      m_maze_names.push_back(mazeList[i].title);
+    }
+    static int maze_index = 0;
 
     /// set up the robot
     m_robot_body.setRobot(m_robot);
@@ -51,7 +66,9 @@ class Application : public IEventObserver {
   }
 
   ~Application() {
-    m_robot.Stop();  // Ensure the robot thread stops
+    m_robot.Stop();    // Ensure the robot thread stops
+    m_window.reset();  // destroys the widow explicitly so that we can clean up
+    ImGui::SFML::Shutdown();
   }
 
   void run() {
@@ -73,14 +90,15 @@ class Application : public IEventObserver {
    */
 
   void onEvent(const AppEvent& event) override {
+    ImGui::SFML::ProcessEvent(*m_window->getRenderWindow(), event.event);
     switch (event.type) {
       case EventType::SFML_EVENT:
         if (event.event.type == sf::Event::MouseButtonPressed) {
-          sf::RenderWindow* window = m_window.getRenderWindow();
+          sf::RenderWindow* window = m_window->getRenderWindow();
           sf::Vector2i pixelPos(sf::Mouse::getPosition(*window));
           sf::Vector2f mazePos{0, 0};
-          window->setView(m_window.getMazeView());
-          sf::View mazeView = m_window.getMazeView();  // TODO: where should we store the mazeView? In config?
+          window->setView(m_window->getMazeView());
+          sf::View mazeView = m_window->getMazeView();  // TODO: where should we store the mazeView? In config?
           sf::FloatRect mazeBounds = getBoundingRectangle(conf::MazeView);
           if (mazeBounds.contains(float(pixelPos.x), float(pixelPos.y))) {
             mazePos = (window->mapPixelToCoords(pixelPos, mazeView));
@@ -193,7 +211,8 @@ class Application : public IEventObserver {
    * @param deltaTime
    */
   void update(sf::Time deltaTime = sf::seconds(0.01)) {
-    m_window.update();  // call this first to process window events
+    static bool maze_changed = true;
+    m_window->update();  // call this first to process window events
     m_elapsed += deltaTime;
     std::string msg;
     SensorData sensors = m_robot.getSensorData();
@@ -217,6 +236,23 @@ class Application : public IEventObserver {
     }
     if (snapped) {
       msg += "\nSNAPPED";
+    }
+    ImGui::SFML::Update(*m_window->getRenderWindow(), m_frame_clock.restart());
+    ImGui::Begin("ImGui dialog");
+    ImGui::Text("Select the Maze data:");
+    if (ImGui::Combo("Maze", &m_maze_index, m_maze_names.data(), (int)m_maze_names.size())) {
+      maze_changed = true;
+    }
+    ImGui::End();
+    if (maze_changed) {
+      MazeDataSource m = mazeList[m_maze_index];
+      if (m.size == 256) {
+        m_maze_manager.loadFromMemory(m.data, 16);
+      } else {
+        m_maze_manager.loadFromMemory(m.data, 32);
+      }
+      m_txt_maze_name.setString(m.title);
+      maze_changed = false;
     }
 
     m_adhoc_text.setString(msg);
@@ -295,10 +331,10 @@ class Application : public IEventObserver {
 
   void render() {
     /// ALWAYS do this first
-    m_window.beginDraw();
+    m_window->beginDraw();
     // grab the window reference to save typing
-    sf::RenderWindow& window = *m_window.getRenderWindow();
-    window.setView(m_window.getMazeView());
+    sf::RenderWindow& window = *m_window->getRenderWindow();
+    window.setView(m_window->getMazeView());
     // Render the physical maze TODO: think about how to add and distinguish the robot map from the physical maze
     m_maze_manager.render(window);
     m_robot_body.draw(window);
@@ -308,18 +344,21 @@ class Application : public IEventObserver {
       m_maze_manager.resetWallColours();
     }
 
-    window.setView(m_window.getUIView());
+    window.setView(m_window->getUIView());
     // we can draw anything else we want here.
 
     m_adhoc_text.setPosition(1000, 200);
     window.draw(m_adhoc_text);
 
     m_textbox.draw(window);
+    window.draw(m_txt_maze_name);
+
+    ImGui::SFML::Render(*m_window->getRenderWindow());
     /// ALWAYS do this last
-    m_window.endDraw();
+    m_window->endDraw();
   }
 
-  Window* getWindow() { return &m_window; }
+  Window* getWindow() { return m_window.get(); }
 
   sf::Time getElapsed() { return m_elapsed; }
 
@@ -364,11 +403,12 @@ class Application : public IEventObserver {
   }
 
  private:
-  Window m_window;
+  std::unique_ptr<Window> m_window;
   Robot m_robot;  // The robot instance
   RobotBody m_robot_body;
   std::vector<sf::FloatRect> m_obstacles;
-
+  std::vector<const char*> m_maze_names;
+  int m_maze_index = 0;
   SensorData m_sensor_data;  // sensor readings we pass back to the robot
   MazeManager m_maze_manager;
 
@@ -376,10 +416,12 @@ class Application : public IEventObserver {
   sf::Clock m_timer;
   sf::Time m_process_time;
   sf::Time m_elapsed;
+  sf::Clock m_frame_clock;
 
   // use these for adhoc messages, overlays and the like
   sf::Font m_default_font;
   sf::Text m_adhoc_text;
+  sf::Text m_txt_maze_name;
   Textbox m_textbox;
   bool snapped = false;
 };
