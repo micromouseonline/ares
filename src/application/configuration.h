@@ -13,7 +13,7 @@ namespace conf {
 
   // Window configuration
   const std::string AppName = "ARES Simulator for Micromouse";
-  const sf::Vector2u WindowSize = {1900, 990};
+  const sf::Vector2u WindowSize = {1900, 1000};
   const sf::Vector2f WindoSizef = static_cast<sf::Vector2f>(WindowSize);
   const sf::VideoMode VideoMode = {WindowSize.x, WindowSize.y, 32};
   const sf::Color WindowBackGround = sf::Color(16, 16, 16, 255);
