@@ -37,6 +37,7 @@
 #include <cstdint>
 
 MazeDataSource mazeList[] = {
+    {"emptyClassic", emptyMaze, 256},
     {"emptyHalfSize", emptyHalfSize, 1024},
     {"japan2010ef_half", japan2010ef_half, 1024},  // goal 827
     {"japan2011ef_half", japan2011ef_half, 1024},  // goal 827
@@ -57,7 +58,6 @@ MazeDataSource mazeList[] = {
     {"apec1998", apec1998, 256},
     {"apec2012", apec2012, 256},
     {"apec2013", apec2013, 256},
-    {"emptyMaze", emptyMaze, 256},
     {"japan11", japan11, 256},
     {"japan13", japan13, 256},
     {"japan2011ff", japan2011ff, 256},
