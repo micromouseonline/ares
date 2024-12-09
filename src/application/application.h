@@ -251,7 +251,11 @@ class Application : public IEventObserver {
       } else {
         m_maze_manager.loadFromMemory(m.data, 32);
       }
-      m_txt_maze_name.setString(m.title);
+      std::string maze_name = m.title;
+      maze_name += "(";
+      maze_name += std::to_string(m_maze_index);
+      maze_name += ")";
+      m_txt_maze_name.setString(maze_name);
       maze_changed = false;
     }
 
