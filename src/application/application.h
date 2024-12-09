@@ -40,9 +40,7 @@ class Application : public IEventObserver {
     m_textbox.addString("Hello World!");
     m_textbox.addString("WASD keys to move robot");
 
-    //    m_maze_manager.loadFromMemory(japan2007ef, 16);
-    //    m_maze_manager.loadFromMemory(japan2016ef_half, 32);
-
+    m_maze_index = 48;  // Japan2007ef
     /// Have the window inform us of any events
     m_window->addObserver(this);
 
