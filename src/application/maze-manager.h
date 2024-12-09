@@ -150,8 +150,8 @@ class MazeManager {
   bool loadFromMemory(const uint8_t* data, int mazeWidth) {
     resize(mazeWidth);
     initialiseWallStates();
-    for (int y = 0; y < mazeWidth - 1; y++) {
-      for (int x = 0; x < mazeWidth - 1; x++) {
+    for (int y = 0; y < mazeWidth; y++) {
+      for (int x = 0; x < mazeWidth; x++) {
         int index = x * mazeWidth + y;
         int walls = data[index];
         for (int d = 0; d < 4; d++) {
