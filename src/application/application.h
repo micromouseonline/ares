@@ -244,11 +244,8 @@ class Application : public IEventObserver {
     ImGui::End();
     if (maze_changed) {
       MazeDataSource m = mazeList[m_maze_index];
-      if (m.size == 256) {
-        m_maze_manager.loadFromMemory(m.data, 16);
-      } else {
-        m_maze_manager.loadFromMemory(m.data, 32);
-      }
+      m_maze_manager.loadFromMemory(m.data, m.size);
+
       std::string maze_name = m.title;
       maze_name += "(";
       maze_name += std::to_string(m_maze_index);
