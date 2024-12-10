@@ -36,7 +36,7 @@ class Application : public IEventObserver {
     m_txt_maze_name.setPosition(10, 973);
 
     /// The UI components are defined in world pixels in the window's default view
-    m_textbox.initialise(5, 14, 600, sf::Vector2f(1000, 10));
+    m_textbox.initialise(10, 14, 400, sf::Vector2f(1000, 10));
     m_textbox.addString("Hello World!");
     m_textbox.addString("WASD keys to move robot");
 
@@ -51,7 +51,6 @@ class Application : public IEventObserver {
     for (int i = 0; i < mazeCount; i++) {
       m_maze_names.push_back(mazeList[i].title);
     }
-    static int maze_index = 0;
 
     /// set up the robot
     m_robot_body.setRobot(m_robot);
@@ -210,8 +209,11 @@ class Application : public IEventObserver {
    */
   void update(sf::Time deltaTime = sf::seconds(0.01)) {
     static bool maze_changed = true;
+    sf::RenderWindow& window = *m_window->getRenderWindow();
+    // sf::Vector2u window_size = window.getSize();
     m_window->update();  // call this first to process window events
     m_elapsed += deltaTime;
+    ImGui::SFML::Update(*m_window->getRenderWindow(), m_frame_clock.restart());
     std::string msg;
     SensorData sensors = m_robot.getSensorData();
     char str[100];
@@ -235,13 +237,25 @@ class Application : public IEventObserver {
     if (snapped) {
       msg += "\nSNAPPED";
     }
-    ImGui::SFML::Update(*m_window->getRenderWindow(), m_frame_clock.restart());
-    ImGui::Begin("ImGui dialog");
+    ImGui::SetNextWindowSize(ImVec2(450, 190));
+    ImGui::SetNextWindowPos(ImVec2(1440, 10));
+    bool True = true;
+    ImGui::Begin("ImGui dialog", &True, ImGuiWindowFlags_NoResize);
     ImGui::Text("Select the Maze data:");
     if (ImGui::Combo("Maze", &m_maze_index, m_maze_names.data(), (int)m_maze_names.size())) {
       maze_changed = true;
     }
+    if (ImGui::Button("RESET")) {
+      m_robot.setPosition(96, 96);
+      m_robot.setOrientation(90);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("SNAP")) {
+      m_robot.setOrientation(snapToNearest45(m_robot.getOrientation()));
+    }
+    ImGui::Checkbox("Highlight Sensor Region", &m_highlight_sensor_region);
     ImGui::End();
+
     if (maze_changed) {
       MazeDataSource m = mazeList[m_maze_index];
       m_maze_manager.loadFromMemory(m.data, m.size);
@@ -294,14 +308,14 @@ class Application : public IEventObserver {
     WallState s_s = m_maze_manager.getWallState(w_s);
     WallState s_w = m_maze_manager.getWallState(w_w);
     char str[50];
-    sprintf(str, "%5d (%d) %5d (%d) %5d (%d) %5d (%d)\n", w_n, s_n, w_e, s_e, w_s, s_s, w_w, s_w);
+    sprintf(str, "%5d (%d) %5d (%d) %5d (%d) %5d (%d)\n", w_n, (int)s_n, w_e, (int)s_e, w_s, (int)s_s, w_w, (int)s_w);
     return std::string(str);
   }
 
   void drawLidar(sf::RenderTarget& window) {
     float range = conf::SENSOR_MAX_RANGE;
     sf::Vector2f origin = m_robot.getPose();
-    sf::FloatRect wall = m_maze_manager.getWallRect(m_maze_manager.getWallIndex(3, 3, Direction::East));
+    // sf::FloatRect wall = m_maze_manager.getWallRect(m_maze_manager.getWallIndex(3, 3, Direction::East));
     auto pos = m_robot.getPose();
     auto walls = getLocalWallList(pos.x / m_maze_manager.getCellSize(), pos.y / m_maze_manager.getCellSize());
     for (int a = -179; a < 179; a += 1) {
@@ -317,9 +331,9 @@ class Application : public IEventObserver {
           }
         }
       }
-      sf::Vector2f p = origin;
-      sf::Vector2f q = origin + ray * min_d;
+      // sf::Vector2f p = origin;
       //      Drawing::drawLine(window, p, q, sf::Color(255, 255, 255, 32));
+      sf::Vector2f q = origin + ray * min_d;
       Drawing::drawDot(window, q);
     }
   }
@@ -335,13 +349,13 @@ class Application : public IEventObserver {
     sf::RenderWindow& window = *m_window->getRenderWindow();
     window.setView(m_window->getMazeView());
     // Render the physical maze TODO: think about how to add and distinguish the robot map from the physical maze
-    m_maze_manager.render(window);
-    m_robot_body.draw(window);
-    //    drawLidar(window);
-    if (conf::DebugHighlightTestedWalls) {
+    if (!m_highlight_sensor_region) {
       m_maze_manager.resetPostColours();
       m_maze_manager.resetWallColours();
     }
+    m_maze_manager.render(window);
+    m_robot_body.draw(window);
+    //    drawLidar(window);
 
     window.setView(m_window->getUIView());
     // we can draw anything else we want here.
@@ -423,6 +437,8 @@ class Application : public IEventObserver {
   sf::Text m_txt_maze_name;
   Textbox m_textbox;
   bool snapped = false;
+  bool m_highlight_sensor_region = true;
+  ;
 };
 
 #endif  // APPLICATION_H
