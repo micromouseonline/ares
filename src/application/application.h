@@ -47,6 +47,8 @@ class Application : public IEventObserver {
     if (!ImGui::SFML::Init(*m_window->getRenderWindow())) {
       std::cerr << "ImGui failed to initialise" << std::endl;
     }
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.WindowRounding = 5.0f;
 
     for (int i = 0; i < mazeCount; i++) {
       m_maze_names.push_back(mazeList[i].title);
@@ -234,9 +236,7 @@ class Application : public IEventObserver {
     for (auto& wall : wall_list) {
       msg += getWallInfo(wall);
     }
-    if (snapped) {
-      msg += "\nSNAPPED";
-    }
+    /////  IMGUI ////////////////////////////////////////////////////////////////////////////
     ImGui::SetNextWindowSize(ImVec2(450, 190));
     ImGui::SetNextWindowPos(ImVec2(1440, 10));
     bool True = true;
@@ -249,13 +249,15 @@ class Application : public IEventObserver {
       m_robot.setPosition(96, 96);
       m_robot.setOrientation(90);
     }
+
     ImGui::SameLine();
-    if (ImGui::Button("SNAP")) {
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
+    if (ImGui::Button("SNAP TO 45")) {
       m_robot.setOrientation(snapToNearest45(m_robot.getOrientation()));
     }
     ImGui::Checkbox("Highlight Sensor Region", &m_highlight_sensor_region);
     ImGui::End();
-
+    //////////////////////////////////////////////////////////////////////////////////////////
     if (maze_changed) {
       MazeDataSource m = mazeList[m_maze_index];
       m_maze_manager.loadFromMemory(m.data, m.size);
@@ -349,11 +351,16 @@ class Application : public IEventObserver {
     sf::RenderWindow& window = *m_window->getRenderWindow();
     window.setView(m_window->getMazeView());
     // Render the physical maze TODO: think about how to add and distinguish the robot map from the physical maze
+
+    // TODO this is sketchy for the highlight. We can do better.
+    //      by telling the maze manager what to do
     if (!m_highlight_sensor_region) {
       m_maze_manager.resetPostColours();
       m_maze_manager.resetWallColours();
     }
     m_maze_manager.render(window);
+    m_maze_manager.resetPostColours();
+    m_maze_manager.resetWallColours();
     m_robot_body.draw(window);
     //    drawLidar(window);
 
