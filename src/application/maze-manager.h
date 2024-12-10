@@ -442,6 +442,18 @@ class MazeManager {
 
   void render(sf::RenderWindow& window) {
     window.draw(m_maze_base_rectangle);
+    resetPostColours();
+    resetWallColours();
+    if (m_highlight_obstacles) {
+      /// the walls and posts seen can be modified by the robot thread
+      std::lock_guard<std::mutex> lock(m_mutex_obstacles);
+      for (auto& i : m_walls_visible) {
+        setWallColour(i, conf::WallHighlightColour);
+      }
+      for (auto& i : m_posts_visible) {
+        setPostColour(i, conf::WallHighlightColour);
+      }
+    }
     window.draw(m_walls_vertex_array);
     window.draw(m_posts_vertex_array);
   }
@@ -474,38 +486,36 @@ class MazeManager {
     int x = robot_x / m_cell_size;
     int y = robot_y / m_cell_size;
 
-    std::unordered_set<int> m_obstacle_set;
+    m_walls_visible.clear();
     for (int xx = x - 1; xx <= x + 1; xx++) {
       for (int yy = y - 1; yy <= y + 1; yy++) {
-        addWallToSet(m_obstacle_set, xx, yy, Direction::North);
-        addWallToSet(m_obstacle_set, xx, yy, Direction::East);
-        addWallToSet(m_obstacle_set, xx, yy, Direction::South);
-        addWallToSet(m_obstacle_set, xx, yy, Direction::West);
+        addWallToSet(m_walls_visible, xx, yy, Direction::North);
+        addWallToSet(m_walls_visible, xx, yy, Direction::East);
+        addWallToSet(m_walls_visible, xx, yy, Direction::South);
+        addWallToSet(m_walls_visible, xx, yy, Direction::West);
       }
     };
 
     m_obstacles.clear();
 
-    for (auto i : m_obstacle_set) {
+    for (auto i : m_walls_visible) {
       m_obstacles.push_back(m_wall_rectangles[i]);
-      if (conf::DebugHighlightTestedWalls) {
+      if (m_highlight_obstacles) {
         setWallColour(i, conf::WallHighlightColour);
-        setWallColour(i, sf::Color::Green);
       }
     }
 
-    std::vector<int> posts_seen;
+    m_posts_visible.clear();
     /// we just do the bottom left post for all required cells
     for (int xx = x - 1; xx <= x + 2; xx++) {
       for (int yy = y - 1; yy <= y + 2; yy++) {
-        addPostToList(posts_seen, xx, yy);
+        addPostToList(m_posts_visible, xx, yy);
       }
     }
-    for (auto& post_index : posts_seen) {
+    for (auto& post_index : m_posts_visible) {
       m_obstacles.push_back(m_post_rectangles[post_index]);
-      if (conf::DebugHighlightTestedWalls) {
+      if (m_highlight_obstacles) {
         setPostColour(post_index, conf::WallHighlightColour);
-        setPostColour(post_index, sf::Color::Green);
       }
     }
     return m_obstacles;  //
@@ -523,6 +533,10 @@ class MazeManager {
 
   sf::FloatRect getWallRect(int index) {
     return m_wall_rectangles[index];  //
+  }
+
+  void setHighlightObstacles(bool state = false) {
+    m_highlight_obstacles = state;  //
   }
 
  private:
@@ -573,6 +587,9 @@ class MazeManager {
 
   mutable std::mutex m_mutex_obstacles;    // Protects access when building collision list
   std::vector<sf::FloatRect> m_obstacles;  // the things the robot can see or hit
+  /// objects visible to the mouse sensors
+  std::unordered_set<int> m_walls_visible;
+  std::vector<int> m_posts_visible;
 
   int m_maze_width;
   float m_cell_size;
@@ -581,6 +598,7 @@ class MazeManager {
   float m_wall_thickness;
   int m_wall_count;
   int m_post_count;
+  bool m_highlight_obstacles;
 
   // clang_format on
 };

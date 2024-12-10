@@ -258,6 +258,7 @@ class Application : public IEventObserver {
     ImGui::Checkbox("Highlight Sensor Region", &m_highlight_sensor_region);
     ImGui::End();
     //////////////////////////////////////////////////////////////////////////////////////////
+    m_maze_manager.setHighlightObstacles(m_highlight_sensor_region);
     if (maze_changed) {
       MazeDataSource m = mazeList[m_maze_index];
       m_maze_manager.loadFromMemory(m.data, m.size);
@@ -354,13 +355,8 @@ class Application : public IEventObserver {
 
     // TODO this is sketchy for the highlight. We can do better.
     //      by telling the maze manager what to do
-    if (!m_highlight_sensor_region) {
-      m_maze_manager.resetPostColours();
-      m_maze_manager.resetWallColours();
-    }
     m_maze_manager.render(window);
-    m_maze_manager.resetPostColours();
-    m_maze_manager.resetWallColours();
+
     m_robot_body.draw(window);
     //    drawLidar(window);
 
@@ -444,7 +440,7 @@ class Application : public IEventObserver {
   sf::Text m_txt_maze_name;
   Textbox m_textbox;
   bool snapped = false;
-  bool m_highlight_sensor_region = true;
+  bool m_highlight_sensor_region = false;
   ;
 };
 

@@ -6,7 +6,6 @@
 namespace conf {
 
   // Debug flags
-  const bool DebugHighlightTestedWalls = true;
 
   // Maze Dimensions
   const float MazeSize = (16 * 180.0f) + 12.0f;  // 2892.0f;
