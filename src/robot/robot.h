@@ -10,7 +10,6 @@
 #include <iostream>
 #include <mutex>
 #include <thread>
-#include "behaviour/behaviour.h"
 #include "common/core.h"
 #include "robot-state.h"
 #include "sensor-data.h"

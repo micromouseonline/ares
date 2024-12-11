@@ -2,83 +2,121 @@
 // Created by peter on 22/11/24.
 //
 
-#ifndef ROBOT_CONTROL_H
-#define ROBOT_CONTROL_H
+#ifndef BEHAVIOUR_H
+#define BEHAVIOUR_H
 
 /**
  *
- * The RobotControl class is responsible for the behavior of the robot in the
- * environment made available by the RobotDisplay class.
+ * The behaviour class is responsible for the behavior of the physical robot.
  *
- * For a micromouse, this includes path planning, searching, mapping,
+ * It runs in its own thread though not in real time. Instead, it will run as fast
+ * as the PC permits and record its state at regular intervals. These are 1ms at
+ * present.
+ *
+ * This is made possible by calling the robot's systick method once for every
+ * tick in the delay_ms method. The robot is quite dumb and its systick
+ * method just updates the sensors and the motion. At the most basic level
+ * the robot is assumed to behave perfectly so there is not control system
+ * as such. Instead, all motion updates are executed exactly. Sensor updates
+ * are performed by the robot with a callback function provided by the main
+ * application, where the representation of the physical world is held.
+ *
+ * There is no need for the Robot to run in its own thread.
+ *
+ * For testing, we can add a real delay between each call to the robot's systick
+ * method.
+ *
+ *
+ * For a micromouse, Behaviour includes path planning, searching, mapping,
  * and other decision-making behaviors. It can be adapted for other types of robots.
  *
- * The RobotControl class holds an instance of the Robot class and a logical
+ * The Behaviour class holds an instance of the Robot class and a logical
  * representation of the Maze. The physical maze is maintained and updated by
  * the main thread.
  *
- * Synchronization between RobotControl and RobotDisplay is managed using
- * condition variables. RobotControl sets a request flag and calls notify_all().
- * RobotDisplay responds by calculating sensor readings appropriate to the current
- * robot state and updating the Robot instance.
  *
- * Core Features of RobotControl
+ * Core Features of Behaviour
  * Behavioral Logic:
  *    - Implements decision-making algorithms such as path planning, mapping, and navigation.
  *    - Reacts to sensor data (e.g., front distance, wall proximity) for obstacle avoidance or exploration.
  *
- * Synchronization:
- *    - Uses a std::condition_variable to coordinate updates between threads:
- *    - Notifies the RobotDisplay thread to update sensor data.
- *    - Waits for the updated data to proceed with control logic.
- *
  * Robot Interaction:
  *    - Directly interacts with the Robot instance to access pose, velocity, or other state data.
+ *    - the Robot should have virtual LEDs and buttons to emulate user interaction
  *
  * Environment Access:
- *    - Maintains a reference to a Maze object, which represents the logical environment
- *      for pathfinding and navigation.
+ *    - Maintains its own map of the maze based on sensor readings obtained from the Robot
  *
- * mRobot, mMaze and mSensorData are private members of RobotControl accessed
- * through methods that ensure thread safety. RobotControl manages all synchronization
- * between threads.
  *
  */
 
 #include <SFML/Graphics.hpp>
+#include <atomic>
+#include <chrono>
+#include <iostream>
+#include <thread>
+#include <vector>
+#include "robot/robot.h"
 #include "robot/sensor-data.h"
 
 class Behaviour {
  public:
-  Behaviour() : m_velocity(0.0f), m_omega(0.0f), m_center(0.0f, 0.0f), m_radius(0.0f) {};
+  Behaviour(Robot& robot)
+      : m_robot(robot) {
 
-  // Updates the control logic with the current sensor data
-  void update() {};
+          //
+        };
 
-  // Get the current velocities (linear and angular)
-  float getLinearVelocity() const {
-    return m_velocity;  //
-  };
+  ~Behaviour() {
+    end();  //
+  }
 
-  float getAngularVelocity() const {
-    return m_omega;  //
-  };
+  void begin() {
+    if (!m_running) {
+      m_running = true;
+      m_thread = std::thread(&Behaviour::run, this);
+    }
+  }
 
-  // Set a circular trajectory for the robot
-  void setCircularTrajectory(const sf::Vector2f& center, float radius, float angularSpeedDegrees) {
-    m_center = center;
-    m_radius = radius;
-    m_omega = angularSpeedDegrees;  // Store angular speed in degrees per second
-    m_velocity = radius * (m_omega * 3.14159f / 180.0f);
-    // Convert angular speed to radians for calculation
+  void end() {
+    if (m_running) {
+      m_running = false;
+      if (m_thread.joinable()) {
+        m_thread.join();
+      }
+    }
+  }
+
+  void run() {
+    while (m_running) {
+      // do stuff
+      delay_ms(10);
+    }
+  }
+
+  uint32_t getTimeStamp() {
+    return m_timeStamp.load();  //
+  }
+
+  void delay_ms(int ms) {
+    while (ms > 0) {
+      // call robot systick
+      // log state
+      m_timeStamp++;
+      ms--;
+      // do the following if we want real-time data
+      auto interval = std::chrono::milliseconds(1);
+      auto next_time = std::chrono::high_resolution_clock::now() + interval;
+      std::this_thread::sleep_until(next_time);
+    }
+    //
   }
 
  private:
-  // Current control outputs
-  float m_velocity;       // Forward velocity (units per second)
-  float m_omega;          // Angular velocity (radians per second)
-  sf::Vector2f m_center;  // Center of the circular trajectory
-  float m_radius;         // Radius of the circular trajectory
+  Robot& m_robot;
+  std::thread m_thread;
+  std::atomic<bool> m_running;
+  std::atomic<long> m_timeStamp = 0;
 };
 
-#endif  // ROBOT_CONTROL_H
+#endif  // BEHAVIOUR_H

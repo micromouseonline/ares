@@ -16,6 +16,7 @@
 #include "application/robot-wall-sensor.h"
 #include "application/textbox.h"
 #include "application/window.h"
+#include "behaviour/behaviour.h"
 #include "common/core.h"
 #include "common/vec2.h"
 #include "imgui-SFML.h"
@@ -66,6 +67,11 @@ class Application : public IEventObserver {
     /// The Lambda expression here serves to bind the callback to the application instance
     m_robot.setSensorCallback([this](float x, float y, float theta) -> SensorData { return this->callbackCalculateSensorData(x, y, theta); });
     m_robot.Start();
+    Behaviour mouse(m_robot);
+    mouse.begin();
+    sleep(1);
+    mouse.end();
+    std::cout << mouse.getTimeStamp() << std::endl;
   }
 
   ~Application() {
