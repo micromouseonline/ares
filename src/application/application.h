@@ -219,7 +219,10 @@ class Application : public IEventObserver {
     std::string msg;
     SensorData sensors = m_robot.getSensorData();
     char str[100];
-    sprintf(str, "%4d %4d %4d %4d ", (int)sensors.lfs_value, (int)sensors.lds_value, (int)sensors.rds_value, (int)sensors.rfs_value);
+    sprintf(str, "%4d %4d %4d %4d ", (int)sensors.lfs_power, (int)sensors.lds_power, (int)sensors.rds_power, (int)sensors.rfs_power);
+    msg += str;
+    msg += "\n";
+    sprintf(str, "%4d %4d %4d %4d ", (int)sensors.lfs_distance, (int)sensors.lds_distance, (int)sensors.rds_distance, (int)sensors.rfs_distance);
     msg += str;
     msg += "\n";
     msg += "sensor update: " + std::to_string(m_process_time.asMicroseconds()) + " us";
@@ -410,10 +413,15 @@ class Application : public IEventObserver {
     m_robot_body.updateSensorGeometry(x, y, theta);
     m_obstacles = m_maze_manager.GetObstacles(x, y);
     m_robot_body.updateSensors(m_obstacles);
-    m_sensor_data.lfs_value = m_robot_body.getSensor(conf::LFS).getPower();
-    m_sensor_data.lds_value = m_robot_body.getSensor(conf::LDS).getPower();
-    m_sensor_data.rds_value = m_robot_body.getSensor(conf::RDS).getPower();
-    m_sensor_data.rfs_value = m_robot_body.getSensor(conf::RFS).getPower();
+    m_sensor_data.lfs_power = m_robot_body.getSensor(conf::LFS).getPower();
+    m_sensor_data.lds_power = m_robot_body.getSensor(conf::LDS).getPower();
+    m_sensor_data.rds_power = m_robot_body.getSensor(conf::RDS).getPower();
+    m_sensor_data.rfs_power = m_robot_body.getSensor(conf::RFS).getPower();
+
+    m_sensor_data.lfs_distance = m_robot_body.getSensor(conf::LFS).getDistance();
+    m_sensor_data.lds_distance = m_robot_body.getSensor(conf::LDS).getDistance();
+    m_sensor_data.rds_distance = m_robot_body.getSensor(conf::RDS).getDistance();
+    m_sensor_data.rfs_distance = m_robot_body.getSensor(conf::RFS).getDistance();
     m_process_time = m_timer.getElapsedTime();
     return m_sensor_data;
   }

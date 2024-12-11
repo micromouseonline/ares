@@ -77,8 +77,17 @@ class RobotWallSensor {
     return m_geometry;  //
   }
 
+  [[nodiscard]] float getDistance() const {
+    return m_distance;  //
+  }
+
   [[nodiscard]] float getPower() const {
     return m_power;  //
+  }
+
+  float getPowerFromDistance(float distance) {
+    m_power = 1600.0f * expf(-0.025f * distance);  //
+    return m_power;
   }
 
   /***
@@ -116,8 +125,8 @@ class RobotWallSensor {
       /// Accumulate distance and power for averaging
       total_distance += closestHit;
     }
-    float a = total_distance / (float)m_geometry.rayCount;
-    m_power = 1600.0f * expf(-0.025f * a);
+    m_distance = total_distance / (float)m_geometry.rayCount;
+    m_power = getPowerFromDistance(m_distance);
   }
 
   /// The sensor will be drawn as a triangle fan. This is really
@@ -127,63 +136,11 @@ class RobotWallSensor {
   }
 
  private:
-  //  /***
-  //   * This is the meat of the business. A single ray is tested for intersection
-  //   * with an axis-aligned rectangle. Two such tests are needed, one for the far
-  //   * side and one for the near side. We only care about the closest one and we
-  //   * do not know if it is the first one found or the second so we find both
-  //   * and work it out after.
-  //   * TODO: I do not fully understand this function.
-  //   * @param rectangle
-  //   * @param ray_dir - as a normalised vector
-  //   * @return the distance to the closest intersection or the maze range if
-  //   * there is no intersection
-  //   */
-  //  float getDistanceToAlignedRectangle(const sf::FloatRect& rectangle, const sf::Vector2f& ray_dir) {
-  //    sf::FloatRect bounds = rectangle;
-  //    sf::Vector2f rectMin(bounds.left, bounds.top);
-  //    sf::Vector2f rectMax(bounds.left + bounds.width, bounds.top + bounds.height);
-  //
-  //    float tmin = -std::numeric_limits<float>::infinity();
-  //    float tmax = std::numeric_limits<float>::infinity();
-  //
-  //    for (int i = 0; i < 2; ++i) {
-  //      float origin = (i == 0) ? m_origin.x : m_origin.y;
-  //      float dir = (i == 0) ? ray_dir.x : ray_dir.y;
-  //      float min = (i == 0) ? rectMin.x : rectMin.y;
-  //      float max = (i == 0) ? rectMax.x : rectMax.y;
-  //
-  //      if (std::abs(dir) < 1e-6) {  // i.e. straight up/down
-  //        if (origin < min || origin > max) {
-  //          // No intersection
-  //          return m_max_range;
-  //        }
-  //      } else {
-  //        float t1 = (min - origin) / dir;
-  //        float t2 = (max - origin) / dir;
-  //
-  //        if (t1 > t2)
-  //          std::swap(t1, t2);
-  //        tmin = std::max(tmin, t1);
-  //        tmax = std::min(tmax, t2);
-  //
-  //        if (tmin > tmax) {
-  //          // No intersection
-  //          return m_max_range;
-  //        }
-  //      }
-  //    }
-  //    if (tmax < 0) {
-  //      // Intersection behind the ray origin. Are we INSIDE the box?
-  //      return m_max_range;
-  //    }
-  //    return std::min(tmin >= 0 ? tmin : tmax, m_max_range);  // Intersection behind the ray origin
-  //  }
-
   SensorGeometry m_geometry = {.x = 0, .y = 0, .theta = 0, .halfAngle = 5.0f, .rayCount = 16};
   sf::Vector2f m_origin = {0, 0};
   float m_angle;
   float m_max_range;
+  float m_distance;
   float m_power;
 
   sf::VertexArray m_vertices;

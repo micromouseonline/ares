@@ -8,10 +8,14 @@
 #include <mutex>
 
 struct SensorData {
-  float lfs_value = 0;
-  float lds_value = 0;
-  float rds_value = 0;
-  float rfs_value = 0;
+  float lfs_distance = 0;
+  float lds_distance = 0;
+  float rds_distance = 0;
+  float rfs_distance = 0;
+  float lfs_power = 0;
+  float lds_power = 0;
+  float rds_power = 0;
+  float rfs_power = 0;
 };
 
 #include <functional>
