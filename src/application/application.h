@@ -7,6 +7,10 @@
 
 #include <SFML/Graphics.hpp>
 #include <cstdlib>
+
+#include <iomanip>
+#include <iostream>
+#include <sstream>
 #include "application/event_observer.h"
 #include "application/maze-manager.h"
 #include "application/robot-wall-sensor.h"
@@ -195,6 +199,28 @@ class Application : public IEventObserver {
     m_robot.setOmega(w);
   }
 
+  std::string formatSensorData(int lfs, int lds, int rds, int rfs) {
+    std::stringstream ss;
+    ss << std::setw(5) << lfs << " "    //
+       << std::setw(5) << lds << " "    //
+       << std::setw(5) << rds << " "    //
+       << std::setw(5) << rfs << "\n";  //
+    return ss.str();
+  }
+  std::string formatRobotState() {
+    std::stringstream ss;
+    sf::Vector2f pos = m_robot.getPose();
+    int cell = m_maze_manager.getCellFromPosition(pos.x, pos.y);
+    int cell_x = int(pos.x / m_maze_manager.getCellSize());
+    int cell_y = int(pos.y / m_maze_manager.getCellSize());
+    ss << "Robot:  X: " << (int)pos.x << "\n"                                                           //
+       << "        y: " << (int)pos.y << "\n"                                                           //
+       << "    theta: " << std::fixed << std::setprecision(1) << m_robot.getOrientation() << " deg \n"  //
+       << "\n"                                                                                          //
+       << " Cell:  [" << cell_x << ", " << cell_y << "] = " << cell << "\n";                            //
+    return ss.str();
+  }
+
   /***
    * This is where the work gets done. All the application logic and behaviour
    * is performed from this method. By passing in a deltaTime we can choose to
@@ -216,29 +242,16 @@ class Application : public IEventObserver {
     m_window->update();  // call this first to process window events
     m_elapsed += deltaTime;
     ImGui::SFML::Update(*m_window->getRenderWindow(), m_frame_clock.restart());
-    std::string msg;
+    std::stringstream ss;
     SensorData sensors = m_robot.getSensorData();
-    char str[100];
-    sprintf(str, "%4d %4d %4d %4d ", (int)sensors.lfs_power, (int)sensors.lds_power, (int)sensors.rds_power, (int)sensors.rfs_power);
-    msg += str;
-    msg += "\n";
-    sprintf(str, "%4d %4d %4d %4d ", (int)sensors.lfs_distance, (int)sensors.lds_distance, (int)sensors.rds_distance, (int)sensors.rfs_distance);
-    msg += str;
-    msg += "\n";
-    msg += "sensor update: " + std::to_string(m_process_time.asMicroseconds()) + " us";
-    msg += "\n";
-    float angle = m_robot.getOrientation();
-    sf::Vector2f pos = m_robot.getPose();
-    int cell = m_maze_manager.getCellFromPosition(pos.x, pos.y);
-    int cell_x = int(pos.x / m_maze_manager.getCellSize());
-    int cell_y = int(pos.y / m_maze_manager.getCellSize());
-    sprintf(str, "Robot: (%4d,%4d) %4d  cell:%3d = %2d,%2d\n", (int)pos.x, (int)pos.y, (int)angle, cell, cell_x, cell_y);
-    msg += str;
+    ss << "power:  " + formatSensorData((int)sensors.lfs_power, (int)sensors.lds_power, (int)sensors.rds_power, (int)sensors.rfs_power);
+    ss << " Dist:  " + formatSensorData((int)sensors.lfs_distance, (int)sensors.lds_distance, (int)sensors.rds_distance, (int)sensors.rfs_distance);
+    ss << "\n";
+    ss << formatRobotState();
+    ss << "\n";
+    ss << "sensor update time : " << std::setw(3) << std::to_string(m_process_time.asMicroseconds()) << " us\n";
+    m_adhoc_text.setString(ss.str());
 
-    std::vector<int> wall_list = getLocalWallList(cell_x, cell_y);
-    for (auto& wall : wall_list) {
-      msg += getWallInfo(wall);
-    }
     /////  IMGUI ////////////////////////////////////////////////////////////////////////////
     ImGui::SetNextWindowSize(ImVec2(450, 190));
     ImGui::SetNextWindowPos(ImVec2(1440, 10));
@@ -273,8 +286,6 @@ class Application : public IEventObserver {
       m_txt_maze_name.setString(maze_name);
       maze_changed = false;
     }
-
-    m_adhoc_text.setString(msg);
   }
 
   std::string getWallInfo(int index) {
