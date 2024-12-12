@@ -52,9 +52,13 @@
 
 #include <SFML/Graphics.hpp>
 #include <atomic>
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <chrono>
-#include <iostream>
 #include <thread>
+#endif
+#include <iostream>
 #include <vector>
 #include "robot/robot.h"
 #include "robot/sensor-data.h"
@@ -71,7 +75,9 @@ class Behaviour {
     stop();  //
   }
 
-  void setRobot(Robot& robot) { m_robot = &robot; }
+  void setRobot(Robot& robot) {
+    m_robot = &robot;  //
+  }
 
   void start() {
     if (!m_running) {
@@ -92,7 +98,7 @@ class Behaviour {
   void run() {
     while (m_running) {
       // do stuff
-      delay_ms(10);
+      timedDelay(10);
     }
   }
 
@@ -100,26 +106,81 @@ class Behaviour {
     return m_timeStamp.load();  //
   }
 
-  /// TODO: Direct keyboard drive need to run in real time
+  /***
+   * delay_ms must be used in any busy-wait loops required by the Behaviour code.
+   * For example, if you are waiting for a sensor value to drop below a threshold,
+   * then use code like:
+   *    while (sensorValue > threshold) {
+   *      delay_ms(1);
+   *    }
+   *
+   * delay_ms calls the robot's systick method once per iteration. That is how
+   * the robot motion processing gets updated and the sensors get read. If the
+   * robot systick is not called it will be unresponsive.
+   */
   void delay_ms(int ms) {
+    if (m_realTime) {
+      timedDelay(ms);
+    } else {
+      fastDelay(ms);
+    }
+  }
+
+  void doTick() {
+    if (m_robot) {
+      m_robot->systick();
+    }
+
+    m_timeStamp++;
+  }
+
+  /***
+   * This version of delay_ms will attempt to run in real-time. That is. there will
+   * be around 1ms between iterations. Use this when driving around with the keyboard
+   * or when you want to simulate in real time for a demonstration.
+   *
+   * Windows and Linux do timing delays differently so if we want a timed delay
+   * we need to use a different technique for each
+   */
+  void timedDelay(int ms) {
+#ifdef _WIN32
+    LARGE_INTEGER frequency, start, end;
+    QueryPerformanceFrequency(&frequency);
+    QueryPerformanceCounter(&start);
     while (ms > 0) {
-      if (m_robot) {
-        m_robot->systick();
-      }
-      // call robot systick
-      // log state
-      m_timeStamp++;
+      doTick();
       ms--;
-      // do the following if we want real-time data
-      auto interval = std::chrono::microseconds(1000);
-      auto next_time = std::chrono::high_resolution_clock::now() + interval;
+      do {
+        QueryPerformanceCounter(&end);
+      } while (end.QuadPart - start.QuadPart < frequency.QuadPart / 1000);
+      start = end;
+    }
+#else
+    const auto interval = std::chrono::milliseconds(1);
+    while (ms > 0) {
+      doTick();
+      ms--;
+      auto next_time = std::chrono::steady_clock::now() + interval;
       std::this_thread::sleep_until(next_time);
     }
-    //
+#endif
+  }
+
+  /***
+   * This is the full-speed version of delay_ms. It will run as fast as the PC
+   * permits. That turns out to be VERY fast so take care not to overdo it. Any
+   * motion will send the robot off the screen before you can lok up from the
+   * keyboard.
+   */
+  void fastDelay(int ms) {
+    for (int i = 0; i < ms; i++) {
+      doTick();
+    }
   }
 
  private:
   Robot* m_robot = nullptr;
+  bool m_realTime = false;
   std::thread m_thread;
   std::atomic<bool> m_running;
   std::atomic<long> m_timeStamp = 0;
