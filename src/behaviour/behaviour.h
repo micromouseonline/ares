@@ -68,17 +68,17 @@ class Behaviour {
         };
 
   ~Behaviour() {
-    end();  //
+    stop();  //
   }
 
-  void begin() {
+  void start() {
     if (!m_running) {
       m_running = true;
       m_thread = std::thread(&Behaviour::run, this);
     }
   }
 
-  void end() {
+  void stop() {
     if (m_running) {
       m_running = false;
       if (m_thread.joinable()) {

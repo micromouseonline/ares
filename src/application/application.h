@@ -68,9 +68,9 @@ class Application : public IEventObserver {
     m_robot.setSensorCallback([this](float x, float y, float theta) -> SensorData { return this->callbackCalculateSensorData(x, y, theta); });
     m_robot.Start();
     Behaviour mouse(m_robot);
-    mouse.begin();
+    mouse.start();
     sleep(1);
-    mouse.end();
+    mouse.stop();
     std::cout << mouse.getTimeStamp() << std::endl;
   }
 
