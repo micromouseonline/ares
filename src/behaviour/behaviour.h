@@ -100,6 +100,7 @@ class Behaviour {
     return m_timeStamp.load();  //
   }
 
+  /// TODO: Direct keyboard drive need to run in real time
   void delay_ms(int ms) {
     while (ms > 0) {
       if (m_robot) {
@@ -110,7 +111,7 @@ class Behaviour {
       m_timeStamp++;
       ms--;
       // do the following if we want real-time data
-      auto interval = std::chrono::milliseconds(1);
+      auto interval = std::chrono::microseconds(1000);
       auto next_time = std::chrono::high_resolution_clock::now() + interval;
       std::this_thread::sleep_until(next_time);
     }

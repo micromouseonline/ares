@@ -66,7 +66,6 @@ class Application : public IEventObserver {
     m_robot.setOrientation(90.0);
     /// The Lambda expression here serves to bind the callback to the application instance
     m_robot.setSensorCallback([this](float x, float y, float theta) -> SensorData { return this->callbackCalculateSensorData(x, y, theta); });
-    //    m_robot.Start();
     m_mouse.setRobot(m_robot);
     m_mouse.start();
   }
