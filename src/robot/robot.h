@@ -10,40 +10,10 @@
 #include <cmath>
 #include <iostream>
 #include <mutex>
-#include <thread>
 #include "common/core.h"
+#include "profile.h"
 #include "robot-state.h"
 #include "sensor-data.h"
-
-/***
- * TODO Not sure this is the best place for this macro
- *
- * the macro looks odd because it uses a C++17 feature where
- * the if statement condition can include an initialiser.
- * This feature allows you to initialize variables within the
- * if statement, followed by a condition that determines if
- * the block should be executed. It's a neat way to declare
- * and initialise variables that are only used within the
- * scope of the if statement. Use it like this:
- *
- * if (initialiser; condition){
- *   // code that will run if condition is true
- * }
- *
- * The scope of any variables declared in the initializer
- * of an if statement is limited to the entire if block,
- * including both the condition and the code within the
- * braces {} of the if statement.
- *
- * Use the macro like this
- *
- * CRITICAL_SECTION(m_systick_mutex){
- *   // guarded code
- * }
- *
- */
-
-#define CRITICAL_SECTION(the_mutex) if (std::lock_guard<std::mutex> lock(the_mutex); true)
 
 /***
  * The Robot class models the physical robot. It is just the vehicle that moves around the screen.
@@ -79,7 +49,6 @@ class Robot {
     }
   }
 
-  // Stops the robot's thread
   void Stop() {
     if (m_running) {
       m_running = false;
@@ -165,7 +134,7 @@ class Robot {
   uint32_t getTicks() const {
     return m_ticks;  //
   }
-  void setTicks(uint32_t mTicks) {
+  void setTickCount(uint32_t mTicks) {
     m_ticks = mTicks;  //
   }
 
@@ -182,7 +151,7 @@ class Robot {
   }
 
   void setVMax(float mVMax) {
-    m_vMax = mVMax;  //
+    m_vMax = fabsf(mVMax);  //
   }
 
   float getOmegaMax() const {
@@ -190,12 +159,35 @@ class Robot {
   }
 
   void setOmegaMax(float mOmegaMax) {
-    m_omegaMax = mOmegaMax;  //
+    m_omegaMax = fabsf(mOmegaMax);  //
   }
 
   uint32_t millis() {
     std::lock_guard<std::mutex> lock(m_robot_mutex);
     return m_ticks;
+  }
+
+  void startMove(float distance, float v_max, float v_end, float accel) {
+    CRITICAL_SECTION(m_robot_mutex) {
+      m_fwdProfile.start(distance, v_max, v_end, accel);
+    }
+  }
+
+  bool moveFinished() {
+    CRITICAL_SECTION(m_robot_mutex) {
+      return m_fwdProfile.is_finished();
+    }
+  }
+  void startTurn(float angle, float omega_Max, float omega_end, float alpha) {
+    CRITICAL_SECTION(m_robot_mutex) {
+      m_rotProfile.start(angle, omega_Max, omega_end, alpha);
+    }
+  }
+
+  bool turnFinished() {
+    CRITICAL_SECTION(m_robot_mutex) {
+      return m_rotProfile.is_finished();
+    }
   }
 
   /***
@@ -222,17 +214,22 @@ class Robot {
       if (m_sensor_callback) {
         m_sensor_data = m_sensor_callback(m_state.x, m_state.y, m_state.theta);
       }
-      // update the speeds
-      m_state.v += m_state.accel * deltaTime;
-      m_state.omega += m_state.alpha * deltaTime;
 
-      // limit them
+      // run the profilers
+      m_fwdProfile.update(deltaTime);
+      m_rotProfile.update(deltaTime);
+      m_state.v = m_fwdProfile.speed();
+      m_state.omega = m_rotProfile.speed();
+
+      // update the speeds
       m_state.v = std::clamp(m_state.v, -m_vMax, m_vMax);
       m_state.omega = std::clamp(m_state.omega, -m_omegaMax, +m_omegaMax);
 
       // accumulate distances
-      m_state.distance += m_state.v * deltaTime;
-      m_state.offset += m_state.v * deltaTime;
+      float deltaDistance = m_state.v * deltaTime;
+      m_profileDistance += deltaDistance;
+      m_state.distance += deltaDistance;
+      m_state.offset += deltaDistance;
 
       // wrap the angle
       m_state.theta += m_state.omega * deltaTime;
@@ -241,7 +238,7 @@ class Robot {
       } else if (m_state.theta < 0.0f) {
         m_state.theta += 360.0f;
       }
-      
+
       // calculate new location
       m_state.x += m_state.v * std::cos(m_state.theta * RADIANS) * deltaTime;
       m_state.y += m_state.v * std::sin(m_state.theta * RADIANS) * deltaTime;
@@ -250,13 +247,27 @@ class Robot {
 
  private:
   uint32_t m_ticks;
-  std::atomic<bool> m_running;  // Thread control flag
+  std::atomic<bool> m_running;
   SensorDataCallback m_sensor_callback = nullptr;
   mutable std::mutex m_robot_mutex;  // Protects access to m_pose and m_orientation
   SensorData m_sensor_data;          // Current sensor readings
   RobotState m_state;
+  // profile values
+  float m_targetDistance = 0.0f;
+  float m_maxVelocity = 0.0f;
+  float m_targetVelocity = 0.0;
+  float m_acceleration = 0.0f;
+  float m_profileDistance = 0.0f;
+  bool m_moving = false;
+
+  float accelPhaseDistance = 0.0f;
+  float decelPhaseDistance = 0.0f;
+  float cruiseDistance = 0.0f;
+
   float m_vMax = 5000.0f;
   float m_omegaMax = 4000.0f;
+  Profile m_fwdProfile;
+  Profile m_rotProfile;
 };
 
 #endif  // ROBOT_H

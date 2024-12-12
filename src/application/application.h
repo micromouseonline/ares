@@ -275,6 +275,9 @@ class Application : public IEventObserver {
       m_robot.setPosition(96, 96);
       m_robot.setOrientation(90);
     }
+    if (ImGui::Button("MOVE")) {
+      m_mouse.makeMove();
+    }
 
     ImGui::SameLine();
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
