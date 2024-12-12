@@ -123,7 +123,7 @@ class Behaviour {
     Timer timer;
     while (ms > 0) {
       if (m_robot) {
-        m_robot->systick();
+        m_robot->systick(m_step_time);
       }
       m_timeStamp++;
       ms--;
@@ -134,6 +134,7 @@ class Behaviour {
  private:
   Robot* m_robot = nullptr;
   bool m_realTime = true;
+  float m_step_time = 0.001;
   std::thread m_thread;
   std::atomic<bool> m_running;
   std::atomic<long> m_timeStamp = 0;

@@ -71,8 +71,6 @@ class Robot {
 
   ~Robot() { Stop(); }
 
-  /***
-   */
   void Start() {
     if (!m_running) {
       m_ticks = 0;
@@ -86,46 +84,47 @@ class Robot {
       m_running = false;
     }
   }
+  void Resume() { m_running = true; }
 
   ////// Accessors
   sf::Vector2f getPose() const {
-    std::lock_guard<std::mutex> lock(m_systick_mutex);
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
     return sf::Vector2f(m_state.x, m_state.y);
   }
 
   RobotState getState() const {
-    std::lock_guard<std::mutex> lock(m_systick_mutex);
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
     return m_state;
   }
 
   RobotState setState() const {
-    std::lock_guard<std::mutex> lock(m_systick_mutex);
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
     return m_state;
   }
 
   float getOrientation() const {
-    std::lock_guard<std::mutex> lock(m_systick_mutex);
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
     return m_state.theta;
   }
 
   void setPosition(float x, float y) {
-    std::lock_guard<std::mutex> lock(m_systick_mutex);
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
     m_state.x = x;
     m_state.y = y;
   }
 
   void setOrientation(float theta) {
-    std::lock_guard<std::mutex> lock(m_systick_mutex);
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
     m_state.theta = theta;  //
   }
 
   void setVelocity(float velocity) {
-    std::lock_guard<std::mutex> lock(m_systick_mutex);
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
     m_state.v = velocity;  //
   }
 
   void setOmega(float omega) {
-    std::lock_guard<std::mutex> lock(m_systick_mutex);
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
     m_state.omega = omega;  //
   }
 
@@ -135,77 +134,56 @@ class Robot {
   }
 
   SensorData& getSensorData() {
-    std::lock_guard<std::mutex> lock(m_systick_mutex);
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
     return m_sensor_data;
   }
 
   /***
-   * The systick() method runs in its own thread, with the loop running at, in
-   * this case, about 1kHz. The systick() method simulates an interrupt triggered
-   * by a timer on the hardware.
+   * The systick() method simulates an interrupt triggered by a timer on the hardware.
    *
-   * In the real hardware, operations during the Interrupt Service Routine (ISR) are
-   * mutually exclusive with the main code. This would not normally be the case here,
-   * so everything that happens in systick() is guarded with a mutex. This ensures
-   * the code in systick() can run and modify state as needed, while the top-level
-   * robot code will block as soon as it tries to access any of the resources guarded
-   * by the mutex, thus simulating the behavior of the hardware interrupt.
+   * This ISR normally handles all the IO, sensors, control systems and motion
+   * processing on the physical robot.  The Systick normally runs at 1kHz on many
+   * robots and so is also responsible for monitoring the passage of time, keeping
+   * the main code synchronised with the hardware.
+   * With the Behaviour separated out from the robot we can simply call the systick
+   * ISR from the behaviour whenever we want the Robot to advance by one tick.
    *
-   * If the top-level code needs to guarantee that systick() will not change any
-   * shared state, it can also lock the same mutex for the duration of a critical
-   * section. If the mutex is already locked, the top-level code will block until
-   * systick() has finished that iteration. Then the top-level code will acquire the
-   * mutex and block systick() until it is released.
-   *
-   * Care must be taken to ensure that these mutually cooperative functions do
-   * not end up in a deadlock.
+   * Behaviour runs in a separate thread to the main application so, by extension,
+   * does the Robot code. That means that Behaviour is free to interact with the
+   * Robot without restraint, any calls from the Application to either Robot or
+   * Behaviour must be guarded by a mutex or atomic variables.
    */
 
-  void systick() {
+  void systick(float deltaTime) {
     // The mutex will lock out the main thread while this block runs.
-    CRITICAL_SECTION(m_systick_mutex) {
+    CRITICAL_SECTION(m_robot_mutex) {
       m_ticks++;
       if (m_sensor_callback) {
         m_sensor_data = m_sensor_callback(m_state.x, m_state.y, m_state.theta);
       }
       // updateMotionControllers();
-      m_state.theta += m_state.omega * m_loop_time;
+      m_state.theta += m_state.omega * deltaTime;
       if (m_state.theta >= 360.0f) {
         m_state.theta -= 360.0f;
       } else if (m_state.theta < 0.0f) {
         m_state.theta += 360.0f;
       }
-      m_state.x += m_state.v * std::cos(m_state.theta * RADIANS) * m_loop_time;
-      m_state.y += m_state.v * std::sin(m_state.theta * RADIANS) * m_loop_time;
+      m_state.x += m_state.v * std::cos(m_state.theta * RADIANS) * deltaTime;
+      m_state.y += m_state.v * std::sin(m_state.theta * RADIANS) * deltaTime;
     }
   }
 
   uint32_t millis() {
-    std::lock_guard<std::mutex> lock(m_systick_mutex);
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
     return m_ticks;
   }
 
  private:
-  //  /***
-  //   * The run() method is what gets called from the thread initialisation
-  //   * It should run continuously when started. An atomic flag, m_running,
-  //   * is used so that the parent thread can signal an orderly termination.
-  //   */
-  //  void Run() {
-  //    while (m_running) {
-  //      std::this_thread::sleep_for(std::chrono::milliseconds(10));  // 100 Hz loop
-  //    }
-  //  }
-
   uint32_t m_ticks;
-  std::thread m_systick_thread;
-  std::thread m_thread;
   std::atomic<bool> m_running;  // Thread control flag
-  float m_loop_time = 0.001f;
-
   SensorDataCallback m_sensor_callback = nullptr;
-  mutable std::mutex m_systick_mutex;  // Protects access to m_pose and m_orientation
-  SensorData m_sensor_data;            // Current sensor readings
+  mutable std::mutex m_robot_mutex;  // Protects access to m_pose and m_orientation
+  SensorData m_sensor_data;          // Current sensor readings
   RobotState m_state;
 };
 
