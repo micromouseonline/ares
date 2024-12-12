@@ -60,6 +60,7 @@
 #endif
 #include <iostream>
 #include <vector>
+#include "common/timer.h"
 #include "robot/robot.h"
 #include "robot/sensor-data.h"
 
@@ -98,7 +99,7 @@ class Behaviour {
   void run() {
     while (m_running) {
       // do stuff
-      timedDelay(10);
+      delay_ms(10);
     }
   }
 
@@ -119,68 +120,20 @@ class Behaviour {
    * robot systick is not called it will be unresponsive.
    */
   void delay_ms(int ms) {
-    if (m_realTime) {
-      timedDelay(ms);
-    } else {
-      fastDelay(ms);
-    }
-  }
-
-  void doTick() {
-    if (m_robot) {
-      m_robot->systick();
-    }
-
-    m_timeStamp++;
-  }
-
-  /***
-   * This version of delay_ms will attempt to run in real-time. That is. there will
-   * be around 1ms between iterations. Use this when driving around with the keyboard
-   * or when you want to simulate in real time for a demonstration.
-   *
-   * Windows and Linux do timing delays differently so if we want a timed delay
-   * we need to use a different technique for each
-   */
-  void timedDelay(int ms) {
-#ifdef _WIN32
-    LARGE_INTEGER frequency, start, end;
-    QueryPerformanceFrequency(&frequency);
-    QueryPerformanceCounter(&start);
+    Timer timer;
     while (ms > 0) {
-      doTick();
+      if (m_robot) {
+        m_robot->systick();
+      }
+      m_timeStamp++;
       ms--;
-      do {
-        QueryPerformanceCounter(&end);
-      } while (end.QuadPart - start.QuadPart < frequency.QuadPart / 1000);
-      start = end;
-    }
-#else
-    const auto interval = std::chrono::milliseconds(1);
-    while (ms > 0) {
-      doTick();
-      ms--;
-      auto next_time = std::chrono::steady_clock::now() + interval;
-      std::this_thread::sleep_until(next_time);
-    }
-#endif
-  }
-
-  /***
-   * This is the full-speed version of delay_ms. It will run as fast as the PC
-   * permits. That turns out to be VERY fast so take care not to overdo it. Any
-   * motion will send the robot off the screen before you can lok up from the
-   * keyboard.
-   */
-  void fastDelay(int ms) {
-    for (int i = 0; i < ms; i++) {
-      doTick();
+      timer.wait_us(1000);
     }
   }
 
  private:
   Robot* m_robot = nullptr;
-  bool m_realTime = false;
+  bool m_realTime = true;
   std::thread m_thread;
   std::atomic<bool> m_running;
   std::atomic<long> m_timeStamp = 0;
