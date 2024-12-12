@@ -170,13 +170,15 @@ class Application : public IEventObserver {
     }
     float v = 0;
     float w = 0;
-
+    float accel = 0;
+    float alpha = 0;
     if (!snapped && sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::RControl)) {
         m_robot.setOrientation(snapToHigher45(m_robot.getOrientation() + 1));
         snapped = true;
       } else {
         w = 90;
+        alpha = +500;
       }
     }
     if (!snapped && sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
@@ -185,20 +187,25 @@ class Application : public IEventObserver {
         snapped = true;
       } else {
         w = -90;
+        alpha = -500;
       }
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
       v = 540;
+      accel = 1000.0f;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
       v = -540;
+      accel = -1000.0f;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::RShift)) {
       w = w / 10.0f;
       v = v / 10.0f;
     }
-    m_robot.setVelocity(v);
-    m_robot.setOmega(w);
+    //    m_robot.setVelocity(v);
+    //    m_robot.setOmega(w);
+    m_robot.setAlpha(alpha);
+    m_robot.setAccel(accel);
   }
 
   std::string formatSensorData(int lfs, int lds, int rds, int rfs) {
@@ -264,6 +271,7 @@ class Application : public IEventObserver {
       maze_changed = true;
     }
     if (ImGui::Button("RESET")) {
+      m_robot.resetState();
       m_robot.setPosition(96, 96);
       m_robot.setOrientation(90);
     }

@@ -20,8 +20,21 @@ struct RobotState {
   float v;
   float theta;
   float omega;
+  float accel;
+  float alpha;
+  float distance;
+  float offset;
 
-  RobotState() : x(0.0f), y(0.0f), v(0.0f), theta(0.0f), omega(0.0f) {
+  RobotState()
+      : x(0.0f),
+        y(0.0f),
+        v(0.0f),  //
+        theta(0.0f),
+        omega(0.0f),  //
+        accel(0.0f),
+        alpha(0.0f),  //
+        distance(0.0f),
+        offset(0.0f) {
     //
   }
 };

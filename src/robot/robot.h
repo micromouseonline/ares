@@ -6,6 +6,7 @@
 #define ROBOT_H
 
 #include <SFML/Graphics.hpp>
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <mutex>
@@ -84,7 +85,10 @@ class Robot {
       m_running = false;
     }
   }
-  void Resume() { m_running = true; }
+
+  void Resume() {
+    m_running = true;  //
+  }
 
   ////// Accessors
   sf::Vector2f getPose() const {
@@ -97,14 +101,24 @@ class Robot {
     return m_state;
   }
 
-  RobotState setState() const {
+  void setState(RobotState state) {
     std::lock_guard<std::mutex> lock(m_robot_mutex);
-    return m_state;
+    m_state = state;
+  }
+
+  void resetState() {
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    m_state = RobotState();
   }
 
   float getOrientation() const {
     std::lock_guard<std::mutex> lock(m_robot_mutex);
     return m_state.theta;
+  }
+
+  float getDistance() const {
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    return m_state.distance;
   }
 
   void setPosition(float x, float y) {
@@ -128,6 +142,16 @@ class Robot {
     m_state.omega = omega;  //
   }
 
+  void setAccel(float accel) {
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    m_state.accel = accel;  //
+  }
+
+  void setAlpha(float alpha) {
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    m_state.alpha = alpha;  //
+  }
+
   ///////////// Sensors
   void setSensorCallback(SensorDataCallback callback) {
     m_sensor_callback = callback;  //
@@ -136,6 +160,42 @@ class Robot {
   SensorData& getSensorData() {
     std::lock_guard<std::mutex> lock(m_robot_mutex);
     return m_sensor_data;
+  }
+
+  uint32_t getTicks() const {
+    return m_ticks;  //
+  }
+  void setTicks(uint32_t mTicks) {
+    m_ticks = mTicks;  //
+  }
+
+  const std::atomic<bool>& getRunning() const {
+    return m_running;  //
+  }
+
+  void setSensorData(const SensorData& mSensorData) {
+    m_sensor_data = mSensorData;  //
+  }
+
+  float getVMax() const {
+    return m_vMax;  //
+  }
+
+  void setVMax(float mVMax) {
+    m_vMax = mVMax;  //
+  }
+
+  float getOmegaMax() const {
+    return m_omegaMax;  //
+  }
+
+  void setOmegaMax(float mOmegaMax) {
+    m_omegaMax = mOmegaMax;  //
+  }
+
+  uint32_t millis() {
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    return m_ticks;
   }
 
   /***
@@ -158,24 +218,34 @@ class Robot {
     // The mutex will lock out the main thread while this block runs.
     CRITICAL_SECTION(m_robot_mutex) {
       m_ticks++;
+      // Ask the Application for a sensor update
       if (m_sensor_callback) {
         m_sensor_data = m_sensor_callback(m_state.x, m_state.y, m_state.theta);
       }
-      // updateMotionControllers();
+      // update the speeds
+      m_state.v += m_state.accel * deltaTime;
+      m_state.omega += m_state.alpha * deltaTime;
+
+      // limit them
+      m_state.v = std::clamp(m_state.v, -m_vMax, m_vMax);
+      m_state.omega = std::clamp(m_state.omega, -m_omegaMax, +m_omegaMax);
+
+      // accumulate distances
+      m_state.distance += m_state.v * deltaTime;
+      m_state.offset += m_state.v * deltaTime;
+
+      // wrap the angle
       m_state.theta += m_state.omega * deltaTime;
       if (m_state.theta >= 360.0f) {
         m_state.theta -= 360.0f;
       } else if (m_state.theta < 0.0f) {
         m_state.theta += 360.0f;
       }
+      
+      // calculate new location
       m_state.x += m_state.v * std::cos(m_state.theta * RADIANS) * deltaTime;
       m_state.y += m_state.v * std::sin(m_state.theta * RADIANS) * deltaTime;
     }
-  }
-
-  uint32_t millis() {
-    std::lock_guard<std::mutex> lock(m_robot_mutex);
-    return m_ticks;
   }
 
  private:
@@ -185,6 +255,8 @@ class Robot {
   mutable std::mutex m_robot_mutex;  // Protects access to m_pose and m_orientation
   SensorData m_sensor_data;          // Current sensor readings
   RobotState m_state;
+  float m_vMax = 5000.0f;
+  float m_omegaMax = 4000.0f;
 };
 
 #endif  // ROBOT_H
