@@ -66,17 +66,14 @@ class Application : public IEventObserver {
     m_robot.setOrientation(90.0);
     /// The Lambda expression here serves to bind the callback to the application instance
     m_robot.setSensorCallback([this](float x, float y, float theta) -> SensorData { return this->callbackCalculateSensorData(x, y, theta); });
-    m_robot.Start();
-    Behaviour mouse(m_robot);
-    mouse.start();
-    sleep(1);
-    mouse.stop();
-    std::cout << mouse.getTimeStamp() << std::endl;
+    //    m_robot.Start();
+    m_mouse.setRobot(m_robot);
+    m_mouse.start();
   }
 
   ~Application() {
-    m_robot.Stop();    // Ensure the robot thread stops
-    m_window.reset();  // destroys the widow explicitly so that we can clean up
+    m_mouse.stop();
+    m_window.reset();  // destroys the window explicitly so that we can clean up
     ImGui::SFML::Shutdown();
   }
 
@@ -445,6 +442,7 @@ class Application : public IEventObserver {
 
  private:
   std::unique_ptr<Window> m_window;
+  Behaviour m_mouse;
   Robot m_robot;  // The robot instance
   RobotBody m_robot_body;
   std::vector<sf::FloatRect> m_obstacles;

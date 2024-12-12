@@ -61,8 +61,8 @@
 
 class Behaviour {
  public:
-  Behaviour(Robot& robot)
-      : m_robot(robot) {
+  Behaviour()
+      : m_robot(nullptr), m_running(false), m_timeStamp(0) {
 
           //
         };
@@ -70,6 +70,8 @@ class Behaviour {
   ~Behaviour() {
     stop();  //
   }
+
+  void setRobot(Robot& robot) { m_robot = &robot; }
 
   void start() {
     if (!m_running) {
@@ -100,6 +102,9 @@ class Behaviour {
 
   void delay_ms(int ms) {
     while (ms > 0) {
+      if (m_robot) {
+        m_robot->systick();
+      }
       // call robot systick
       // log state
       m_timeStamp++;
@@ -113,7 +118,7 @@ class Behaviour {
   }
 
  private:
-  Robot& m_robot;
+  Robot* m_robot = nullptr;
   std::thread m_thread;
   std::atomic<bool> m_running;
   std::atomic<long> m_timeStamp = 0;

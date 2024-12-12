@@ -71,30 +71,12 @@ class Robot {
 
   ~Robot() { Stop(); }
 
-  // Starts the robot in its own thread
-
   /***
-   * The main application should call the Start() method to start the robot, passing
-   * in a pointer to itself so that callbacks can be used. Fo example, the robot
-   * can request sensor data from the application.
-   *
-   * Once started, the robot will run until Stop() is called.
-   *
-   * This robot instance will also start its own thread that repeatedly calls the
-   * systick() method. In this case, systick runs at about 1kHz. Actually a little
-   * less because we run the code then sleep for 1ms. Although the timing will not
-   * be completely accurate, it should suffice for simulation.
-   *
-   * We could
-   *
-   * @param app - the calling thread.
    */
   void Start() {
     if (!m_running) {
       m_ticks = 0;
       m_running = true;
-      m_thread = std::thread(&Robot::Run, this);
-      m_systick_thread = std::thread(&Robot::systick, this);
     }
   }
 
@@ -102,12 +84,6 @@ class Robot {
   void Stop() {
     if (m_running) {
       m_running = false;
-      if (m_systick_thread.joinable()) {
-        m_systick_thread.join();
-      }
-      if (m_thread.joinable()) {
-        m_thread.join();
-      }
     }
   }
 
@@ -186,31 +162,21 @@ class Robot {
    */
 
   void systick() {
-    using namespace std::chrono;
-    /// NOTE: this runs a little fast on linux
-    auto interval_us = duration_cast<microseconds>(duration<float>(m_loop_time));
-    auto next_time = steady_clock::now() + interval_us;
-    while (m_running) {
-      // The mutex will lock out the main thread while this block runs.
-      CRITICAL_SECTION(m_systick_mutex) {
-        m_ticks++;
-        if (m_sensor_callback) {
-          m_sensor_data = m_sensor_callback(m_state.x, m_state.y, m_state.theta);
-        }
-        // updateMotionControllers();
-        m_state.theta += m_state.omega * m_loop_time;
-        if (m_state.theta >= 360.0f) {
-          m_state.theta -= 360.0f;
-        } else if (m_state.theta < 0.0f) {
-          m_state.theta += 360.0f;
-        }
-        m_state.x += m_state.v * std::cos(m_state.theta * RADIANS) * m_loop_time;
-        m_state.y += m_state.v * std::sin(m_state.theta * RADIANS) * m_loop_time;
+    // The mutex will lock out the main thread while this block runs.
+    CRITICAL_SECTION(m_systick_mutex) {
+      m_ticks++;
+      if (m_sensor_callback) {
+        m_sensor_data = m_sensor_callback(m_state.x, m_state.y, m_state.theta);
       }
-      /// TODO: switching to an asynchronous method in Behaviour would call
-      ///       systick directly from delays through the yield function??
-      std::this_thread::sleep_until(next_time);
-      next_time += interval_us;
+      // updateMotionControllers();
+      m_state.theta += m_state.omega * m_loop_time;
+      if (m_state.theta >= 360.0f) {
+        m_state.theta -= 360.0f;
+      } else if (m_state.theta < 0.0f) {
+        m_state.theta += 360.0f;
+      }
+      m_state.x += m_state.v * std::cos(m_state.theta * RADIANS) * m_loop_time;
+      m_state.y += m_state.v * std::sin(m_state.theta * RADIANS) * m_loop_time;
     }
   }
 
@@ -220,16 +186,16 @@ class Robot {
   }
 
  private:
-  /***
-   * The run() method is what gets called from the thread initialisation
-   * It should run continuously when started. An atomic flag, m_running,
-   * is used so that the parent thread can signal an orderly termination.
-   */
-  void Run() {
-    while (m_running) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));  // 100 Hz loop
-    }
-  }
+  //  /***
+  //   * The run() method is what gets called from the thread initialisation
+  //   * It should run continuously when started. An atomic flag, m_running,
+  //   * is used so that the parent thread can signal an orderly termination.
+  //   */
+  //  void Run() {
+  //    while (m_running) {
+  //      std::this_thread::sleep_for(std::chrono::milliseconds(10));  // 100 Hz loop
+  //    }
+  //  }
 
   uint32_t m_ticks;
   std::thread m_systick_thread;
