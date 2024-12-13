@@ -126,6 +126,7 @@ class Behaviour {
     doMove(5.0 * 180 - lead_out, v_max, 0, acc);
     doTurn(-90, 318, 0, 50000);
   }
+
   void test_SS180(int counts) {
     float s = 1.0;
     float v_max = 5000.0f;

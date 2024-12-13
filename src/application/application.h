@@ -270,7 +270,7 @@ class Application : public IEventObserver {
     m_adhoc_text.setString(ss.str());
 
     /////  IMGUI ////////////////////////////////////////////////////////////////////////////
-    ImGui::SetNextWindowSize(ImVec2(450, 220));
+    ImGui::SetNextWindowSize(ImVec2(450, 230));
     //    ImGui::SetNextWindowPos(ImVec2(1440, 10));
     bool True = true;
     ImGui::Begin("ImGui dialog", &True, ImGuiWindowFlags_NoResize);
