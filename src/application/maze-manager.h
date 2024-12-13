@@ -6,6 +6,7 @@
 #define MAZE_H
 
 #include <SFML/Graphics.hpp>
+#include <cassert>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -405,6 +406,8 @@ class MazeManager {
   }
 
   void setWallColour(int index, sf::Color colour) {
+    assert(index >= 0);
+
     m_walls_vertex_array[index * 4 + 0].color = colour;
     m_walls_vertex_array[index * 4 + 1].color = colour;
     m_walls_vertex_array[index * 4 + 2].color = colour;
@@ -446,6 +449,8 @@ class MazeManager {
     resetWallColours();
     if (m_highlight_obstacles) {
       /// the walls and posts seen can be modified by the robot thread
+      /// TODO: there  is a concurrency error here. I need to guard the sensor callback
+      ///       but do not know how to use the right mutex
       std::lock_guard<std::mutex> lock(m_mutex_obstacles);
       for (auto& i : m_walls_visible) {
         setWallColour(i, conf::WallHighlightColour);

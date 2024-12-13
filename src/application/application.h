@@ -21,6 +21,11 @@
 #include "common/vec2.h"
 #include "imgui-SFML.h"
 #include "imgui.h"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+#include "imgui_internal.h"
+#pragma GCC diagnostic pop
+
 #include "robot-body.h"
 #include "robot/robot.h"
 #include "robot/sensor-data.h"
@@ -45,7 +50,7 @@ class Application : public IEventObserver {
     m_textbox.addString("Hello World!");
     m_textbox.addString("WASD keys to move robot");
 
-    m_maze_index = 48;  // Japan2007ef
+    m_maze_index = 0;  // Japan2007ef is 48
     /// Have the window inform us of any events
     m_window->addObserver(this);
 
@@ -54,6 +59,9 @@ class Application : public IEventObserver {
     }
     ImGuiStyle& style = ImGui::GetStyle();
     style.WindowRounding = 5.0f;
+    ImGuiIO& io = ImGui::GetIO();
+    m_guiFont = io.Fonts->AddFontFromFileTTF("assets/fonts/ubuntu-mono-r.ttf", 16);
+    (void)ImGui::SFML::UpdateFontTexture();
 
     for (int i = 0; i < mazeCount; i++) {
       m_maze_names.push_back(mazeList[i].title);
@@ -246,7 +254,7 @@ class Application : public IEventObserver {
    */
   void update(sf::Time deltaTime = sf::seconds(0.01)) {
     static bool maze_changed = true;
-    sf::RenderWindow& window = *m_window->getRenderWindow();
+    //    sf::RenderWindow& window = *m_window->getRenderWindow();
     // sf::Vector2u window_size = window.getSize();
     m_window->update();  // call this first to process window events
     m_elapsed += deltaTime;
@@ -262,31 +270,66 @@ class Application : public IEventObserver {
     m_adhoc_text.setString(ss.str());
 
     /////  IMGUI ////////////////////////////////////////////////////////////////////////////
-    ImGui::SetNextWindowSize(ImVec2(450, 190));
-    ImGui::SetNextWindowPos(ImVec2(1440, 10));
+    ImGui::SetNextWindowSize(ImVec2(450, 220));
+    //    ImGui::SetNextWindowPos(ImVec2(1440, 10));
     bool True = true;
     ImGui::Begin("ImGui dialog", &True, ImGuiWindowFlags_NoResize);
+    ImGui::PushFont(m_guiFont);
     ImGui::Text("Select the Maze data:");
     if (ImGui::Combo("Maze", &m_maze_index, m_maze_names.data(), (int)m_maze_names.size())) {
       maze_changed = true;
     }
-    if (ImGui::Button("RESET")) {
-      m_robot.resetState();
-      m_robot.setPosition(96, 96);
-      m_robot.setOrientation(90);
+
+    static int counts = 2;
+
+    ImGui::AlignTextToFramePadding();
+    ImGui::Text("Turn Count:");
+    ImGui::SameLine();
+    float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+    ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {
+      counts--;
     }
-    if (ImGui::Button("MOVE")) {
-      m_mouse.makeMove();
+    ImGui::SameLine(0.0f, spacing);
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) {
+      counts++;
+    }
+    counts = std::clamp(counts, 1, 20);
+    ImGui::SameLine();
+    ImGui::Text("%d", counts);
+    ImGui::PopItemFlag();
+    float b_wide = ImGui::CalcTextSize("TEST SS180R").x;
+    b_wide += ImGui::GetStyle().FramePadding.x * 2.0;
+    if (ImGui::Button("TEST SS90", ImVec2(b_wide, 0))) {
+      m_robot.resetState();
+      m_mouse.go(1, counts);
+    }
+    if (ImGui::Button("TEST SS180", ImVec2(b_wide, 0))) {
+      m_robot.resetState();
+      m_mouse.go(2, counts);
     }
 
-    ImGui::SameLine();
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
-    if (ImGui::Button("SNAP TO 45")) {
-      m_robot.setOrientation(snapToNearest45(m_robot.getOrientation()));
+    if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
+      m_robot.resetState();
     }
-    ImGui::Checkbox("Highlight Sensor Region", &m_highlight_sensor_region);
+    //    ImGui::NewLine();
+    //    ImGui::SameLine();
+    //    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
+    //    if (ImGui::Button("SNAP TO 45")) {
+    //      m_robot.setOrientation(snapToNearest45(m_robot.getOrientation()));
+    //    }
+    //    ImGui::Checkbox("Highlight Sensor Region", &m_highlight_sensor_region);
+    RobotState state = m_robot.getState();
+    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "     X      Y   Theta     Vel    Omega");
+    char s[60];
+    sprintf(s, " %5.1f  %5.1f   %4.2f  %6.1f  %6.1f  ", state.x, state.y, state.theta, state.v, state.omega);
+    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", s);
+
+    ImGui::PopFont();
     ImGui::End();
+    ImGui::ShowDemoWindow();
     //////////////////////////////////////////////////////////////////////////////////////////
+
     m_maze_manager.setHighlightObstacles(m_highlight_sensor_region);
     if (maze_changed) {
       MazeDataSource m = mazeList[m_maze_index];
@@ -401,9 +444,13 @@ class Application : public IEventObserver {
     m_window->endDraw();
   }
 
-  Window* getWindow() { return m_window.get(); }
+  Window* getWindow() {
+    return m_window.get();
+  }
 
-  sf::Time getElapsed() { return m_elapsed; }
+  sf::Time getElapsed() {
+    return m_elapsed;
+  }
 
   /// This would be a good place to create any overlay information or to log
   /// performance data for example.
@@ -474,6 +521,7 @@ class Application : public IEventObserver {
   Textbox m_textbox;
   bool snapped = false;
   bool m_highlight_sensor_region = false;
+  ImFont* m_guiFont = nullptr;
   ;
 };
 
