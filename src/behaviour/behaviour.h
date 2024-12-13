@@ -98,30 +98,28 @@ class Behaviour {
     }
   }
 
+  bool doMove(float distance, float v_max, float v_end, float accel) {
+    m_robot->startMove(distance, v_max, v_end, accel);
+    return waitForMove();
+  }
+
+  bool doTurn(float distance, float v_max, float v_end, float accel) {
+    m_robot->startTurn(distance, v_max, v_end, accel);
+    return waitForTurn();
+  }
+
   void run() {
     while (m_running) {
       // do stuff
       if (m_act) {
-        m_robot->startMove(1500, 1000, 500, 5000);
-        if (!waitForMove()) {
-          return;
+        doMove(14.5 * 180, 500, 500, 5000);
+        doTurn(-90, 318, 0, 50000);
+        for (int i = 0; i < 6; i++) {
+          doMove(14 * 180, 5000, 500, 5000);
+          doTurn(-90, 318, 0, 50000);
         }
-        m_robot->startTurn(-180, 2500, 0, 1000);
-        if (!waitForTurn()) {
-          return;
-        }
-        m_robot->startMove(900, 1000, 2000, 5000);
-        if (!waitForMove()) {
-          return;
-        }
-        m_robot->startTurn(180, 500, 0, 1000);
-        if (!waitForTurn()) {
-          return;
-        }
-        m_robot->startMove(300, 1000, 0, 5000);
-        if (!waitForMove()) {
-          return;
-        }
+        doMove(14.5 * 180, 500, 0, 5000);
+        doTurn(-90, 318, 0, 50000);
         m_act = false;
       }
       delay_ms(10);
@@ -160,7 +158,9 @@ class Behaviour {
     }
   }
 
-  void requestTerminate() { m_terminate = true; }
+  void requestTerminate() {
+    m_terminate = true;
+  }
 
  private:
   bool waitForMove() {
