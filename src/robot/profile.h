@@ -53,7 +53,7 @@ class Profile {
     m_state = PS_IDLE;
   }
 
-  bool is_finished() {
+  bool isFinished() {
     return m_state == PS_FINISHED;  //
   }
 
@@ -107,7 +107,9 @@ class Profile {
     m_state = PS_FINISHED;
   }
 
-  void set_state(State state) { m_state = state; }
+  void set_state(State state) {
+    m_state = state;  //
+  }
 
   /// @brief  Calculate the distance needed to get to the final speed from the
   ///         current speed using the current acceleration.
@@ -120,32 +122,32 @@ class Profile {
   ///         was a prior call to set_position() distance is incremented from there.
   /// @return distance travelled (mm)
   float position() {
-    float pos;
-    pos = m_position;
-    return pos;
+    return m_position;
   }
 
-  /// @brief Get the current speed
-  /// @return
-  float speed() {
-    float speed;
-    speed = m_speed;
-    return speed;
+  float getSpeed() {
+    return m_speed;  //
   }
 
   float acceleration() {
-    float acc;
-    acc = m_acceleration;
-    return acc;
+    return m_acceleration;
   }
 
-  void set_speed(float speed) { m_speed = speed; }
-  void set_target_speed(float speed) { m_target_speed = speed; }
+  void set_speed(float speed) {
+    m_speed = speed;
+  }
+  void set_target_speed(float speed) {
+    m_target_speed = speed;  //
+  }
 
   // normally only used to alter position for forward error correction
-  void adjust_position(float adjustment) { m_position += adjustment; }
+  void adjust_position(float adjustment) {
+    m_position += adjustment;
+  }
 
-  void set_position(float position) { m_position = position; }
+  void set_position(float position) {
+    m_position = position;
+  }
 
   // update is called from within systick and should be safe from interrupts
   void update(float deltaTime) {

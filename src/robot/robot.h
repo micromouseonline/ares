@@ -175,7 +175,7 @@ class Robot {
 
   bool moveFinished() {
     CRITICAL_SECTION(m_robot_mutex) {
-      return m_fwdProfile.is_finished();
+      return m_fwdProfile.isFinished();
     }
   }
   void startTurn(float angle, float omega_Max, float omega_end, float alpha) {
@@ -186,7 +186,7 @@ class Robot {
 
   bool turnFinished() {
     CRITICAL_SECTION(m_robot_mutex) {
-      return m_rotProfile.is_finished();
+      return m_rotProfile.isFinished();
     }
   }
 
@@ -218,8 +218,8 @@ class Robot {
       // run the profilers
       m_fwdProfile.update(deltaTime);
       m_rotProfile.update(deltaTime);
-      m_state.v = m_fwdProfile.speed();
-      m_state.omega = m_rotProfile.speed();
+      m_state.v = m_fwdProfile.getSpeed();
+      m_state.omega = m_rotProfile.getSpeed();
 
       // update the speeds
       m_state.v = std::clamp(m_state.v, -m_vMax, m_vMax);
