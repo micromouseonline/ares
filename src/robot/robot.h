@@ -40,7 +40,9 @@ class Robot {
     //
   }
 
-  ~Robot() { Stop(); }
+  ~Robot() {
+    Stop();
+  }
 
   void Start() {
     if (!m_running) {
@@ -78,6 +80,9 @@ class Robot {
   void resetState() {
     std::lock_guard<std::mutex> lock(m_robot_mutex);
     m_state = RobotState();
+    m_state.x = 96;
+    m_state.y = 96;
+    m_state.theta = 90.0f;
   }
 
   float getOrientation() const {

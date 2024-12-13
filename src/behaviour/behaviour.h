@@ -108,26 +108,66 @@ class Behaviour {
     return waitForTurn();
   }
 
+  void test_SS90(int counts) {
+    float s = 1.0;
+    float v_max = 5000.0f;
+    float acc = 10000.0f;
+    float omega_max = 287.0f;
+    float alpha = 2866.0f;
+    float turn_speed = 500.0f;
+    float lead_in = 124.0f;
+    float lead_out = 123.0f;
+    doMove(5.0 * 180 - lead_in, v_max, s * turn_speed, acc);
+    doTurn(-90, s * omega_max, 0, alpha);
+    for (int i = 0; i < counts - 2; i++) {
+      doMove(5.0 * 180 - lead_in - lead_out, v_max, s * turn_speed, acc);
+      doTurn(-90, s * omega_max, 0, alpha);
+    }
+    doMove(5.0 * 180 - lead_out, v_max, 0, acc);
+    doTurn(-90, 318, 0, 50000);
+  }
+  void test_SS180(int counts) {
+    float s = 1.0;
+    float v_max = 5000.0f;
+    float acc = 10000.0f;
+    float omega_max = 287.0f;
+    float alpha = 2866.0f;
+    float turn_speed = 440.0f;
+    float lead_in = 124.0f;
+    float lead_out = 123.0f;
+    doMove(5.0 * 180 - lead_in, v_max, s * turn_speed, acc);
+    doTurn(-180, s * omega_max, 0, alpha);
+    for (int i = 0; i < counts - 2; i++) {
+      doMove(5.0 * 180 - lead_in - lead_out, v_max, s * turn_speed, acc);
+      doTurn(-180, s * omega_max, 0, alpha);
+    }
+    doMove(5.0 * 180 - lead_out, v_max, 0, acc);
+    doTurn(-180, 318, 0, 50000);
+  }
+
   void run() {
     while (m_running) {
       // do stuff
-      if (m_act) {
-        doMove(14.5 * 180, 500, 500, 5000);
-        doTurn(-90, 318, 0, 50000);
-        for (int i = 0; i < 6; i++) {
-          doMove(14 * 180, 5000, 500, 5000);
-          doTurn(-90, 318, 0, 50000);
-        }
-        doMove(14.5 * 180, 500, 0, 5000);
-        doTurn(-90, 318, 0, 50000);
-        m_act = false;
+      switch (m_act) {
+        case 1:
+          test_SS90(m_iterations);
+          m_act = 0;
+          break;
+        case 2:
+          test_SS180(m_iterations);
+          m_act = 0;
+          break;
+        default:
+          // do nothing
+          break;
       }
       delay_ms(10);
     }
   }
 
-  void makeMove() {
-    m_act = true;  //
+  void go(int action, int i) {
+    m_iterations = i;
+    m_act = action;  //
   }
 
   uint32_t getTimeStamp() {
@@ -185,7 +225,8 @@ class Behaviour {
   std::atomic<bool> m_terminate;
   std::atomic<long> m_timeStamp = 0;
 
-  std::atomic<bool> m_act = false;
+  std::atomic<int> m_act = 0;
+  std::atomic<int> m_iterations = 0;
 };
 
 #endif  // BEHAVIOUR_H
