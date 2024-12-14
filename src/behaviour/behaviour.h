@@ -99,12 +99,12 @@ class Behaviour {
   }
 
   bool doMove(float distance, float v_max, float v_end, float accel) {
-    m_robot->startMove(distance, v_max, v_end, accel);
+    startMove(distance, v_max, v_end, accel);
     return waitForMove();
   }
 
   bool doTurn(float distance, float v_max, float v_end, float accel) {
-    m_robot->startTurn(distance, v_max, v_end, accel);
+    startTurn(distance, v_max, v_end, accel);
     return waitForTurn();
   }
 
@@ -190,7 +190,10 @@ class Behaviour {
   void delay_ms(int ms) {
     Timer timer;
     while (ms > 0) {
+      m_fwdProfile.update(m_step_time);
+      m_rotProfile.update(m_step_time);
       if (m_robot) {
+        m_robot->setSpeeds(m_fwdProfile.getSpeed(), m_rotProfile.getSpeed());
         m_robot->systick(m_step_time);
       }
       m_timeStamp++;
@@ -205,17 +208,32 @@ class Behaviour {
 
  private:
   bool waitForMove() {
-    while (!m_robot->moveFinished() && !m_terminate) {
+    while (!moveFinished() && !m_terminate) {
       delay_ms(1);
     }
     return !m_terminate;
   }
 
   bool waitForTurn() {
-    while (!m_robot->turnFinished() && !m_terminate) {
+    while (!turnFinished() && !m_terminate) {
       delay_ms(1);
     }
     return !m_terminate;
+  }
+
+  void startMove(float distance, float v_max, float v_end, float accel) {
+    m_fwdProfile.start(distance, v_max, v_end, accel);
+  }
+
+  bool moveFinished() {
+    return m_fwdProfile.isFinished();
+  }
+  void startTurn(float angle, float omega_Max, float omega_end, float alpha) {
+    m_rotProfile.start(angle, omega_Max, omega_end, alpha);
+  }
+
+  bool turnFinished() {
+    return m_rotProfile.isFinished();
   }
 
   Robot* m_robot = nullptr;
@@ -228,6 +246,9 @@ class Behaviour {
 
   std::atomic<int> m_act = 0;
   std::atomic<int> m_iterations = 0;
+
+  Profile m_fwdProfile;
+  Profile m_rotProfile;
 };
 
 #endif  // BEHAVIOUR_H

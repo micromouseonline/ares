@@ -10,8 +10,8 @@
 #include <cmath>
 #include <iostream>
 #include <mutex>
+#include "behaviour/profile.h"
 #include "common/core.h"
-#include "profile.h"
 #include "robot-state.h"
 #include "sensor-data.h"
 
@@ -172,26 +172,10 @@ class Robot {
     return m_ticks;
   }
 
-  void startMove(float distance, float v_max, float v_end, float accel) {
+  void setSpeeds(float velocity, float omega) {
     CRITICAL_SECTION(m_robot_mutex) {
-      m_fwdProfile.start(distance, v_max, v_end, accel);
-    }
-  }
-
-  bool moveFinished() {
-    CRITICAL_SECTION(m_robot_mutex) {
-      return m_fwdProfile.isFinished();
-    }
-  }
-  void startTurn(float angle, float omega_Max, float omega_end, float alpha) {
-    CRITICAL_SECTION(m_robot_mutex) {
-      m_rotProfile.start(angle, omega_Max, omega_end, alpha);
-    }
-  }
-
-  bool turnFinished() {
-    CRITICAL_SECTION(m_robot_mutex) {
-      return m_rotProfile.isFinished();
+      m_state.v = velocity;
+      m_state.omega = omega;
     }
   }
 
@@ -221,10 +205,6 @@ class Robot {
       }
 
       // run the profilers
-      m_fwdProfile.update(deltaTime);
-      m_rotProfile.update(deltaTime);
-      m_state.v = m_fwdProfile.getSpeed();
-      m_state.omega = m_rotProfile.getSpeed();
 
       // update the speeds
       m_state.v = std::clamp(m_state.v, -m_vMax, m_vMax);
@@ -271,8 +251,6 @@ class Robot {
 
   float m_vMax = 5000.0f;
   float m_omegaMax = 4000.0f;
-  Profile m_fwdProfile;
-  Profile m_rotProfile;
 };
 
 #endif  // ROBOT_H
