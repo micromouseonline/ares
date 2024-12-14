@@ -237,7 +237,6 @@ class Behaviour {
   }
 
   Robot* m_robot = nullptr;
-  bool m_realTime = true;
   float m_step_time = 0.001;
   std::thread m_thread;
   std::atomic<bool> m_running;

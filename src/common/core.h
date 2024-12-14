@@ -5,18 +5,19 @@
 #ifndef CORE_H
 #define CORE_H
 
+#include <cmath>
 #include <mutex>
 #include "SFML/Graphics.hpp"
 #include "types.h"
 
-#ifndef M_PI
-#define M_PI 3.1415923846f
-#endif
+constexpr float kPI = 3.14159265358979323846f;  // More precise
 
-#define BIT(x) (1 << x)
+constexpr int BIT(int x) {
+  return 1 << x;
+}
 
-constexpr float RADIANS = M_PI / 180.0f;
-constexpr float DEGREES = 180.0f / M_PI;
+constexpr float RADIANS = kPI / 180.0f;
+constexpr float DEGREES = 180.0f / kPI;
 
 inline float toRadians(float deg) {
   return deg * RADIANS;
@@ -30,32 +31,17 @@ inline float toDegrees(float rad) {
 inline std::mutex g_robot_mutex;      // Protects access to m_pose and m_orientation
 inline std::mutex g_mutex_obstacles;  // Protects access when building collision list
 
-/***
- * TODO Not sure this is the best place for this macro
+/** * CRITICAL_SECTION
  *
- * the macro looks odd because it uses a C++17 feature where
- * the if statement condition can include an initialiser.
- * This feature allows you to initialize variables within the
- * if statement, followed by a condition that determines if
- * the block should be executed. It's a neat way to declare
- * and initialise variables that are only used within the
- * scope of the if statement. Use it like this:
+ * The macro uses a C++17 feature where the if statement condition can include an
+ * initializer.
+ * This allows you to initialize variables within the if statement, followed
+ * by a condition that determines if the block should be executed.
  *
- * if (initialiser; condition){
- *   // code that will run if condition is true
+ * Usage:
+ * CRITICAL_SECTION(m_systick_mutex) {
+ *     // guarded code
  * }
- *
- * The scope of any variables declared in the initializer
- * of an if statement is limited to the entire if block,
- * including both the condition and the code within the
- * braces {} of the if statement.
- *
- * Use the macro like this
- *
- * CRITICAL_SECTION(m_systick_mutex){
- *   // guarded code
- * }
- *
  */
 #define CRITICAL_SECTION(the_mutex) if (std::lock_guard<std::mutex> lock(the_mutex); true)
 

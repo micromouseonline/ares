@@ -30,9 +30,32 @@
  * The Application holds the information about the physical world and the
  * relationship of the robot to that world.
  * Provision is made for sensor data to simply be a number in the range 0..1023
- *
- * The interpretation of that number is something the Behaviour should be responsible
+ *The interpretation of that number is something the Behaviour should be responsible
  * for.
+ * Distance is also held and made available.
+ *
+ * Robot state is held in a single struct that comprises current speed, orientation
+ * and position.
+ *
+ * A real robot might also provide data from the control system such as servo errors
+ * and motor voltages.
+ *
+ * The inputs to the robot are few. For simulation purposes, we only need to give the
+ * forward and angular velocities. It is assumed that the (ideal) robot body can match
+ * those immediately.
+ *
+ * To maintain some similarity with the physical robot, there is a systick method that
+ * would normally be called by an interrupt at some fixed frequency. Systick would
+ * normally update the low-level controllers, monitor the encoders and IMU, and
+ * possibly look after buttons and LEDS.
+ *
+ * Black-box style data logging would also be performed from systick to get a running
+ * record of the low level behaviour or the robot.
+ *
+ * For synchronisation purposes, the Robot maintains a millisecod-accurate counter. The
+ * value of that counter is used as the timestamp for all logging and timing in the system.
+ *
+ *
  */
 class Robot {
  public:
@@ -63,22 +86,22 @@ class Robot {
 
   ////// Accessors
   sf::Vector2f getPose() const {
-    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
     return sf::Vector2f(m_state.x, m_state.y);
   }
 
   RobotState getState() const {
-    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
     return m_state;
   }
 
   void setState(RobotState state) {
-    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
     m_state = state;
   }
 
   void resetState() {
-    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
     m_state = RobotState();
     m_state.x = 96;
     m_state.y = 96;
@@ -86,43 +109,43 @@ class Robot {
   }
 
   float getOrientation() const {
-    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
     return m_state.theta;
   }
 
   float getDistance() const {
-    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
     return m_state.distance;
   }
 
   void setPosition(float x, float y) {
-    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
     m_state.x = x;
     m_state.y = y;
   }
 
   void setOrientation(float theta) {
-    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
     m_state.theta = theta;  //
   }
 
   void setVelocity(float velocity) {
-    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
     m_state.v = velocity;  //
   }
 
   void setOmega(float omega) {
-    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
     m_state.omega = omega;  //
   }
 
   void setAccel(float accel) {
-    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
     m_state.accel = accel;  //
   }
 
   void setAlpha(float alpha) {
-    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
     m_state.alpha = alpha;  //
   }
 
@@ -132,7 +155,7 @@ class Robot {
   }
 
   SensorData& getSensorData() {
-    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
     return m_sensor_data;
   }
 
@@ -168,12 +191,12 @@ class Robot {
   }
 
   uint32_t millis() {
-    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
     return m_ticks;
   }
 
   void setSpeeds(float velocity, float omega) {
-    CRITICAL_SECTION(m_robot_mutex) {
+    CRITICAL_SECTION(g_robot_mutex) {
       m_state.v = velocity;
       m_state.omega = omega;
     }
@@ -197,14 +220,13 @@ class Robot {
 
   void systick(float deltaTime) {
     // The mutex will lock out the main thread while this block runs.
-    CRITICAL_SECTION(m_robot_mutex) {
+    CRITICAL_SECTION(g_robot_mutex) {
       m_ticks++;
+
       // Ask the Application for a sensor update
       if (m_sensor_callback) {
         m_sensor_data = m_sensor_callback(m_state.x, m_state.y, m_state.theta);
       }
-
-      // run the profilers
 
       // update the speeds
       m_state.v = std::clamp(m_state.v, -m_vMax, m_vMax);
@@ -212,7 +234,6 @@ class Robot {
 
       // accumulate distances
       float deltaDistance = m_state.v * deltaTime;
-      m_profileDistance += deltaDistance;
       m_state.distance += deltaDistance;
       m_state.offset += deltaDistance;
 
@@ -237,18 +258,6 @@ class Robot {
 
   SensorData m_sensor_data;  // Current sensor readings
   RobotState m_state;
-  // profile values
-  float m_targetDistance = 0.0f;
-  float m_maxVelocity = 0.0f;
-  float m_targetVelocity = 0.0;
-  float m_acceleration = 0.0f;
-  float m_profileDistance = 0.0f;
-  bool m_moving = false;
-
-  float accelPhaseDistance = 0.0f;
-  float decelPhaseDistance = 0.0f;
-  float cruiseDistance = 0.0f;
-
   float m_vMax = 5000.0f;
   float m_omegaMax = 4000.0f;
 };
