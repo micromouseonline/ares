@@ -62,6 +62,7 @@ class Application : public IEventObserver {
     ImGuiIO& io = ImGui::GetIO();
     m_guiFont = io.Fonts->AddFontFromFileTTF("assets/fonts/ubuntu-mono-r.ttf", 16);
     (void)ImGui::SFML::UpdateFontTexture();
+    io.FontDefault = m_guiFont;
 
     for (int i = 0; i < mazeCount; i++) {
       m_maze_names.push_back(mazeList[i].title);
@@ -270,11 +271,11 @@ class Application : public IEventObserver {
     m_adhoc_text.setString(ss.str());
 
     /////  IMGUI ////////////////////////////////////////////////////////////////////////////
-    ImGui::SetNextWindowSize(ImVec2(450, 230));
+    ImGui::SetNextWindowSize(ImVec2(400, 600));
     //    ImGui::SetNextWindowPos(ImVec2(1440, 10));
     bool True = true;
     ImGui::Begin("ImGui dialog", &True, ImGuiWindowFlags_NoResize);
-    ImGui::PushFont(m_guiFont);
+    //    ImGui::PushFont(m_guiFont);
     ImGui::Text("Select the Maze data:");
     if (ImGui::Combo("Maze", &m_maze_index, m_maze_names.data(), (int)m_maze_names.size())) {
       maze_changed = true;
@@ -322,10 +323,22 @@ class Application : public IEventObserver {
     RobotState state = m_robot.getState();
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "     X      Y   Theta     Vel    Omega");
     char s[60];
-    sprintf(s, " %5.1f  %5.1f   %4.2f  %6.1f  %6.1f  ", state.x, state.y, state.theta, state.v, state.omega);
+    sprintf(s, " %5.1f  %5.1f  %6.2f  %6.1f  %6.1f  ", state.x, state.y, state.theta, state.v, state.omega);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", s);
+    const int frames = 60 * 4;
+    static float speed[frames];
+    static float omega[frames];
+    static float rds[frames];
+    static int index = 0;
+    speed[index] = state.v;
+    omega[index] = state.omega;
+    rds[index] = m_robot.getSensorData().rds_power;
+    index = (index + 1) % IM_ARRAYSIZE(speed);
+    ImGui::PlotLines("speed", speed, IM_ARRAYSIZE(speed), index, "", 0, 3000, ImVec2(0, 100));
+    ImGui::PlotLines("omega", omega, IM_ARRAYSIZE(omega), index, "", -500, 500, ImVec2(0, 100));
+    ImGui::PlotLines("RDS", rds, IM_ARRAYSIZE(rds), index, "", 00, 500, ImVec2(0, 100));
 
-    ImGui::PopFont();
+    //    ImGui::PopFont();
     ImGui::End();
     ImGui::ShowDemoWindow();
     //////////////////////////////////////////////////////////////////////////////////////////
