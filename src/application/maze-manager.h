@@ -451,7 +451,7 @@ class MazeManager {
       /// the walls and posts seen can be modified by the robot thread
       /// TODO: there  is a concurrency error here. I need to guard the sensor callback
       ///       but do not know how to use the right mutex
-      std::lock_guard<std::mutex> lock(m_mutex_obstacles);
+      std::lock_guard<std::mutex> lock(g_mutex_obstacles);
       for (auto& i : m_walls_visible) {
         setWallColour(i, conf::WallHighlightColour);
       }
@@ -590,7 +590,6 @@ class MazeManager {
   sf::VertexArray m_posts_vertex_array;
   sf::VertexArray m_walls_vertex_array;
 
-  mutable std::mutex m_mutex_obstacles;    // Protects access when building collision list
   std::vector<sf::FloatRect> m_obstacles;  // the things the robot can see or hit
   /// objects visible to the mouse sensors
   std::unordered_set<int> m_walls_visible;

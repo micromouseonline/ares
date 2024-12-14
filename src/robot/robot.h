@@ -234,8 +234,8 @@ class Robot {
   uint32_t m_ticks;
   std::atomic<bool> m_running;
   SensorDataCallback m_sensor_callback = nullptr;
-  mutable std::mutex m_robot_mutex;  // Protects access to m_pose and m_orientation
-  SensorData m_sensor_data;          // Current sensor readings
+
+  SensorData m_sensor_data;  // Current sensor readings
   RobotState m_state;
   // profile values
   float m_targetDistance = 0.0f;

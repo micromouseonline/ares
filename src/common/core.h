@@ -5,6 +5,7 @@
 #ifndef CORE_H
 #define CORE_H
 
+#include <mutex>
 #include "SFML/Graphics.hpp"
 #include "types.h"
 
@@ -24,6 +25,10 @@ inline float toRadians(float deg) {
 inline float toDegrees(float rad) {
   return rad * DEGREES;
 }
+
+/// Shared mutexes for access to the behaviour and robot from the application
+inline std::mutex g_robot_mutex;      // Protects access to m_pose and m_orientation
+inline std::mutex g_mutex_obstacles;  // Protects access when building collision list
 
 /***
  * TODO Not sure this is the best place for this macro
@@ -52,7 +57,6 @@ inline float toDegrees(float rad) {
  * }
  *
  */
-
 #define CRITICAL_SECTION(the_mutex) if (std::lock_guard<std::mutex> lock(the_mutex); true)
 
 #endif  // CORE_H
