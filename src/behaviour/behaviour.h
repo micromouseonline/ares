@@ -63,7 +63,7 @@
 #include "common/timer.h"
 #include "robot/robot.h"
 #include "robot/sensor-data.h"
-
+#include "trapezoid.h"
 
 class Behaviour {
  public:
