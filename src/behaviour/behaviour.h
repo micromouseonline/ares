@@ -4,7 +4,6 @@
 
 #ifndef BEHAVIOUR_H
 #define BEHAVIOUR_H
-
 /**
  *
  * The behaviour class is responsible for the behavior of the physical robot.
@@ -57,20 +56,24 @@
 #include <windows.h>
 #else
 #include <chrono>
-#include <thread>
 #endif
 #include <iostream>
+#include <thread>
 #include <vector>
 #include "common/timer.h"
 #include "robot/robot.h"
 #include "robot/sensor-data.h"
 
+
 class Behaviour {
  public:
   Behaviour()
-      : m_robot(nullptr), m_running(false), m_terminate(false), m_timeStamp(0) {
+      : m_robot(nullptr),
+        m_running(false),
+        m_terminate(false),
+        m_timeStamp(0){
 
-          //
+            //
         };
 
   ~Behaviour() {
