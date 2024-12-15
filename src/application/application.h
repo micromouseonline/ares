@@ -75,6 +75,7 @@ class Application : public IEventObserver {
     m_robot.setOrientation(90.0);
     /// The Lambda expression here serves to bind the callback to the application instance
     m_robot.setSensorCallback([this](float x, float y, float theta) -> SensorData { return this->callbackCalculateSensorData(x, y, theta); });
+    m_robot.start();
     m_mouse.setRobot(m_robot);
     m_mouse.start();
   }
@@ -177,44 +178,19 @@ class Application : public IEventObserver {
     } else {
       m_textbox.setBackgroundColour(sf::Color(255, 255, 255, 48));
     }
-    float v = 0;
-    float w = 0;
-    float accel = 0;
-    float alpha = 0;
+
     if (!snapped && sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::RControl)) {
         m_robot.setOrientation(snapToHigher45(m_robot.getOrientation() + 1));
         snapped = true;
-      } else {
-        w = 90;
-        alpha = +500;
       }
     }
     if (!snapped && sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::RControl)) {
         m_robot.setOrientation(snapToLower45(m_robot.getOrientation() - 1));
         snapped = true;
-      } else {
-        w = -90;
-        alpha = -500;
       }
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-      v = 540;
-      accel = 1000.0f;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-      v = -540;
-      accel = -1000.0f;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::RShift)) {
-      w = w / 10.0f;
-      v = v / 10.0f;
-    }
-    //    m_robot.setVelocity(v);
-    //    m_robot.setOmega(w);
-    m_robot.setAlpha(alpha);
-    m_robot.setAccel(accel);
   }
 
   std::string formatSensorData(int lfs, int lds, int rds, int rfs) {
@@ -313,17 +289,10 @@ class Application : public IEventObserver {
     if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
       m_robot.resetState();
     }
-    //    ImGui::NewLine();
-    //    ImGui::SameLine();
-    //    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10);
-    //    if (ImGui::Button("SNAP TO 45")) {
-    //      m_robot.setOrientation(snapToNearest45(m_robot.getOrientation()));
-    //    }
-    //    ImGui::Checkbox("Highlight Sensor Region", &m_highlight_sensor_region);
     RobotState state = m_robot.getState();
-    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "     X      Y   Theta     Vel    Omega");
+    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "    time     X      Y   Theta     Vel   Omega");
     char s[60];
-    sprintf(s, " %5.1f  %5.1f  %6.2f  %6.1f  %6.1f  ", state.x, state.y, state.theta, state.v, state.omega);
+    sprintf(s, "%8u %5.1f  %5.1f  %6.2f  %6.1f  %6.1f  ", state.timestamp, state.x, state.y, state.theta, state.v, state.omega);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", s);
     const int frames = 60 * 4;
     static float speed[frames];

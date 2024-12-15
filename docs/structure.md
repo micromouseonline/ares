@@ -84,7 +84,7 @@ disadvantages of the structure.
   updates
   from the `Application`.
 - Key Methods:
-    - Start(): Starts the robot and the sensor update thread.
+    - start(): Starts the robot and the sensor update thread.
     - Stop(): Stops the robot and the sensor update thread.
     - UpdateSensors(): Requests the latest sensor data from the Application.
 - Attributes:

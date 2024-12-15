@@ -1,5 +1,6 @@
-//
+// robot.h
 // Created by peter on 22/11/24.
+// Defines the Robot class which models the physical behaviour of the robot
 //
 
 #ifndef ROBOT_H
@@ -59,28 +60,29 @@
  */
 class Robot {
  public:
-  Robot() : m_running(false) {
+  Robot() : m_running(false), m_vMax(8000.0f), m_omegaMax(4000.0f) {
     //
+    stop();
   }
 
   ~Robot() {
-    Stop();
+    stop();
   }
 
-  void Start() {
+  void start() {
     if (!m_running) {
       m_ticks = 0;
       m_running = true;
     }
   }
 
-  void Stop() {
+  void stop() {
     if (m_running) {
       m_running = false;
     }
   }
 
-  void Resume() {
+  void resume() {
     m_running = true;  //
   }
 
@@ -108,16 +110,6 @@ class Robot {
     m_state.theta = 90.0f;
   }
 
-  float getOrientation() const {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
-    return m_state.theta;
-  }
-
-  float getDistance() const {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
-    return m_state.distance;
-  }
-
   void setPosition(float x, float y) {
     std::lock_guard<std::mutex> lock(g_robot_mutex);
     m_state.x = x;
@@ -129,24 +121,9 @@ class Robot {
     m_state.theta = theta;  //
   }
 
-  void setVelocity(float velocity) {
+  float getOrientation() const {
     std::lock_guard<std::mutex> lock(g_robot_mutex);
-    m_state.v = velocity;  //
-  }
-
-  void setOmega(float omega) {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
-    m_state.omega = omega;  //
-  }
-
-  void setAccel(float accel) {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
-    m_state.accel = accel;  //
-  }
-
-  void setAlpha(float alpha) {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
-    m_state.alpha = alpha;  //
+    return m_state.theta;
   }
 
   ///////////// Sensors
@@ -159,47 +136,20 @@ class Robot {
     return m_sensor_data;
   }
 
-  uint32_t getTicks() const {
-    return m_ticks;  //
-  }
-  void setTickCount(uint32_t mTicks) {
-    m_ticks = mTicks;  //
-  }
-
-  const std::atomic<bool>& getRunning() const {
-    return m_running;  //
-  }
-
-  void setSensorData(const SensorData& mSensorData) {
-    m_sensor_data = mSensorData;  //
-  }
-
-  float getVMax() const {
-    return m_vMax;  //
-  }
-
-  void setVMax(float mVMax) {
-    m_vMax = fabsf(mVMax);  //
-  }
-
-  float getOmegaMax() const {
-    return m_omegaMax;  //
-  }
-
-  void setOmegaMax(float mOmegaMax) {
-    m_omegaMax = fabsf(mOmegaMax);  //
-  }
-
-  uint32_t millis() {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
-    return m_ticks;
-  }
-
+  /// This is the primary way to get the robot to move
   void setSpeeds(float velocity, float omega) {
     CRITICAL_SECTION(g_robot_mutex) {
       m_state.v = velocity;
       m_state.omega = omega;
     }
+  }
+
+  [[nodiscard]] bool isRunning() const {
+    return m_running.load();
+  }
+
+  [[nodiscard]] uint32_t millis() const {
+    return m_ticks.load();
   }
 
   /***
@@ -219,9 +169,13 @@ class Robot {
    */
 
   void systick(float deltaTime) {
+    if (!isRunning()) {
+      return;
+    }
     // The mutex will lock out the main thread while this block runs.
     CRITICAL_SECTION(g_robot_mutex) {
       m_ticks++;
+      m_state.timestamp = m_ticks;
 
       // Ask the Application for a sensor update
       if (m_sensor_callback) {
@@ -252,14 +206,15 @@ class Robot {
   }
 
  private:
-  uint32_t m_ticks;
+  std::atomic<uint32_t> m_ticks;
   std::atomic<bool> m_running;
+
   SensorDataCallback m_sensor_callback = nullptr;
 
   SensorData m_sensor_data;  // Current sensor readings
   RobotState m_state;
-  float m_vMax = 5000.0f;
-  float m_omegaMax = 4000.0f;
+  float m_vMax;
+  float m_omegaMax;
 };
 
 #endif  // ROBOT_H

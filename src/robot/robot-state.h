@@ -15,6 +15,7 @@
  *
  */
 struct RobotState {
+  uint32_t timestamp;
   float x;
   float y;
   float v;
