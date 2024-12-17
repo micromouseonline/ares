@@ -6,11 +6,14 @@
 #define CORE_H
 
 #include <cmath>
+#include <limits>
 #include <mutex>
 #include "SFML/Graphics.hpp"
 #include "types.h"
 
 constexpr float kPI = 3.14159265358979323846f;  // More precise
+
+constexpr float kEpsilon = std::numeric_limits<float>::epsilon();
 
 constexpr int BIT(int x) {
   return 1 << x;

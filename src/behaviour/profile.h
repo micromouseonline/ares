@@ -85,7 +85,8 @@ class Profile {
     m_target_speed = m_sign * top_speed;
     m_final_speed = m_sign * final_speed;
     m_acceleration = fabsf(acceleration);
-    if (m_acceleration >= 1) {
+    /// pre-calculate for better performance in the update method
+    if (m_acceleration > 1.0f) {
       m_one_over_acc = 1.0f / m_acceleration;
     } else {
       m_one_over_acc = 1.0;
@@ -119,7 +120,7 @@ class Profile {
   }
 
   /// @brief  gets the distance travelled (mm) since the last call to start(). If there
-  ///         was a prior call to set_position() distance is incremented from there.
+  ///         was a prior call to setPosition() distance is incremented from there.
   /// @return distance travelled (mm)
   float position() {
     return m_position;
@@ -133,19 +134,28 @@ class Profile {
     return m_acceleration;
   }
 
-  void set_speed(float speed) {
-    m_speed = speed;
-  }
-  void set_target_speed(float speed) {
-    m_target_speed = speed;  //
+  /***
+   * @brief Sets a target speed that the profiler will try to reach using the supplied acceleration
+   * Leave the acceleration at zero to immediately set the speed
+   * @param speed
+   */
+  void setTargetSpeed(const float speed, const float acceleration = 0) {
+    float a = fabsf(acceleration);
+    if (a < kEpsilon) {
+      m_speed = speed;
+    } else {
+      m_acceleration = a;
+    }
+    m_target_speed = speed;
   }
 
   // normally only used to alter position for forward error correction
-  void adjust_position(float adjustment) {
+  /// TODO: should I ever really need this?
+  void adjustPosition(float adjustment) {
     m_position += adjustment;
   }
 
-  void set_position(float position) {
+  void setPosition(float position) {
     m_position = position;
   }
 
