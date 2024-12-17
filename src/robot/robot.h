@@ -139,7 +139,7 @@ class Robot {
   /// This is the primary way to get the robot to move
   void setSpeeds(float velocity, float omega) {
     CRITICAL_SECTION(g_robot_mutex) {
-      m_state.v = velocity;
+      m_state.velocity = velocity;
       m_state.omega = omega;
     }
   }
@@ -183,13 +183,13 @@ class Robot {
       }
 
       // update the speeds
-      m_state.v = std::clamp(m_state.v, -m_vMax, m_vMax);
+      m_state.velocity = std::clamp(m_state.velocity, -m_vMax, m_vMax);
       m_state.omega = std::clamp(m_state.omega, -m_omegaMax, +m_omegaMax);
 
       // accumulate distances
-      float deltaDistance = m_state.v * deltaTime;
-      m_state.distance += deltaDistance;
-      m_state.offset += deltaDistance;
+      float deltaDistance = m_state.velocity * deltaTime;
+      m_state.total_distance += deltaDistance;
+      m_state.cell_offset += deltaDistance;
 
       // wrap the angle
       m_state.theta += m_state.omega * deltaTime;
@@ -200,8 +200,8 @@ class Robot {
       }
 
       // calculate new location
-      m_state.x += m_state.v * std::cos(m_state.theta * RADIANS) * deltaTime;
-      m_state.y += m_state.v * std::sin(m_state.theta * RADIANS) * deltaTime;
+      m_state.x += m_state.velocity * std::cos(m_state.theta * RADIANS) * deltaTime;
+      m_state.y += m_state.velocity * std::sin(m_state.theta * RADIANS) * deltaTime;
     }
   }
 

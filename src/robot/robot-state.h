@@ -18,24 +18,20 @@ struct RobotState {
   uint32_t timestamp;
   float x;
   float y;
-  float v;
   float theta;
+  float velocity;
   float omega;
-  float accel;
-  float alpha;
-  float distance;
-  float offset;
+  float total_distance;  // accumulated from last reset
+  float cell_offset;     // distance through cell from border
 
   RobotState()
       : x(0.0f),
         y(0.0f),
-        v(0.0f),  //
         theta(0.0f),
-        omega(0.0f),  //
-        accel(0.0f),
-        alpha(0.0f),  //
-        distance(0.0f),
-        offset(0.0f) {
+        velocity(0.0f),  //
+        omega(0.0f),     //
+        total_distance(0.0f),
+        cell_offset(0.0f) {
     //
   }
 };

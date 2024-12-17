@@ -292,14 +292,14 @@ class Application : public IEventObserver {
     RobotState state = m_robot.getState();
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "    time     X      Y   Theta     Vel   Omega");
     char s[60];
-    sprintf(s, "%8u %5.1f  %5.1f  %6.2f  %6.1f  %6.1f  ", state.timestamp, state.x, state.y, state.theta, state.v, state.omega);
+    sprintf(s, "%8u %5.1f  %5.1f  %6.2f  %6.1f  %6.1f  ", state.timestamp, state.x, state.y, state.theta, state.velocity, state.omega);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", s);
     const int frames = 60 * 4;
     static float speed[frames];
     static float omega[frames];
     static float rds[frames];
     static int index = 0;
-    speed[index] = state.v;
+    speed[index] = state.velocity;
     omega[index] = state.omega;
     rds[index] = m_robot.getSensorData().rds_power;
     index = (index + 1) % IM_ARRAYSIZE(speed);
