@@ -60,16 +60,22 @@ class RobotBody {
     addShape(std::move(dot), sf::Vector2f(0, 0));
   }
 
-  void setRobot(Robot& robot) { m_robot = &robot; }
+  void setRobot(Robot& robot) {
+    m_robot = &robot;
+  }
 
   void addShape(std::unique_ptr<sf::Shape> shape, const sf::Vector2f& offset) {
     shape->setPosition(m_position + offset);
     m_body_shapes.push_back({std::move(shape), offset, offset});
   }
 
-  void setColour(sf::Color colour) { m_colour = colour; }
+  void setColour(sf::Color colour) {
+    m_colour = colour;
+  }
 
-  void setPosition(float x, float y) { setPosition(sf::Vector2f(x, y)); }
+  void setPosition(float x, float y) {
+    setPosition(sf::Vector2f(x, y));
+  }
 
   void setPosition(const sf::Vector2f& position) {
     m_position = position;
@@ -115,8 +121,8 @@ class RobotBody {
     float angle = 0;
     sf::Vector2f worldPos{90, 90};
     if (m_robot) {
-      worldPos = m_robot->getPose();
-      angle = (m_robot->getOrientation());
+      worldPos = {m_robot->getState().x, m_robot->getState().y};
+      angle = (m_robot->getState().angle);
     }
 
     setPosition(worldPos);

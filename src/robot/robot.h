@@ -16,53 +16,58 @@
 #include "robot-state.h"
 #include "sensor-data.h"
 
-/***
- * The Robot class models the physical robot. It is just the vehicle that moves around the screen.
+/**
+ * @brief The Robot class models the physical robot's behavior and movement.
  *
- * It will provide the dynamic behaviour for the simulation
+ * The Robot class acts as a simulated vehicle that moves and turns on the screen,
+ * mimicking the dynamic behavior of a real-world robot. It is designed to be
+ * generic and independent of any specific behavior or control logic, except for
+ * non-holonomic constraints and sensor data collection.
  *
- * It should be regarded as like your car. You can tell it to move and turn and you
- * can examine its status. Almost nothing about the Robot is specific to its use
- * for any particular behaviour except, perhaps, the non-holonomic constraints
- * and the array of sensor data it collects.
+ * ### Key Features:
+ * - **Movement and State:**
+ *   The robot's state (position, orientation, and velocity) is maintained in a
+ *   single struct. The forward and angular velocities are the primary inputs,
+ *   and the robot assumes ideal instantaneous matching of these values.
  *
- * Sensor data is actually evaluated by a callback to the application and stored
- * in the Robot. This is directly analogous to the way the sensors actually work.
- * The Application holds the information about the physical world and the
- * relationship of the robot to that world.
- * Provision is made for sensor data to simply be a number in the range 0..1023
- *The interpretation of that number is something the Behaviour should be responsible
- * for.
- * Distance is also held and made available.
+ * - **Sensor Data:**
+ *   Sensor readings are evaluated via a callback function provided by the
+ *   application. The Robot stores the sensor data as raw values (0-1023), while
+ *   interpreting these values is left to the Behavior layer. This design mimics
+ *   real-world sensor operation where the robot queries the environment but
+ *   delegates interpretation to higher-level logic.
  *
- * Robot state is held in a single struct that comprises current speed, orientation
- * and position.
+ * - **Simulation of Hardware Interrupts:**
+ *   The `systick()` method simulates a hardware timer interrupt, typically running
+ *   at 1kHz on real robots. It updates low-level controllers, monitors encoders
+ *   and sensors, and handles motion processing. This ensures accurate time
+ *   synchronization and hardware-like behavior.
  *
- * A real robot might also provide data from the control system such as servo errors
- * and motor voltages.
+ * - **Time Management:**
+ *   The Robot maintains a millisecond-accurate counter (`m_ticks`), which serves
+ *   as a timestamp for logging and timing purposes.
  *
- * The inputs to the robot are few. For simulation purposes, we only need to give the
- * forward and angular velocities. It is assumed that the (ideal) robot body can match
- * those immediately.
+ * - **Data Logging:**
+ *   The systick method can also perform black-box style data logging, recording
+ *   low-level behavior for debugging or analysis.
  *
- * To maintain some similarity with the physical robot, there is a systick method that
- * would normally be called by an interrupt at some fixed frequency. Systick would
- * normally update the low-level controllers, monitor the encoders and IMU, and
- * possibly look after buttons and LEDS.
+ * ### Relationship with Application and Behavior:
+ * - The **Application** holds the physical world data and provides the sensor
+ *   callback, determining the robot's relationship with the environment.
+ * - The **Behavior** layer interacts with the Robot to control its movement,
+ *   interpret sensor data, and define higher-level actions.
  *
- * Black-box style data logging would also be performed from systick to get a running
- * record of the low level behaviour or the robot.
- *
- * For synchronisation purposes, the Robot maintains a millisecod-accurate counter. The
- * value of that counter is used as the timestamp for all logging and timing in the system.
- *
- *
+ * This separation of concerns ensures modularity, where the Robot focuses solely
+ * on physical behavior, and the Behavior or Application layers handle interpretation
+ * and control logic.
  */
 class Robot {
  public:
-  Robot() : m_running(false), m_vMax(8000.0f), m_omegaMax(4000.0f) {
+  const float VELOCITY_MAX = 8000.0f;
+  const float OMEGA_MAX = 4000.0f;
+
+  Robot() : m_ticks(0), m_running(false), m_sensor_data(), m_state(), m_vMax(VELOCITY_MAX), m_omegaMax(OMEGA_MAX) {
     //
-    stop();
   }
 
   ~Robot() {
@@ -87,10 +92,6 @@ class Robot {
   }
 
   ////// Accessors
-  sf::Vector2f getPose() const {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
-    return sf::Vector2f(m_state.x, m_state.y);
-  }
 
   RobotState getState() const {
     std::lock_guard<std::mutex> lock(g_robot_mutex);
@@ -102,28 +103,11 @@ class Robot {
     m_state = state;
   }
 
-  void resetState() {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
-    m_state = RobotState();
-    m_state.x = 96;
-    m_state.y = 96;
-    m_state.theta = 90.0f;
-  }
-
-  void setPosition(float x, float y) {
+  void setPose(float x, float y, float angle) {
     std::lock_guard<std::mutex> lock(g_robot_mutex);
     m_state.x = x;
     m_state.y = y;
-  }
-
-  void setOrientation(float theta) {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
-    m_state.theta = theta;  //
-  }
-
-  float getOrientation() const {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
-    return m_state.theta;
+    m_state.angle = angle;
   }
 
   ///////////// Sensors
@@ -136,36 +120,63 @@ class Robot {
     return m_sensor_data;
   }
 
-  /// This is the primary way to get the robot to move
+  /// This is the primary way to get the robot to move.
+  /// A more physics-based model would need accelerations.
+  /// Here we assume the controllers are really good and that
+  /// only realistic demands are made of the robot.
   void setSpeeds(float velocity, float omega) {
-    CRITICAL_SECTION(g_robot_mutex) {
-      m_state.velocity = velocity;
-      m_state.omega = omega;
-    }
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    m_state.velocity = velocity;
+    m_state.omega = omega;
+    // TODO: should this be clamped here or handled elsewhere?
+    m_state.velocity = std::clamp(m_state.velocity, -m_vMax, m_vMax);
+    m_state.omega = std::clamp(m_state.omega, -m_omegaMax, +m_omegaMax);
+  }
+
+  void adjustCellOffset(float delta) {
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    m_state.cell_offset += delta;
+  }
+
+  void setCellOffset(float offset) {
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    m_state.cell_offset = offset;
+  }
+
+  void resetMoveDistance() {
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    m_state.move_distance = 0.0f;
+  }
+
+  void resetMoveAngle() {
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    m_state.move_angle = 0.0f;
   }
 
   [[nodiscard]] bool isRunning() const {
-    return m_running.load();
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    return m_running;
   }
 
   [[nodiscard]] uint32_t millis() const {
-    return m_ticks.load();
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    return m_ticks;
   }
 
-  /***
-   * The systick() method simulates an interrupt triggered by a timer on the hardware.
+  /**
+   * @brief Simulates a hardware timer interrupt for the robot.
    *
-   * This ISR normally handles all the IO, sensors, control systems and motion
-   * processing on the physical robot.  The Systick normally runs at 1kHz on many
-   * robots and so is also responsible for monitoring the passage of time, keeping
-   * the main code synchronised with the hardware.
-   * With the Behaviour separated out from the robot we can simply call the systick
-   * ISR from the behaviour whenever we want the Robot to advance by one tick.
+   * The systick() method acts as a simulated ISR (Interrupt Service Routine) that
+   * updates the robot's state, sensors, and motion processing. On physical robots,
+   * such a timer ISR typically runs at 1kHz, handling IO operations, control systems,
+   * and time synchronization with hardware.
    *
-   * Behaviour runs in a separate thread to the main application so, by extension,
-   * does the Robot code. That means that Behaviour is free to interact with the
-   * Robot without restraint, any calls from the Application to either Robot or
-   * Behaviour must be guarded by a mutex or atomic variables.
+   * In this simulation, the systick() method is invoked from the Behaviour class
+   * to advance the Robot's state by one tick. Since Behaviour runs in a separate
+   * thread from the main application, the Robot code also executes in its own thread.
+   * This design allows Behaviour to interact with the Robot freely, but any calls
+   * from the Application to Robot or Behaviour must be thread-safe, using mutexes
+   * or atomic variables.
    */
 
   void systick(float deltaTime) {
@@ -173,41 +184,43 @@ class Robot {
       return;
     }
     // The mutex will lock out the main thread while this block runs.
-    CRITICAL_SECTION(g_robot_mutex) {
+    {
+      std::lock_guard<std::mutex> lock(g_robot_mutex);
       m_ticks++;
       m_state.timestamp = m_ticks;
 
       // Ask the Application for a sensor update
       if (m_sensor_callback) {
-        m_sensor_data = m_sensor_callback(m_state.x, m_state.y, m_state.theta);
+        m_sensor_data = m_sensor_callback(m_state.x, m_state.y, m_state.angle);
       }
-
-      // update the speeds
-      m_state.velocity = std::clamp(m_state.velocity, -m_vMax, m_vMax);
-      m_state.omega = std::clamp(m_state.omega, -m_omegaMax, +m_omegaMax);
 
       // accumulate distances
       float deltaDistance = m_state.velocity * deltaTime;
+      float deltaAngle = m_state.omega * deltaTime;
+
       m_state.total_distance += deltaDistance;
       m_state.cell_offset += deltaDistance;
-
-      // wrap the angle
-      m_state.theta += m_state.omega * deltaTime;
-      if (m_state.theta >= 360.0f) {
-        m_state.theta -= 360.0f;
-      } else if (m_state.theta < 0.0f) {
-        m_state.theta += 360.0f;
-      }
+      m_state.move_distance += deltaDistance;
 
       // calculate new location
-      m_state.x += m_state.velocity * std::cos(m_state.theta * RADIANS) * deltaTime;
-      m_state.y += m_state.velocity * std::sin(m_state.theta * RADIANS) * deltaTime;
+      m_state.x += deltaDistance * std::cos(m_state.angle * RADIANS);
+      m_state.y += deltaDistance * std::sin(m_state.angle * RADIANS);
+      m_state.angle += deltaAngle;
+
+      // wrap the angle
+      m_state.angle = std::fmod(m_state.angle, 360.0f);
+      if (m_state.angle < 0.0f) {
+        m_state.angle += 360.0f;
+      }
     }
   }
 
  private:
-  std::atomic<uint32_t> m_ticks;
-  std::atomic<bool> m_running;
+  Robot(const Robot&) = delete;
+  Robot& operator=(const Robot&) = delete;
+
+  uint32_t m_ticks;
+  bool m_running;
 
   SensorDataCallback m_sensor_callback = nullptr;
 

@@ -71,8 +71,7 @@ class Application : public IEventObserver {
     /// set up the robot
     m_robot_body.setRobot(m_robot);
     sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
-    m_robot.setPosition(start_pos.x, start_pos.y);
-    m_robot.setOrientation(90.0);
+    m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
     /// The Lambda expression here serves to bind the callback to the application instance
     m_robot.setSensorCallback([this](float x, float y, float theta) -> SensorData { return this->callbackCalculateSensorData(x, y, theta); });
     m_robot.start();
@@ -178,19 +177,6 @@ class Application : public IEventObserver {
     } else {
       m_textbox.setBackgroundColour(sf::Color(255, 255, 255, 48));
     }
-
-    if (!snapped && sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-      if (sf::Keyboard::isKeyPressed(sf::Keyboard::RControl)) {
-        m_robot.setOrientation(snapToHigher45(m_robot.getOrientation() + 1));
-        snapped = true;
-      }
-    }
-    if (!snapped && sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-      if (sf::Keyboard::isKeyPressed(sf::Keyboard::RControl)) {
-        m_robot.setOrientation(snapToLower45(m_robot.getOrientation() - 1));
-        snapped = true;
-      }
-    }
   }
 
   std::string formatSensorData(int lfs, int lds, int rds, int rfs) {
@@ -203,13 +189,13 @@ class Application : public IEventObserver {
   }
   std::string formatRobotState() {
     std::stringstream ss;
-    sf::Vector2f pos = m_robot.getPose();
+    sf::Vector2f pos = {m_robot.getState().x, m_robot.getState().y};
     int cell = m_maze_manager.getCellFromPosition(pos.x, pos.y);
     int cell_x = int(pos.x / m_maze_manager.getCellSize());
     int cell_y = int(pos.y / m_maze_manager.getCellSize());
     ss << "Robot:  X: " << (int)pos.x << "\n"                                                           //
        << "        y: " << (int)pos.y << "\n"                                                           //
-       << "    theta: " << std::fixed << std::setprecision(1) << m_robot.getOrientation() << " deg \n"  //
+       << "    angle: " << std::fixed << std::setprecision(1) << m_robot.getState().angle << " deg \n"  //
        << "\n"                                                                                          //
        << " Cell:  [" << cell_x << ", " << cell_y << "] = " << cell << "\n";                            //
     return ss.str();
@@ -277,22 +263,23 @@ class Application : public IEventObserver {
     ImGui::PopItemFlag();
     float b_wide = ImGui::CalcTextSize("TEST SS180R").x;
     b_wide += ImGui::GetStyle().FramePadding.x * 2.0;
+    sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
     if (ImGui::Button("TEST SS90", ImVec2(b_wide, 0))) {
-      m_robot.resetState();
+      m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
       m_mouse.go(1, counts);
     }
     if (ImGui::Button("TEST SS180", ImVec2(b_wide, 0))) {
-      m_robot.resetState();
+      m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
       m_mouse.go(2, counts);
     }
 
     if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
-      m_robot.resetState();
+      m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
     }
     RobotState state = m_robot.getState();
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "    time     X      Y   Theta     Vel   Omega");
     char s[60];
-    sprintf(s, "%8u %5.1f  %5.1f  %6.2f  %6.1f  %6.1f  ", state.timestamp, state.x, state.y, state.theta, state.velocity, state.omega);
+    sprintf(s, "%8u %5.1f  %5.1f  %6.2f  %6.1f  %6.1f  ", state.timestamp, state.x, state.y, state.angle, state.velocity, state.omega);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", s);
     const int frames = 60 * 4;
     static float speed[frames];
@@ -347,7 +334,7 @@ class Application : public IEventObserver {
   }
 
   std::string showWallIDs() {
-    sf::Vector2f pos = m_robot.getPose();
+    sf::Vector2f pos = {m_robot.getState().x, m_robot.getState().y};
     int cell_x = pos.x / m_maze_manager.getCellSize();
     int cell_y = pos.y / m_maze_manager.getCellSize();
     int x = cell_x;
@@ -369,18 +356,17 @@ class Application : public IEventObserver {
 
   void drawLidar(sf::RenderTarget& window) {
     float range = conf::SENSOR_MAX_RANGE;
-    sf::Vector2f origin = m_robot.getPose();
+    sf::Vector2f pos = {m_robot.getState().x, m_robot.getState().y};
     // sf::FloatRect wall = m_maze_manager.getWallRect(m_maze_manager.getWallIndex(3, 3, Direction::East));
-    auto pos = m_robot.getPose();
     auto walls = getLocalWallList(pos.x / m_maze_manager.getCellSize(), pos.y / m_maze_manager.getCellSize());
     for (int a = -179; a < 179; a += 1) {
-      float angle = a + m_robot.getOrientation();
+      float angle = a + m_robot.getState().angle;
       sf::Vector2f ray{cosf((float)angle * RADIANS), sinf((float)angle * RADIANS)};
       float min_d = range;
       for (auto& i : walls) {
         if (m_maze_manager.getWallState(i) == WallState::KnownPresent) {
           sf::FloatRect w = m_maze_manager.getWallRect(i);
-          float d = Collisions::getRayDistanceToAlignedRectangle(origin, ray, w, range);
+          float d = Collisions::getRayDistanceToAlignedRectangle(pos, ray, w, range);
           if (d < min_d) {
             min_d = d;  //
           }
@@ -388,7 +374,7 @@ class Application : public IEventObserver {
       }
       // sf::Vector2f p = origin;
       //      Drawing::drawLine(window, p, q, sf::Color(255, 255, 255, 32));
-      sf::Vector2f q = origin + ray * min_d;
+      sf::Vector2f q = pos + ray * min_d;
       Drawing::drawDot(window, q);
     }
   }
