@@ -48,36 +48,45 @@ class Trapezoid {
 
   // Initialize the motion profile
   void begin() {
+    float v1 = m_v_start;
+    float v2 = m_v_max;
+    float v3 = m_v_end;
+    float s = m_distance;
+    float a = m_accel;
+    float dt = m_deltaTime;
+    float s1 = 0;
+    float s2 = 0;
+    float s3 = 0;
+
     // Calculate the steps required for acceleration and deceleration phases (p1 and p3)
-    m_p1 = static_cast<int>(-(2 * m_v_start - std::sqrt(2 * m_v_start * m_v_start + 2 * m_v_end * m_v_end + 4 * m_distance * m_accel)) /
-                            (2 * m_accel * m_deltaTime));
-    m_p3 = static_cast<int>(-(2 * m_v_end - std::sqrt(2 * m_v_start * m_v_start + 2 * m_v_end * m_v_end + 4 * m_distance * m_accel)) /
-                            (2 * m_accel * m_deltaTime));
+    m_p1 = static_cast<int>(-(2 * v1 - std::sqrt(2 * v1 * v1 + 2 * v3 * v3 + 4 * s * a)) / (2 * a * dt));
+    m_p3 = static_cast<int>(-(2 * v3 - std::sqrt(2 * v1 * v1 + 2 * v3 * v3 + 4 * s * a)) / (2 * a * dt));
 
     // Recalculate acceleration to ensure distance matches the provided input
-    m_accel = (m_distance - m_deltaTime * ((float)m_p1 * m_v_start + (float)m_p3 * m_v_end)) /  //
-              (0.5f * m_deltaTime * m_deltaTime * (float)(m_p1 * m_p1 + m_p3 * m_p3));
+    a = (s - dt * ((float)m_p1 * v1 + (float)m_p3 * v3)) /  //
+        (0.5f * dt * dt * (float)(m_p1 * m_p1 + m_p3 * m_p3));
 
     // Check if maximum velocity is reached during acceleration
-    if (m_v_start + m_accel * (float)m_p1 * m_deltaTime < m_v_max) {
+    if (v1 + a * (float)m_p1 * dt < v2) {
       m_p2 = 0;  // No constant velocity phase
     } else {
       // Adjust acceleration and deceleration phases to reach maximum velocity
-      m_p1 = static_cast<int>((m_v_max - m_v_start) / (m_deltaTime * m_accel));
-      m_p3 = static_cast<int>((m_v_max - m_v_end) / (m_deltaTime * m_accel));
+      m_p1 = static_cast<int>((v2 - v1) / (dt * a));
+      m_p3 = static_cast<int>((v2 - v3) / (dt * a));
 
-      float p1_time = (float)m_p1 * m_deltaTime;
-      float p3_time = (float)m_p3 * m_deltaTime;
+      float t1 = (float)m_p1 * dt;
+      float t3 = (float)m_p3 * dt;
       // Calculate the remaining distance for the constant velocity phase
-      float remaining_distance = m_distance                                                           //
-                                 - (0.5f * m_accel * ((p1_time) * (p1_time) + (p3_time) * (p3_time))  //
-                                    + m_v_start * p1_time + m_v_end * p3_time);
+      float remaining_distance = s - (0.5f * a * ((t1) * (t1) + (t3) * (t3)) + v1 * t1 + v3 * t3);
 
       // Calculate the number of steps at maximum velocity
-      m_p2 = static_cast<int>(remaining_distance / (m_deltaTime * m_v_max));
+      m_p2 = static_cast<int>(remaining_distance / (dt * v2));
+      float t2 = (float)m_p2 * dt;
 
       // Adjust the actual maximum velocity to ensure distance consistency
-      m_v_max = remaining_distance / (m_deltaTime * (float)m_p2);
+      v2 = remaining_distance / (dt * (float)m_p2);
+      m_v_max = v2;
+      m_accel = a;
     }
 
     // Reset step count and set motion as active
