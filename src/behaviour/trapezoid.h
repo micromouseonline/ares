@@ -32,26 +32,22 @@ class Trapezoid {
         m_v_start(std::abs(v_start)),  //
         m_v_max(std::abs(v_max)),      //
         m_v_end(std::abs(v_end)),      //
-        m_deltaTime(dt)                //
+        m_acceleration(std::abs(accel)),
+        m_deltaTime(dt)  //
   {
-    begin(dist, v_start, v_max, v_end, accel, dt);
   }
 
   virtual ~Trapezoid() = default;
 
   void begin() {
-    m_step_count = 0;
-    m_finished = false;
-  }
-
-  void begin(float dist, float v_start, float v_max, float v_end, float acc, float dt = 0.001f) {
-    acc = std::abs(acc);
-    m_p1 = (-(2 * m_v_start - std::sqrt(2 * m_v_start * m_v_start + 2 * m_v_end * m_v_end + 4 * m_distance * acc)) / (2 * acc * m_deltaTime));
-    m_p3 = (-(2 * m_v_end - std::sqrt(2 * m_v_start * m_v_start + 2 * m_v_end * m_v_end + 4 * m_distance * acc)) / (2 * acc * m_deltaTime));
+    m_p1 = (-(2 * m_v_start - std::sqrt(2 * m_v_start * m_v_start + 2 * m_v_end * m_v_end + 4 * m_distance * m_acceleration)) /
+            (2 * m_acceleration * m_deltaTime));
+    m_p3 =
+        (-(2 * m_v_end - std::sqrt(2 * m_v_start * m_v_start + 2 * m_v_end * m_v_end + 4 * m_distance * m_acceleration)) / (2 * m_acceleration * m_deltaTime));
 
     m_acceleration = (m_distance - m_deltaTime * (m_p1 * m_v_start + m_p3 * m_v_end)) / (0.5 * m_deltaTime * m_deltaTime * (m_p1 * m_p1 + m_p3 * m_p3));
 
-    if (m_v_start + m_acceleration * m_p1 * m_deltaTime < v_max) {
+    if (m_v_start + m_acceleration * m_p1 * m_deltaTime < m_v_max) {
       m_p2 = 0;
     } else {
       m_p1 = int((m_v_max - m_v_start) / (m_deltaTime * m_acceleration));
