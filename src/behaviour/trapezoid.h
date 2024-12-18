@@ -15,6 +15,17 @@
 // m_finished point
 class Trapezoid {
  public:
+  Trapezoid()
+      : m_distance(0),       //
+        m_dir(0),            //
+        m_v_start(0),        //
+        m_v_max(0),          //
+        m_v_end(0),          //
+        m_deltaTime(0.001f)  //
+  {
+    reset();
+  };
+
   Trapezoid(float dist, float v_start, float v_max, float v_end, float accel, float dt = 0.001f)
       : m_distance(std::abs(dist)),    //
         m_dir(sign(dist)),             //
@@ -23,47 +34,53 @@ class Trapezoid {
         m_v_end(std::abs(v_end)),      //
         m_deltaTime(dt)                //
   {
-    accel = std::abs(accel);
-    m_phase1_steps = (-(2 * m_v_start - std::sqrt(2 * m_v_start * m_v_start + 2 * m_v_end * m_v_end + 4 * m_distance * accel)) / (2 * accel * m_deltaTime));
-    m_phase3_steps = (-(2 * m_v_end - std::sqrt(2 * m_v_start * m_v_start + 2 * m_v_end * m_v_end + 4 * m_distance * accel)) / (2 * accel * m_deltaTime));
-
-    m_acceleration = (m_distance - m_deltaTime * (m_phase1_steps * m_v_start + m_phase3_steps * m_v_end)) /
-                     (0.5 * m_deltaTime * m_deltaTime * (m_phase1_steps * m_phase1_steps + m_phase3_steps * m_phase3_steps));
-
-    if (m_v_start + m_acceleration * m_phase1_steps * m_deltaTime < v_max) {
-      m_phase2_steps = 0;
-    } else {
-      m_phase1_steps = (size_t)((m_v_max - m_v_start) / (m_deltaTime * m_acceleration));
-      m_phase3_steps = (size_t)((m_v_max - m_v_end) / (m_deltaTime * m_acceleration));
-
-      const float L2 =
-          m_distance -
-          (0.5 * m_acceleration *
-               ((m_phase1_steps * m_deltaTime) * (m_phase1_steps * m_deltaTime) + (m_phase3_steps * m_deltaTime) * (m_phase3_steps * m_deltaTime)) +
-           m_v_start * m_phase1_steps * m_deltaTime + m_v_end * m_phase3_steps * m_deltaTime);
-      m_phase2_steps = (size_t)(L2 / (m_deltaTime * m_v_max));
-      m_v_max = L2 / (m_deltaTime * m_phase2_steps);
-    }
-
-    reset();
+    begin(dist, v_start, v_max, v_end, accel, dt);
   }
 
   virtual ~Trapezoid() = default;
 
-  float next() {
-    float v;
-    if (m_step_count <= m_phase1_steps) {
-      v = m_v_start + m_acceleration * m_deltaTime * m_step_count;
-    } else if (m_step_count <= m_phase1_steps + m_phase2_steps) {
-      v = m_v_max;
-    } else if (m_step_count < m_phase1_steps + m_phase2_steps + m_phase3_steps) {
-      v = m_v_end + m_acceleration * m_deltaTime * (m_phase1_steps + m_phase2_steps + m_phase3_steps - m_step_count);
+  void begin() {
+    m_step_count = 0;
+    m_finished = false;
+  }
+
+  void begin(float dist, float v_start, float v_max, float v_end, float acc, float dt = 0.001f) {
+    acc = std::abs(acc);
+    m_p1 = (-(2 * m_v_start - std::sqrt(2 * m_v_start * m_v_start + 2 * m_v_end * m_v_end + 4 * m_distance * acc)) / (2 * acc * m_deltaTime));
+    m_p3 = (-(2 * m_v_end - std::sqrt(2 * m_v_start * m_v_start + 2 * m_v_end * m_v_end + 4 * m_distance * acc)) / (2 * acc * m_deltaTime));
+
+    m_acceleration = (m_distance - m_deltaTime * (m_p1 * m_v_start + m_p3 * m_v_end)) / (0.5 * m_deltaTime * m_deltaTime * (m_p1 * m_p1 + m_p3 * m_p3));
+
+    if (m_v_start + m_acceleration * m_p1 * m_deltaTime < v_max) {
+      m_p2 = 0;
+    } else {
+      m_p1 = int((m_v_max - m_v_start) / (m_deltaTime * m_acceleration));
+      m_p3 = int((m_v_max - m_v_end) / (m_deltaTime * m_acceleration));
+
+      const float L2 = m_distance - (0.5 * m_acceleration * ((m_p1 * m_deltaTime) * (m_p1 * m_deltaTime) + (m_p3 * m_deltaTime) * (m_p3 * m_deltaTime)) +
+                                     m_v_start * m_p1 * m_deltaTime + m_v_end * m_p3 * m_deltaTime);
+      m_p2 = (size_t)(L2 / (m_deltaTime * m_v_max));
+      m_v_max = L2 / (m_deltaTime * m_p2);
     }
 
-    if (!m_finished)
-      m_step_count++;
+    m_step_count = 0;
+    m_finished = false;
+  }
+  float next() {
+    float v;
+    if (m_step_count <= m_p1) {
+      v = m_v_start + m_acceleration * m_deltaTime * m_step_count;
+    } else if (m_step_count <= m_p1 + m_p2) {
+      v = m_v_max;
+    } else if (m_step_count < m_p1 + m_p2 + m_p3) {
+      v = m_v_end + m_acceleration * m_deltaTime * (m_p1 + m_p2 + m_p3 - m_step_count);
+    }
 
-    if (m_step_count >= m_phase1_steps + m_phase2_steps + m_phase3_steps) {
+    if (!m_finished) {
+      m_step_count++;
+    }
+
+    if (m_step_count >= m_p1 + m_p2 + m_p3) {
       m_finished = true;
       v = m_v_end;
     }
@@ -72,28 +89,28 @@ class Trapezoid {
 
   void reset() {
     m_step_count = 0;
-    m_finished = false;
+    m_finished = true;
   }
 
-  inline bool is_end() const {
+  inline bool isFinished() const {
     return m_finished;
   }
 
  private:
-  const float m_distance;
-  const float m_dir;
-  const float m_v_start;
+  float m_distance;
+  float m_dir;
+  float m_v_start;
   float m_v_max;
-  const float m_v_end;
+  float m_v_end;
   float m_acceleration;
-  const float m_deltaTime;
+  float m_deltaTime;
 
-  int m_phase1_steps;
-  int m_phase2_steps;
-  int m_phase3_steps;
+  int m_p1;
+  int m_p2;
+  int m_p3;
   int m_step_count;
 
-  bool m_finished;
+  bool m_finished = true;
 
   inline float sign(float a) const {
     return a >= 0 ? 1 : -1;

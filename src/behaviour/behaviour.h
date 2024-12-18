@@ -68,12 +68,9 @@
 class Behaviour {
  public:
   Behaviour()
-      : m_robot(nullptr),
-        m_running(false),
-        m_terminate(false),
-        m_timeStamp(0){
+      : m_robot(nullptr), m_running(false), m_terminate(false), m_timeStamp(0) {
 
-            //
+          //
         };
 
   ~Behaviour() {
@@ -146,7 +143,7 @@ class Behaviour {
       doTurn(-180, s * omega_max, 0, alpha);
     }
     doMove(5.0 * 180 - lead_out, v_max, 0, acc);
-    doTurn(-180, 318, 0, 50000);
+    doTurn(-180, 318, 0, 3000);
   }
 
   void run() {
@@ -193,10 +190,10 @@ class Behaviour {
   void delay_ms(int ms) {
     Timer timer;
     while (ms > 0) {
-      m_fwdProfile.update(m_step_time);
-      m_rotProfile.update(m_step_time);
+      float v = m_trap_fwd.next();
+      float w = m_trap_rot.next();
       if (m_robot) {
-        m_robot->setSpeeds(m_fwdProfile.getSpeed(), m_rotProfile.getSpeed());
+        m_robot->setSpeeds(v, w);
         m_robot->systick(m_step_time);
       }
       m_timeStamp++;
@@ -225,18 +222,23 @@ class Behaviour {
   }
 
   void startMove(float distance, float v_max, float v_end, float accel) {
-    m_fwdProfile.start(distance, v_max, v_end, accel);
+    float v_start = m_robot->getState().velocity;
+    m_trap_fwd = Trapezoid(distance, v_start, v_max, v_end, accel);
+    m_trap_fwd.begin();
   }
 
   bool moveFinished() {
-    return m_fwdProfile.isFinished();
+    return m_trap_fwd.isFinished();
   }
+
   void startTurn(float angle, float omega_Max, float omega_end, float alpha) {
-    m_rotProfile.start(angle, omega_Max, omega_end, alpha);
+    float w_start = m_robot->getState().omega;
+    m_trap_rot = Trapezoid(angle, w_start, omega_Max, omega_end, alpha);
+    m_trap_rot.begin();
   }
 
   bool turnFinished() {
-    return m_rotProfile.isFinished();
+    return m_trap_rot.isFinished();
   }
 
   Robot* m_robot = nullptr;
@@ -249,6 +251,8 @@ class Behaviour {
   std::atomic<int> m_act = 0;
   std::atomic<int> m_iterations = 0;
 
+  Trapezoid m_trap_fwd;
+  Trapezoid m_trap_rot;
   Profile m_fwdProfile;
   Profile m_rotProfile;
 };

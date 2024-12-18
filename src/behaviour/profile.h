@@ -65,10 +65,16 @@ class Profile {
   /// @param final_speed  (mm/s)
   /// @param acceleration (mm/s/s)
 
+  void start(float distance, float speed_now, float top_speed, float final_speed, float acceleration) {
+    m_sign = (distance < 0) ? -1 : +1;
+  }
+
   void start(float distance, float top_speed, float final_speed, float acceleration) {
+    m_sign = (distance < 0) ? -1 : +1;
+
+    ///////////////////////////////////
     top_speed = fabsf(top_speed);
     final_speed = fabsf(final_speed);
-    m_sign = (distance < 0) ? -1 : +1;
     if (distance < 0) {
       distance = -distance;
     }
