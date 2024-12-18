@@ -253,8 +253,6 @@ class Behaviour {
 
   Trapezoid m_trap_fwd;
   Trapezoid m_trap_rot;
-  Profile m_fwdProfile;
-  Profile m_rotProfile;
 };
 
 #endif  // BEHAVIOUR_H
