@@ -124,6 +124,20 @@ class Trapezoid {
     m_finished = true;
   }
 
+  /***
+   * Calculates the time needed for this profile
+   * NEVER call this while the profile is active
+   * @return time in seconds
+   */
+  float get_duration() {
+    m_step_count = 0;
+    m_finished = false;
+    while (!m_finished) {
+      next();
+    }
+    return m_dt * (float)m_step_count;
+  }
+
   // Check if the motion profile is complete
   inline bool isFinished() const {
     return m_finished;
