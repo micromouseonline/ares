@@ -272,6 +272,10 @@ class Application : public IEventObserver {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
       m_mouse.go(2, counts);
     }
+    if (ImGui::Button("CIRCUIT RUN", ImVec2(b_wide, 0))) {
+      m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
+      m_mouse.go(3, counts);
+    }
 
     if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);

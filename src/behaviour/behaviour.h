@@ -146,6 +146,25 @@ class Behaviour {
     doTurn(-180, 318, 0, 3000);
   }
 
+  void test_circuit_run(int counts) {
+    float s = 1.0;
+    float v_max = 5000.0f;
+    float acc = 10000.0f;
+    float omega_max = 350.0f;
+    float alpha = 2866.0f;
+    float turn_speed = 1000.0f;
+    float lead_in = 227.0f;
+    float lead_out = 227.0f;
+    doMove(15.0 * 180 - lead_in, v_max, s * turn_speed, acc);
+    doTurn(-90, s * omega_max, 0, alpha);
+    for (int i = 0; i < counts - 2; i++) {
+      doMove(15.0 * 180 - lead_in - lead_out, v_max, s * turn_speed, acc);
+      doTurn(-90, s * omega_max, 0, alpha);
+    }
+    doMove(15.0 * 180 - lead_out, v_max, 0, acc);
+    doTurn(-90, 318, 0, 3000);
+  }
+
   void run() {
     while (m_running) {
       // do stuff
@@ -158,6 +177,11 @@ class Behaviour {
           test_SS180(m_iterations);
           m_act = 0;
           break;
+        case 3:
+          test_circuit_run(m_iterations * 4);
+          m_act = 0;
+          break;
+
         default:
           // do nothing
           break;
