@@ -12,6 +12,7 @@
 #ifndef MAZERUNNER32_OPERATION_H
 #define MAZERUNNER32_OPERATION_H
 
+#include <stdint.h>
 #include "config.h"
 
 #define NUM_COMMANDS_MAX 256

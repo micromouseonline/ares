@@ -19,6 +19,10 @@ constexpr int BIT(int x) {
   return 1 << x;
 }
 
+inline float sign(float a) {
+  return a >= 0 ? 1.0f : -1.0f;
+}
+
 constexpr float RADIANS = kPI / 180.0f;
 constexpr float DEGREES = 180.0f / kPI;
 

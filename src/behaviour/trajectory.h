@@ -12,162 +12,89 @@
 #ifndef BEHAVIOUR_TRAJECTORY_H
 #define BEHAVIOUR_TRAJECTORY_H
 
-#include <cstddef>
+#include <cmath>
 
 /***
- * I found the original code for this Trajectoryal profiler as part of the
- * repository for MIZUHO, a micromouse by user 12312.
+ * The Trajectory class is the base class for all motion profiles.
+ * It is a pure virtual class that cannot be instantiated - it
+ * provides a common type and basic interface for various
+ * trajectory types that inherit from it.
  *
- * https://github.com/idt12312/MIZUHO
+ * The primary function of this class is to provide a series of
+ * forward and angular velocities that will move the robot
+ * from the start pose to the end pose.
  *
- * It has been refactored and edited to match more closely with my derivation
- * of the equations which can be found in the docs directory
+ * Typical usage involves constructing a derived class of Trajectory,
+ * initializing it, and then repeatedly calling the next() method
+ * to retrieve a structure containing the two velocities.
+ *
+ * Check isFinished() to determine when the trajectory is complete.
+ *
+ * Utility methods are available to retrieve the duration, the pose
+ * at any time, and the final state.
+ *
+ * Be cautious when using some utilities while the trajectory
+ * is active, as this may affect performance or accuracy.
+ *
+ * Derived classes have custom constructors designed for
+ * specific types of motion, such as linear moves or
+ * in-place/curved turns.
+ *
  */
+
+#include "common/pose.h"
+
 class Trajectory {
  public:
-  // Default constructor initializes the Trajectory profile to zero distance and velocities
-  Trajectory()
-      : m_s(0),           // Total distance to travel
-        m_v1(0),          // Starting velocity
-        m_v_limit(0),     // Maximum velocity
-        m_v2(0),          // Ending velocity
-        m_a(0),           // Acceleration value
-        m_dt(0.001f),     // Time step size
-        m_dir(0),         // Direction of motion (+1 or -1)
-        m_step_count(0),  // Step counter for velocity progression
-        m_finished(true)  // Motion state flag
-  {
-  }
-
-  // Parameterized constructor initializes the Trajectory motion profile
-  Trajectory(float dist, float v_start, float v_max, float v_end, float accel, float dt = 0.001f)
-      : m_s(std::abs(dist)),         // Absolute distance to ensure positive magnitude
-        m_v1(std::abs(v_start)),     // Ensure positive velocity
-        m_v_limit(std::abs(v_max)),  // Ensure positive max velocity
-        m_v2(std::abs(v_end)),       // Ensure positive end velocity
-        m_a(std::abs(accel)),        // Ensure positive acceleration
-        m_dt(dt),                    // Time step size
-        m_dir(sign(dist)),           // Direction of motion (+1 or -1)
-        m_step_count(0),             // Initialize step count
-        m_finished(true)             // Start with motion as finished
-  {
-    init();
-  }
-
   virtual ~Trajectory() = default;
 
-  void begin() {
-    m_step_count = 0;
-    m_finished = false;
-  }
-
   // Initialize the motion profile
-  // TODO what if Vmax < V1 or V2?
-  void init() {
-    // Calculate the steps required for acceleration and deceleration phases (p1 and p3)
-    m_p1 = static_cast<int>(-(2 * m_v1 - std::sqrt(2 * m_v1 * m_v1 + 2 * m_v2 * m_v2 + 4 * m_s * m_a)) / (2 * m_a * m_dt));
-    m_p3 = static_cast<int>(-(2 * m_v2 - std::sqrt(2 * m_v1 * m_v1 + 2 * m_v2 * m_v2 + 4 * m_s * m_a)) / (2 * m_a * m_dt));
+  virtual void init(const Pose) = 0;
 
-    // Recalculate acceleration to ensure distance matches the provided input
-    m_a = (m_s - m_dt * ((float)m_p1 * m_v1 + (float)m_p3 * m_v2)) /  //
-          (0.5f * m_dt * m_dt * (float)(m_p1 * m_p1 + m_p3 * m_p3));
-
-    // Check if maximum velocity is reached during acceleration
-    if (m_v1 + m_a * (float)m_p1 * m_dt < m_v_limit) {
-      m_p2 = 0;  // No constant velocity phase
-    } else {
-      // Adjust acceleration and deceleration phases to reach maximum velocity
-      m_p1 = static_cast<int>((m_v_limit - m_v1) / (m_dt * m_a));
-      m_p3 = static_cast<int>((m_v_limit - m_v2) / (m_dt * m_a));
-
-      float t1 = (float)m_p1 * m_dt;
-      float t3 = (float)m_p3 * m_dt;
-      // Calculate the remaining distance for the constant velocity phase
-      float cruise_dist = m_s - (0.5f * m_a * (t1 * t1 + t3 * t3) + m_v1 * t1 + m_v2 * t3);
-
-      // Calculate the number of steps at maximum velocity
-      m_p2 = static_cast<int>(cruise_dist / (m_dt * m_v_limit));
-
-      // Adjust the actual maximum velocity for exact result
-      m_v_limit = cruise_dist / (m_dt * (float)m_p2);
-    }
-
-    // Reset step count and set motion as active
-    m_step_count = 0;
-    m_finished = true;
-  }
+  // set the control variables to the start of the trajectory, ready for stepping through
+  virtual void begin() = 0;
 
   // Calculate the next velocity step in the profile
-  float next() {
-    float v = 0.0f;
-    if (m_step_count <= m_p1) {  // Phase 1: Acceleration
-      v = m_v1 + m_a * m_dt * (float)m_step_count;
-    } else if (m_step_count <= m_p1 + m_p2) {  // Phase 2: Constant velocity
-      v = m_v_limit;
-    } else if (m_step_count < m_p1 + m_p2 + m_p3) {  // Phase 3: Deceleration
-      v = m_v2 + m_a * m_dt * float(m_p1 + m_p2 + m_p3 - m_step_count);
-    }
+  virtual float next() = 0;
 
-    // Increment step count if motion is not finished
-    if (!m_finished) {
-      m_step_count++;
-    }
+  virtual Pose getPoseAtTime(float t) = 0;
 
-    // Check if motion is finished
-    if (m_step_count >= m_p1 + m_p2 + m_p3) {
-      m_finished = true;
-      v = m_v2;  // Final velocity
-    }
+  virtual Pose getFinalPose() = 0;
 
-    return m_dir * v;  // Apply direction to velocity
+  virtual  // Reset the motion profile
+      void
+      reset() {
   }
 
-  // Reset the motion profile
-  void reset() {
-    m_step_count = 0;
-    m_finished = true;
-  }
-
-  /***
-   * Calculates the time needed for this profile
-   * NEVER call this while the profile is active
-   * @return time in seconds
-   */
-  float get_duration() {
-    m_step_count = 0;
-    m_finished = false;
-    while (!m_finished) {
-      next();
-    }
-    return m_dt * (float)m_step_count;
-  }
+  // calculate the time taken, in seconds, to execute the trajectory
+  virtual float get_duration() = 0;
 
   // Check if the motion profile is complete
-  inline bool isFinished() const {
+  bool isFinished() const {
     return m_finished;
   }
 
- private:
-  // Member variables
-  float m_s;        // Total distance to travel
-  float m_v1;       // Starting velocity
-  float m_v_limit;  // Maximum velocity
-  float m_v2;       // Ending velocity
-  float m_a;        // Acceleration value
-  float m_dt;       // Time step size
+  void setStartPose(Pose p) {
+    m_start_pose = p;
+  }
 
-  float m_dir;       // Direction of motion (+1 or -1)
-  int m_p1;          // Steps in acceleration phase
-  int m_p2;          // Steps in constant velocity phase
-  int m_p3;          // Steps in deceleration phase
-  int m_step_count;  // Current step count
+  void setDeltaTime(float dt) {
+    m_delta_time = dt;
+  }
+
+  [[nodiscard]] float getDeltaTime() const {
+    return m_delta_time;
+  }
+
+ private:
+ protected:
+  Pose m_start_pose;
+  Pose m_current_pose;
+  float m_delta_time;
+  float m_current_step;
 
   bool m_finished;  // Flag to indicate motion completion
-
-  // Helper function to determine the sign of a number
-  inline float sign(float a) const {
-    return a >= 0 ? 1.0f : -1.0f;
-  }
+  Trajectory() : m_start_pose(), m_current_pose(), m_delta_time(0.001f), m_current_step(0), m_finished(true) {};
 };
 
 #endif /* BEHAVIOUR_TRAJECTORY_H */

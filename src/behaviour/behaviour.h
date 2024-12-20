@@ -67,9 +67,11 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include "common/pose.h"
 #include "common/timer.h"
 #include "robot/robot.h"
 #include "robot/sensor-data.h"
+#include "trajectory.h"
 #include "trapezoid.h"
 
 class Behaviour {
@@ -255,6 +257,7 @@ class Behaviour {
   void startMove(float distance, float v_max, float v_end, float accel) {
     float v_start = m_robot->getState().velocity;
     m_trap_fwd = Trapezoid(distance, v_start, v_max, v_end, accel);
+    m_trap_fwd.init(Pose());
     m_trap_fwd.begin();
   }
 
@@ -265,6 +268,7 @@ class Behaviour {
   void startTurn(float angle, float omega_Max, float omega_end, float alpha) {
     float w_start = m_robot->getState().omega;
     m_trap_rot = Trapezoid(angle, w_start, omega_Max, omega_end, alpha);
+    m_trap_rot.init(Pose());
     m_trap_rot.begin();
   }
 
