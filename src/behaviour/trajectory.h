@@ -9,13 +9,13 @@
  *     https://opensource.org/licenses/MIT.                                   *
  ******************************************************************************/
 
-#ifndef CONTROLLER_TRAPEZOID_H_
-#define CONTROLLER_TRAPEZOID_H_
+#ifndef BEHAVIOUR_TRAJECTORY_H
+#define BEHAVIOUR_TRAJECTORY_H
 
 #include <cstddef>
 
 /***
- * I found the original code for this trapezoidal profiler as part of the
+ * I found the original code for this Trajectoryal profiler as part of the
  * repository for MIZUHO, a micromouse by user 12312.
  *
  * https://github.com/idt12312/MIZUHO
@@ -23,10 +23,10 @@
  * It has been refactored and edited to match more closely with my derivation
  * of the equations which can be found in the docs directory
  */
-class Trapezoid {
+class Trajectory {
  public:
-  // Default constructor initializes the trapezoid profile to zero distance and velocities
-  Trapezoid()
+  // Default constructor initializes the Trajectory profile to zero distance and velocities
+  Trajectory()
       : m_s(0),           // Total distance to travel
         m_v1(0),          // Starting velocity
         m_v_limit(0),     // Maximum velocity
@@ -39,8 +39,8 @@ class Trapezoid {
   {
   }
 
-  // Parameterized constructor initializes the trapezoid motion profile
-  Trapezoid(float dist, float v_start, float v_max, float v_end, float accel, float dt = 0.001f)
+  // Parameterized constructor initializes the Trajectory motion profile
+  Trajectory(float dist, float v_start, float v_max, float v_end, float accel, float dt = 0.001f)
       : m_s(std::abs(dist)),         // Absolute distance to ensure positive magnitude
         m_v1(std::abs(v_start)),     // Ensure positive velocity
         m_v_limit(std::abs(v_max)),  // Ensure positive max velocity
@@ -54,7 +54,7 @@ class Trapezoid {
     init();
   }
 
-  virtual ~Trapezoid() = default;
+  virtual ~Trajectory() = default;
 
   void begin() {
     m_step_count = 0;
@@ -170,4 +170,4 @@ class Trapezoid {
   }
 };
 
-#endif /* CONTROLLER_TRAPEZOID_H_ */
+#endif /* BEHAVIOUR_TRAJECTORY_H */

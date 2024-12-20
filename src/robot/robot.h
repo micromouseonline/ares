@@ -11,7 +11,7 @@
 #include <cmath>
 #include <iostream>
 #include <mutex>
-#include "behaviour/profile.h"
+#include "behaviour/trapezoid.h"
 #include "common/core.h"
 #include "robot-state.h"
 #include "sensor-data.h"
