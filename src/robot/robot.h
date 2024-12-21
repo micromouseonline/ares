@@ -13,6 +13,7 @@
 #include <mutex>
 #include "behaviour/trapezoid.h"
 #include "common/core.h"
+#include "common/pose.h"
 #include "robot-state.h"
 #include "sensor-data.h"
 
@@ -108,6 +109,10 @@ class Robot {
     m_state.x = x;
     m_state.y = y;
     m_state.angle = angle;
+
+    m_pose.setX(x);
+    m_pose.setY(y);
+    m_pose.setTheta(angle);
   }
 
   ///////////// Sensors
@@ -131,6 +136,8 @@ class Robot {
     // TODO: should this be clamped here or handled elsewhere?
     m_state.velocity = std::clamp(m_state.velocity, -m_vMax, m_vMax);
     m_state.omega = std::clamp(m_state.omega, -m_omegaMax, +m_omegaMax);
+    m_pose.setVelocity(velocity);
+    m_pose.setOmega(omega);
   }
 
   void adjustCellOffset(float delta) {
@@ -199,8 +206,8 @@ class Robot {
       float deltaAngle = m_state.omega * deltaTime;
 
       m_state.total_distance += deltaDistance;
-      m_state.cell_offset += deltaDistance;
-      m_state.move_distance += deltaDistance;
+      m_state.cell_offset += deltaDistance;    // TODO: should be a behaviour thing
+      m_state.move_distance += deltaDistance;  // TODO: NOT USED
 
       // calculate new location
       m_state.x += deltaDistance * std::cos(m_state.angle * RADIANS);
@@ -209,9 +216,8 @@ class Robot {
 
       // wrap the angle
       m_state.angle = std::fmod(m_state.angle, 360.0f);
-      if (m_state.angle < 0.0f) {
-        m_state.angle += 360.0f;
-      }
+
+      m_pose.advance(deltaTime);
     }
   }
 
@@ -226,6 +232,7 @@ class Robot {
 
   SensorData m_sensor_data;  // Current sensor readings
   RobotState m_state;
+  Pose m_pose;
   float m_vMax;
   float m_omegaMax;
 };
