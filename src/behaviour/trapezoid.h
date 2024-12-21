@@ -118,41 +118,6 @@ class Trapezoid : public Trajectory {
     return m_dir * v;  // Apply direction to velocity
   }
 
-  // Reset the motion profile
-  void reset() override {
-    m_current_pose = m_start_pose;
-    m_current_step = 0;
-    m_finished = true;
-  }
-
-  /***
-   * Calculates the time needed for this profile
-   * NEVER call this while the profile is active
-   * @return time in seconds
-   */
-  float get_duration() override {
-    m_current_step = 0;
-    m_finished = false;
-    while (!m_finished) {
-      next();
-    }
-    return m_delta_time * (float)m_current_step;
-  }
-
-  Pose getPoseAtTime(float t) override {
-    m_current_step = 0;
-    while ((float)m_current_step * m_delta_time < t) {
-      next();
-      m_current_step++;
-    }
-    return m_current_pose;
-  }
-
-  Pose getFinalPose() override {
-    get_duration();
-    return m_current_pose;
-  }
-
  private:
   // Member variables
   float m_s;        // Total distance to travel

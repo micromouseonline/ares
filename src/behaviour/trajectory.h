@@ -61,17 +61,40 @@ class Trajectory {
     m_start_pose = p;
   }
 
-  virtual Pose getPoseAtTime(float t) = 0;
-
-  virtual Pose getFinalPose() = 0;
-
-  virtual  // Reset the motion profile
-      void
-      reset() {
+  virtual Pose getPoseAtTime(float t) {
+    m_current_step = 0;
+    while ((float)m_current_step * m_delta_time < t) {
+      next();
+      m_current_step++;
+    }
+    return m_current_pose;
   }
 
-  // calculate the time taken, in seconds, to execute the trajectory
-  virtual float get_duration() = 0;
+  virtual Pose getFinalPose() {
+    get_duration();
+    return m_current_pose;
+  }
+
+  // Reset the motion profile
+  virtual void reset() {
+    m_current_pose = m_start_pose;
+    m_current_step = 0;
+    m_finished = true;
+  }
+
+  /***
+   * Calculates the time needed for this profile
+   * NEVER call this while the profile is active
+   * @return time in seconds
+   */
+  virtual float get_duration() {
+    m_current_step = 0;
+    m_finished = false;
+    while (!m_finished) {
+      next();
+    }
+    return m_delta_time * (float)m_current_step;
+  };
 
   // Check if the motion profile is complete
   bool isFinished() const {

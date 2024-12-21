@@ -35,7 +35,11 @@ class Cubic : public Trajectory {
   Cubic() : m_length(0), m_angle(0), m_velocity(0) {
   }
 
-  Cubic(float length, float angle, float velocity) : m_length(length), m_angle(angle), m_velocity(velocity) {
+  Cubic(float length, float angle, float velocity)
+      :  //
+        m_length(length),
+        m_angle(angle),
+        m_velocity(velocity) {
   }
 
   virtual ~Cubic() = default;
@@ -66,35 +70,12 @@ class Cubic : public Trajectory {
     }
     float t = m_distance * remaining;
     float omega = m_velocity * m_cubic_constant * t;
-    m_current_step++;
     float w = omega * DEGREES;
     m_current_pose.setVelocity(w);
     m_current_pose.advance(m_delta_time);
-
+    m_current_step++;
     return w;
   }
-
-  virtual Pose getPoseAtTime(float t) override {
-    m_current_step = 0;
-    while ((float)m_current_step * m_delta_time < t) {
-      next();
-      m_current_step++;
-    }
-    return m_current_pose;
-  };
-
-  virtual Pose getFinalPose() override {
-    return Pose();
-  };
-
-  // Reset the motion profile
-  virtual void reset() {
-  }
-
-  // calculate the time taken, in seconds, to execute the trajectory
-  virtual float get_duration() override {
-    return m_velocity * m_length;
-  };
 
  private:
   float m_length = 0;
