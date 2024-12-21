@@ -69,6 +69,8 @@
 #include <vector>
 #include "common/pose.h"
 #include "common/timer.h"
+#include "cubic.h"
+#include "cubic_parameters.h"
 #include "robot/robot.h"
 #include "robot/sensor-data.h"
 #include "trajectory.h"
@@ -117,6 +119,16 @@ class Behaviour {
     return waitForTurn();
   }
 
+  bool doCubicTurn(float length, float angle, float velocity) {
+    startCubicTurn(length, angle, velocity);
+    return waitForTurn();
+  }
+
+  bool doInPlaceTurn(float distance, float v_max, float v_end, float accel) {
+    startInPlaceTurn(distance, v_max, v_end, accel);
+    return waitForTurn();
+  }
+
   void test_SS90(int counts) {
     float s = 1.0;
     float v_max = 5000.0f;
@@ -133,45 +145,41 @@ class Behaviour {
       doTurn(-90, s * omega_max, 0, alpha);
     }
     doMove(5.0 * 180 - lead_out, v_max, 0, acc);
-    doTurn(-90, 318, 0, 50000);
+    doInPlaceTurn(-90, 318, 0, 50000);
   }
 
   void test_SS180(int counts) {
     float s = 1.0;
     float v_max = 5000.0f;
     float acc = 10000.0f;
-    float omega_max = 287.0f;
-    float alpha = 2866.0f;
-    float turn_speed = 440.0f;
-    float lead_in = 124.0f;
-    float lead_out = 123.0f;
+    float turn_speed = 600.0f;
+    float lead_in = 150.0f;
+    float lead_out = 150.0f;
     doMove(5.0 * 180 - lead_in, v_max, s * turn_speed, acc);
-    doTurn(-180, s * omega_max, 0, alpha);
+    doCubicTurn(365, -180, turn_speed);
     for (int i = 0; i < counts - 2; i++) {
       doMove(5.0 * 180 - lead_in - lead_out, v_max, s * turn_speed, acc);
-      doTurn(-180, s * omega_max, 0, alpha);
+      doCubicTurn(365, -180, turn_speed);
     }
     doMove(5.0 * 180 - lead_out, v_max, 0, acc);
-    doTurn(-180, 318, 0, 3000);
+    doInPlaceTurn(-180, 318, 0, 3000);
   }
 
   void test_circuit_run(int counts) {
     float s = 1.0;
     float v_max = 5000.0f;
     float acc = 10000.0f;
-    float omega_max = 350.0f;
-    float alpha = 2866.0f;
     float turn_speed = 1000.0f;
-    float lead_in = 227.0f;
-    float lead_out = 227.0f;
+    float lead_in = 118.0f;
+    float lead_out = 118.0f;
     doMove(15.0 * 180 - lead_in, v_max, s * turn_speed, acc);
-    doTurn(-90, s * omega_max, 0, alpha);
+    doCubicTurn(195, -90, turn_speed);
     for (int i = 0; i < counts - 2; i++) {
       doMove(15.0 * 180 - lead_in - lead_out, v_max, s * turn_speed, acc);
-      doTurn(-90, s * omega_max, 0, alpha);
+      doCubicTurn(195, -90, turn_speed);
     }
     doMove(15.0 * 180 - lead_out, v_max, 0, acc);
-    doTurn(-90, 318, 0, 3000);
+    doInPlaceTurn(-90, 318, 0, 3000);
   }
 
   void run() {
@@ -224,7 +232,11 @@ class Behaviour {
     Timer timer;
     while (ms > 0) {
       float v = m_trap_fwd.next();
-      float w = m_trap_rot.next();
+
+      float w = 0;
+      if (m_turn_trajectory != nullptr) {
+        w = m_turn_trajectory->next();
+      }
       if (m_robot) {
         m_robot->setSpeeds(v, w);
         m_robot->systick(m_step_time);
@@ -267,13 +279,30 @@ class Behaviour {
 
   void startTurn(float angle, float omega_Max, float omega_end, float alpha) {
     float w_start = m_robot->getState().omega;
-    m_trap_rot = Trapezoid(angle, w_start, omega_Max, omega_end, alpha);
-    m_trap_rot.init(Pose());
-    m_trap_rot.begin();
+    std::unique_ptr<Trapezoid> trapezoid = std::make_unique<Trapezoid>(angle, w_start, omega_Max, omega_end, alpha);
+    m_turn_trajectory = std::move(trapezoid);
+    m_turn_trajectory->init(Pose());
+    m_turn_trajectory->begin();
+  }
+
+  void startCubicTurn(float length, float angle, float velocity) {
+    std::unique_ptr<Cubic> cubic = std::make_unique<Cubic>(length, angle, velocity);
+    m_turn_trajectory = std::move(cubic);
+    m_turn_trajectory->init(Pose());
+    m_turn_trajectory->begin();
+  }
+
+  void startInPlaceTurn(float angle, float omega_Max, float omega_end, float alpha) {
+    float w_start = m_robot->getState().omega;
+    std::unique_ptr<Trapezoid> trapezoid = std::make_unique<Trapezoid>(angle, w_start, omega_Max, omega_end, alpha);
+    std::unique_ptr<Cubic> cubic = std::make_unique<Cubic>(195, -90, m_robot->getState().velocity);
+    m_turn_trajectory = std::move(trapezoid);
+    m_turn_trajectory->init(Pose());
+    m_turn_trajectory->begin();
   }
 
   bool turnFinished() {
-    return m_trap_rot.isFinished();
+    return m_turn_trajectory->isFinished();
   }
 
   Robot* m_robot = nullptr;
@@ -287,7 +316,7 @@ class Behaviour {
   std::atomic<int> m_iterations = 0;
 
   Trapezoid m_trap_fwd;
-  Trapezoid m_trap_rot;
+  std::unique_ptr<Trajectory> m_turn_trajectory = nullptr;
 };
 
 #endif  // BEHAVIOUR_H
