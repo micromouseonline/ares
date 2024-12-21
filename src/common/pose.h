@@ -58,16 +58,19 @@ class Pose {
    * Pose is advanced by one time step of motion.
    * Simple Euler integration is used
    * Acceleration is not used
-   * @param delta_time
+   * TODO: consider Verlet integration if errors
+   *       accumulate over a long period. This is
+   *       not likely though
+   * @param delta_time - time step for the update
    */
   void advance(float delta_time) {
-    float delta_s = m_velocity * delta_time;
-    float delta_a = m_omega * delta_time;
-    m_distance += delta_s;
-    m_theta += delta_a;
-    m_theta = std::fmod(m_theta, 360.0f);
-    m_x += delta_s * std::cos(m_theta * RADIANS);
-    m_y += delta_s * std::sin(m_theta * RADIANS);
+    float distance_change = m_velocity * delta_time;
+    float angle_change = m_omega * delta_time;
+    m_distance += distance_change;
+    m_theta += angle_change;
+    m_theta = std::fmod(m_theta + 360.0f, 360.0f);
+    m_x += distance_change * std::cos(m_theta * RADIANS);
+    m_y += distance_change * std::sin(m_theta * RADIANS);
   }
 
  private:

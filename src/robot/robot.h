@@ -215,7 +215,7 @@ class Robot {
       m_state.angle += deltaAngle;
 
       // wrap the angle
-      m_state.angle = std::fmod(m_state.angle, 360.0f);
+      m_state.angle = std::fmod(m_state.angle + 360.0f, 360.0f);
 
       m_pose.advance(deltaTime);
     }
