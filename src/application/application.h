@@ -294,9 +294,9 @@ class Application : public IEventObserver {
     omega[index] = state.omega;
     rds[index] = m_robot.getSensorData().rds_power;
     index = (index + 1) % IM_ARRAYSIZE(speed);
-    ImGui::PlotLines("speed", speed, IM_ARRAYSIZE(speed), index, "", 0, 3000, ImVec2(0, 100));
-    ImGui::PlotLines("omega", omega, IM_ARRAYSIZE(omega), index, "", -500, 500, ImVec2(0, 100));
-    ImGui::PlotLines("RDS", rds, IM_ARRAYSIZE(rds), index, "", 00, 500, ImVec2(0, 100));
+    ImGui::PlotLines("speed", speed, IM_ARRAYSIZE(speed), index, "", 0, 3000, ImVec2(330, 100));
+    ImGui::PlotLines("omega", omega, IM_ARRAYSIZE(omega), index, "", -1000, 1000, ImVec2(330, 140));
+    ImGui::PlotLines("RDS", rds, IM_ARRAYSIZE(rds), index, "", 00, 500, ImVec2(330, 100));
 
     //    ImGui::PopFont();
     ImGui::End();
