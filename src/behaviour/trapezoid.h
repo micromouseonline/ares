@@ -89,8 +89,7 @@ class Trapezoid : public Trajectory {
     }
 
     // Reset step count and set motion as active
-    m_current_step = 0;
-    m_finished = true;
+    reset();
   }
 
   // Calculate the next velocity step in the profile
@@ -114,11 +113,14 @@ class Trapezoid : public Trajectory {
       m_finished = true;
       v = m_v2;  // Final velocity
     }
+    m_current_pose.setVelocity(v);
+    m_current_pose.advance(m_delta_time);
     return m_dir * v;  // Apply direction to velocity
   }
 
   // Reset the motion profile
   void reset() override {
+    m_current_pose = m_start_pose;
     m_current_step = 0;
     m_finished = true;
   }
