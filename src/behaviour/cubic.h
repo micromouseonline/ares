@@ -12,7 +12,16 @@
 #ifndef BEHAVIOUR_CUBIC_H
 #define BEHAVIOUR_CUBIC_H
 /***
- * the Cubic trajectory is used exclusively for smooth turns
+ * the Cubic trajectory is used exclusively for smooth turns.
+ *
+ * The technique is easy to calculate and gives exact values
+ * for angular velocity at any point along the trajectory.
+ *
+ * A major benefit is the ability to run the same trajectory
+ * at any speed (ignoring slip of course).
+ *
+ * It is guaranteed to finish with omega = 0 and can be made
+ * more tight or loose just by adjusting the value of the length.
  *
  */
 
