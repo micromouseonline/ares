@@ -58,7 +58,7 @@ class Trapezoid : public Trajectory {
 
   // Initialize the motion profile
   // TODO what if Vmax < V1 or V2?
-  void init(Pose p) override {
+  void init(Pose p = Pose()) override {
     setStartPose(p);
     // Calculate the steps required for acceleration and deceleration phases (p1 and p3)
     m_p1 = static_cast<int>(-(2 * m_v1 - std::sqrt(2 * m_v1 * m_v1 + 2 * m_v2 * m_v2 + 4 * m_s * m_a)) / (2 * m_a * m_delta_time));

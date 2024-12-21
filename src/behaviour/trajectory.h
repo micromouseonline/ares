@@ -57,6 +57,10 @@ class Trajectory {
   // Calculate the next velocity step in the profile
   virtual float next() = 0;
 
+  void setStartPose(Pose p) {
+    m_start_pose = p;
+  }
+
   virtual Pose getPoseAtTime(float t) = 0;
 
   virtual Pose getFinalPose() = 0;
@@ -74,10 +78,6 @@ class Trajectory {
     return m_finished;
   }
 
-  void setStartPose(Pose p) {
-    m_start_pose = p;
-  }
-
   void setDeltaTime(float dt) {
     m_delta_time = dt;
   }
@@ -92,8 +92,8 @@ class Trajectory {
   Pose m_current_pose;
   float m_delta_time;
   float m_current_step;
-
   bool m_finished;  // Flag to indicate motion completion
+
   Trajectory() : m_start_pose(), m_current_pose(), m_delta_time(0.001f), m_current_step(0), m_finished(true) {};
 };
 

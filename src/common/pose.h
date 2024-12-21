@@ -54,6 +54,12 @@ class Pose {
     m_theta = theta;
   }
 
+  /***
+   * Pose is advanced by one time step of motion.
+   * Simple Euler integration is used
+   * Acceleration is not used
+   * @param delta_time
+   */
   void advance(float delta_time) {
     float delta_s = m_velocity * delta_time;
     float delta_a = m_omega * delta_time;
