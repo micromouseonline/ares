@@ -7,14 +7,23 @@
 - [ ] Add basic logging
 - [ ] Add Robot status LEDs - on Robot?
 - [ ] Add Robot input buttons
-- [ ] Add Robot status display - optional
+- [ ] Add Robot status display 
+- [ ] Link UI to virtual Robot hardware
 - [ ] Figure out how to get maze back from RobotController and display it.
 - [ ] Add sprite to RobotDisplay
 - [ ] Implement collision Detection for Robot
+- [ ] Decide where to put steering correction.
+- [ ] Add wall detection and mapping
+- [ ] Implement Actions/Operations
+- [ ] Generalise trajectory management
+- [ ] Add sensor fedback to steering
 - [ ] get some simple wall following behaviour into RobotControl (Mouse)
 - [ ] Add facility to store and mark goal area.
 - [ ] Implement load maze from file.
 - [ ] Implement save maze to file.
+- [ ] Display Maze cell status as colours
+- [ ] Display Maze wall status as colours
+- [ ] 
 
 # IN PROGRESS
 
