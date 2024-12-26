@@ -170,6 +170,36 @@ class Robot {
     return m_ticks;
   }
 
+  void setLed(const int i, const bool state) {
+    const uint8_t mask = BIT(i);
+    m_leds &= ~(mask);
+    m_leds |= state ? mask : 0;
+  }
+
+  [[nodiscard]] bool getLed(const int i) const {
+    const uint8_t mask = BIT(i);
+    return (m_leds & mask) == mask;
+  }
+
+  [[nodiscard]] uint8_t getLeds() const {
+    return m_leds;
+  }
+
+  void setButton(const int i, const bool state) {
+    const uint8_t mask = BIT(i);
+    m_buttons &= ~(mask);
+    m_buttons |= state ? mask : 0;
+  }
+
+  [[nodiscard]] bool isButton(const int i) const {
+    const uint8_t mask = BIT(i);
+    return (m_buttons & mask) != 0;
+  }
+
+  [[nodiscard]] uint8_t getButtons() const {
+    return m_buttons;
+  }
+
   /**
    * @brief Simulates a hardware timer interrupt for the robot.
    *
@@ -200,6 +230,10 @@ class Robot {
       if (m_sensor_callback) {
         m_sensor_data = m_sensor_callback(m_state.x, m_state.y, m_state.angle);
       }
+      setLed(7, m_sensor_data.lfs_distance < 100);
+      setLed(6, m_sensor_data.lds_distance < 100);
+      setLed(5, m_sensor_data.rds_distance < 100);
+      setLed(4, m_sensor_data.rfs_distance < 100);
 
       // accumulate distances
       float deltaDistance = m_state.velocity * deltaTime;
@@ -235,6 +269,8 @@ class Robot {
   Pose m_pose;
   float m_vMax;
   float m_omegaMax;
+  uint8_t m_buttons = 0;  /// up to 8 button states
+  uint8_t m_leds = 0;     /// up to 8 LED states
 };
 
 #endif  // ROBOT_H

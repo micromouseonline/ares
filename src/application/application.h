@@ -201,6 +201,12 @@ class Application : public IEventObserver {
     return ss.str();
   }
 
+  // Function to draw an LED indicator
+  void DrawLED(bool state, const ImVec4& color) {
+    ImGui::PushStyleColor(ImGuiCol_Button, state ? color : ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+    ImGui::Button("##LED", ImVec2(20, 20));
+    ImGui::PopStyleColor();
+  }
   /***
    * This is where the work gets done. All the application logic and behaviour
    * is performed from this method. By passing in a deltaTime we can choose to
@@ -231,6 +237,21 @@ class Application : public IEventObserver {
     ss << "\n";
     ss << "sensor update time : " << std::setw(3) << std::to_string(m_process_time.asMicroseconds()) << " us\n";
     m_adhoc_text.setString(ss.str());
+    ImGui::SetNextWindowSize(ImVec2(400, 100));
+    ImGui::Begin("MouseUI", nullptr, ImGuiWindowFlags_NoResize);
+    const uint8_t leds = m_robot.getLeds();
+    for (int i = 7; i >= 0; i--) {
+      bool bitState = leds & BIT(i);
+      DrawLED(bitState, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));  // Green color for ON state
+      if (i > 0) {
+        ImGui::SameLine();
+      }
+    }
+    m_robot.setButton(0, ImGui::Button("X", ImVec2(100, 24)));
+    ImGui::SameLine();
+    m_robot.setButton(1, ImGui::Button("Y", ImVec2(100, 24)));
+    ImGui::Text("%02X", m_robot.getButtons());
+    ImGui::End();
 
     /////  IMGUI ////////////////////////////////////////////////////////////////////////////
     ImGui::SetNextWindowSize(ImVec2(400, 600));
