@@ -104,7 +104,6 @@ class MazeManager {
     m_walls_vertex_array.resize(m_wall_count * 4);
     m_posts_vertex_array.resize(m_post_count * 4);
 
-    std::cout << std::endl;
     createWallGeometry();  //
     createPostGeometry();
     initialiseWallStates();
