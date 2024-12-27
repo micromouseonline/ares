@@ -5,9 +5,41 @@
 #ifndef TEXTBOX_H
 #define TEXTBOX_H
 
+#include <imgui.h>
 #include <SFML/Graphics.hpp>
 #include <string>
 
+class TextBox {
+ public:
+  TextBox() : m_scroll_to_bottom(true) {};
+  ~TextBox() {};
+
+  void addText(const std::string& text) {
+    lines.push_back(text);
+    m_scroll_to_bottom = true;
+  }
+
+  void clear() {
+    lines.clear();
+  }
+
+  void render() {
+    //    m_sfml_textbox.initialise(10, 14, 400, sf::Vector2f(1000, 10));
+    ImGui::Begin("TEXT BOX");
+    for (const auto& line : lines) {
+      ImGui::TextWrapped("%s", line.c_str());
+    }
+    if (m_scroll_to_bottom) {
+      ImGui::SetScrollHereY(1.0f);
+      m_scroll_to_bottom = false;
+    }
+    ImGui::End();
+  }
+
+ private:
+  std::vector<std::string> lines;
+  bool m_scroll_to_bottom;
+};
 /***
  * The Textbox class is a simple text overlay that displays the most recent messages
  * in a scrolling window.
@@ -18,17 +50,17 @@
  * Only the most recent messages will be displayed.
  *
  */
-class Textbox {
+class sfmlTextbox {
  public:
-  Textbox() {
+  sfmlTextbox() {
     initialise(5, 9, 200, sf::Vector2f(conf::WindowPadding, 8 * conf::WindowPadding));  //
   }
 
-  Textbox(int l_visible, int l_charSize, int l_width, sf::Vector2f l_screenPos) {
+  sfmlTextbox(int l_visible, int l_charSize, int l_width, sf::Vector2f l_screenPos) {
     initialise(l_visible, l_charSize, l_width, l_screenPos);  //
   }
 
-  ~Textbox() {
+  ~sfmlTextbox() {
     clear();  //
   };
 

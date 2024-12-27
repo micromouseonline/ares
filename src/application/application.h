@@ -46,9 +46,10 @@ class Application : public IEventObserver {
     m_txt_maze_name.setPosition(10, 973);
 
     /// The UI components are defined in world pixels in the window's default view
-    m_textbox.initialise(10, 14, 400, sf::Vector2f(1000, 10));
-    m_textbox.addString("Hello World!");
-    m_textbox.addString("WASD keys to move robot");
+    //    m_sfml_textbox.initialise(10, 14, 400, sf::Vector2f(1000, 10));
+
+    m_textbox.addText("Hello World");
+    m_textbox.addText("WASD keys to move robot");
 
     m_maze_index = 0;  // Japan2007ef is 48
     /// Have the window inform us of any events
@@ -117,15 +118,6 @@ class Application : public IEventObserver {
           if (mazeBounds.contains(float(pixelPos.x), float(pixelPos.y))) {
             mazePos = (window->mapPixelToCoords(pixelPos, mazeView));
           }
-
-          std::stringstream msg;
-          if (event.event.mouseButton.button == sf::Mouse::Right) {
-            msg << " (RIGHT BUTTON) ";
-          } else {
-            msg << " (OTHER BUTTON) ";
-          }
-          msg << " @ " << Vec2(mazePos) << " =  " << Vec2(pixelPos);
-          m_textbox.addString(msg.str());
         }
         if (event.event.type == sf::Event::KeyReleased) {
           if (event.event.key.code == sf::Keyboard::A || event.event.key.code == sf::Keyboard::D) {
@@ -134,10 +126,10 @@ class Application : public IEventObserver {
         }
         break;
       case EventType::USER_EVENT:
-        m_textbox.addString("USER AppEvent");
+        m_textbox.addText("USER AppEvent");
         break;
       default:
-        m_textbox.addString("UNHANDLED AppEvent");
+        m_textbox.addText("UNHANDLED AppEvent");
         break;
     }
   }
@@ -172,11 +164,6 @@ class Application : public IEventObserver {
    */
   void handleInput() {
     /// This is a silly example of how HandleInput can be used
-    if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
-      m_textbox.setBackgroundColour(sf::Color(255, 255, 0, 48));
-    } else {
-      m_textbox.setBackgroundColour(sf::Color(255, 255, 255, 48));
-    }
   }
 
   std::string formatSensorData(int lfs, int lds, int rds, int rfs) {
@@ -230,14 +217,13 @@ class Application : public IEventObserver {
     ImGui::SFML::Update(*m_window->getRenderWindow(), m_frame_clock.restart());
     std::stringstream ss;
     SensorData sensors = m_robot.getSensorData();
+    int sensor_update_time = m_process_time.asMicroseconds();
     ss << "power:  " + formatSensorData((int)sensors.lfs_power, (int)sensors.lds_power, (int)sensors.rds_power, (int)sensors.rfs_power);
     ss << " Dist:  " + formatSensorData((int)sensors.lfs_distance, (int)sensors.lds_distance, (int)sensors.rds_distance, (int)sensors.rfs_distance);
     ss << "\n";
     ss << formatRobotState();
-    ss << "\n";
-    ss << "sensor update time : " << std::setw(3) << std::to_string(m_process_time.asMicroseconds()) << " us\n";
     m_adhoc_text.setString(ss.str());
-    ImGui::SetNextWindowSize(ImVec2(400, 100));
+    ImGui::SetNextWindowSize(ImVec2(400, 150));
     ImGui::Begin("MouseUI", nullptr, ImGuiWindowFlags_NoResize);
     const uint8_t leds = m_robot.getLeds();
     for (int i = 7; i >= 0; i--) {
@@ -251,6 +237,11 @@ class Application : public IEventObserver {
     ImGui::SameLine();
     m_robot.setButton(1, ImGui::Button("Y", ImVec2(104, 24)));
     ImGui::Text("%02X", m_robot.getButtons());
+    ImGui::Text("Sensor update Time (us) %3d", sensor_update_time);
+    ImGui::SameLine();
+    ImVec2 p = ImGui::GetCursorScreenPos();
+    ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + sensor_update_time, p.y + 20), IM_COL32(255, 0, 0, 255));
+
     ImGui::End();
 
     /////  IMGUI ////////////////////////////////////////////////////////////////////////////
@@ -321,6 +312,7 @@ class Application : public IEventObserver {
 
     //    ImGui::PopFont();
     ImGui::End();
+    m_textbox.render();
     ImGui::ShowDemoWindow();
     //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -429,7 +421,6 @@ class Application : public IEventObserver {
     m_adhoc_text.setPosition(1000, 200);
     window.draw(m_adhoc_text);
 
-    m_textbox.draw(window);
     window.draw(m_txt_maze_name);
 
     ImGui::SFML::Render(*m_window->getRenderWindow());
@@ -511,7 +502,7 @@ class Application : public IEventObserver {
   sf::Font m_default_font;
   sf::Text m_adhoc_text;
   sf::Text m_txt_maze_name;
-  Textbox m_textbox;
+  TextBox m_textbox;
   bool snapped = false;
   bool m_highlight_sensor_region = false;
   ImFont* m_guiFont = nullptr;
