@@ -67,7 +67,7 @@ class Robot {
   const float VELOCITY_MAX = 8000.0f;
   const float OMEGA_MAX = 4000.0f;
 
-  Robot() : m_ticks(0), m_running(false), m_sensor_data(), m_state(), m_vMax(VELOCITY_MAX), m_omegaMax(OMEGA_MAX) {
+  Robot() : m_ticks(0), m_running(false), m_state(), m_vMax(VELOCITY_MAX), m_omegaMax(OMEGA_MAX) {
     //
   }
 
@@ -94,7 +94,7 @@ class Robot {
 
   ////// Accessors
 
-  RobotState getState() const {
+  [[nodiscard]] RobotState getState() const {
     std::lock_guard<std::mutex> lock(g_robot_mutex);
     return m_state;
   }
@@ -118,11 +118,6 @@ class Robot {
   ///////////// Sensors
   void setSensorCallback(SensorDataCallback callback) {
     m_sensor_callback = callback;  //
-  }
-
-  SensorData& getSensorData() {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
-    return m_sensor_data;
   }
 
   /// This is the primary way to get the robot to move.
@@ -172,33 +167,33 @@ class Robot {
 
   void setLed(const int i, const bool state) {
     const uint8_t mask = BIT(i);
-    m_leds &= ~(mask);
-    m_leds |= state ? mask : 0;
+    m_state.leds &= ~(mask);
+    m_state.leds |= state ? mask : 0;
   }
-
-  [[nodiscard]] bool getLed(const int i) const {
-    const uint8_t mask = BIT(i);
-    return (m_leds & mask) == mask;
-  }
-
-  [[nodiscard]] uint8_t getLeds() const {
-    return m_leds;
-  }
+  //
+  //  [[nodiscard]] bool getLed(const int i) const {
+  //    const uint8_t mask = BIT(i);
+  //    return (m_leds & mask) == mask;
+  //  }
+  //
+  //  [[nodiscard]] uint8_t getLeds() const {
+  //    return m_leds;
+  //  }
 
   void setButton(const int i, const bool state) {
     const uint8_t mask = BIT(i);
-    m_buttons &= ~(mask);
-    m_buttons |= state ? mask : 0;
+    m_state.buttons &= ~(mask);
+    m_state.buttons |= state ? mask : 0;
   }
-
-  [[nodiscard]] bool isButton(const int i) const {
-    const uint8_t mask = BIT(i);
-    return (m_buttons & mask) != 0;
-  }
-
-  [[nodiscard]] uint8_t getButtons() const {
-    return m_buttons;
-  }
+  //
+  //  [[nodiscard]] bool isButton(const int i) const {
+  //    const uint8_t mask = BIT(i);
+  //    return (m_buttons & mask) != 0;
+  //  }
+  //
+  //  [[nodiscard]] uint8_t getButtons() const {
+  //    return m_buttons;
+  //  }
 
   /**
    * @brief Simulates a hardware timer interrupt for the robot.
@@ -228,12 +223,12 @@ class Robot {
 
       // Ask the Application for a sensor update
       if (m_sensor_callback) {
-        m_sensor_data = m_sensor_callback(m_state.x, m_state.y, m_state.angle);
+        m_state.sensor_data = m_sensor_callback(m_state.x, m_state.y, m_state.angle);
       }
-      setLed(7, m_sensor_data.lfs_distance < 100);
-      setLed(6, m_sensor_data.lds_distance < 100);
-      setLed(5, m_sensor_data.rds_distance < 100);
-      setLed(4, m_sensor_data.rfs_distance < 100);
+      setLed(7, m_state.sensor_data.lfs_distance < 100);
+      setLed(6, m_state.sensor_data.lds_distance < 100);
+      setLed(5, m_state.sensor_data.rds_distance < 100);
+      setLed(4, m_state.sensor_data.rfs_distance < 100);
 
       // accumulate distances
       float deltaDistance = m_state.velocity * deltaTime;
@@ -264,13 +259,10 @@ class Robot {
 
   SensorDataCallback m_sensor_callback = nullptr;
 
-  SensorData m_sensor_data;  // Current sensor readings
   RobotState m_state;
   Pose m_pose;
   float m_vMax;
   float m_omegaMax;
-  uint8_t m_buttons = 0;  /// up to 8 button states
-  uint8_t m_leds = 0;     /// up to 8 LED states
 };
 
 #endif  // ROBOT_H

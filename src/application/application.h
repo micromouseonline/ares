@@ -11,24 +11,23 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include "application/event_observer.h"
-#include "application/maze-manager.h"
-#include "application/robot-wall-sensor.h"
-#include "application/textbox.h"
-#include "application/window.h"
 #include "behaviour/behaviour.h"
 #include "common/core.h"
 #include "common/vec2.h"
+#include "event_observer.h"
 #include "imgui-SFML.h"
 #include "imgui.h"
+#include "maze-manager.h"
+#include "robot-wall-sensor.h"
+#include "window.h"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #include "imgui_internal.h"
 #pragma GCC diagnostic pop
-
 #include "robot-body.h"
 #include "robot/robot.h"
 #include "robot/sensor-data.h"
+#include "widgets.h"
 
 class Application : public IEventObserver {
  public:
@@ -148,7 +147,7 @@ class Application : public IEventObserver {
   }
 
   /***
-   * Note that this is not about the events. We can test the state of the mouse and
+   * This is not about the events. We can test the state of the mouse and
    * the keyboard or any other input devices.
    * We are not looking for things that have happened like keypress events.
    * Could this get tricky if we want to do something like enter text? We will see.
@@ -174,17 +173,18 @@ class Application : public IEventObserver {
        << std::setw(5) << rfs << "\n";  //
     return ss.str();
   }
-  std::string formatRobotState() {
+
+  std::string formatRobotState(RobotState& state) {
     std::stringstream ss;
-    sf::Vector2f pos = {m_robot.getState().x, m_robot.getState().y};
+    sf::Vector2f pos = {state.x, state.y};
     int cell = m_maze_manager.getCellFromPosition(pos.x, pos.y);
     int cell_x = int(pos.x / m_maze_manager.getCellSize());
     int cell_y = int(pos.y / m_maze_manager.getCellSize());
-    ss << "Robot:  X: " << (int)pos.x << "\n"                                                           //
-       << "        y: " << (int)pos.y << "\n"                                                           //
-       << "    angle: " << std::fixed << std::setprecision(1) << m_robot.getState().angle << " deg \n"  //
-       << "\n"                                                                                          //
-       << " Cell:  [" << cell_x << ", " << cell_y << "] = " << cell << "\n";                            //
+    ss << "Robot:  X: " << (int)pos.x << "\n"                                              //
+       << "        y: " << (int)pos.y << "\n"                                              //
+       << "    angle: " << std::fixed << std::setprecision(1) << state.angle << " deg \n"  //
+       << "\n"                                                                             //
+       << " Cell:  [" << cell_x << ", " << cell_y << "] = " << cell << "\n";               //
     return ss.str();
   }
 
@@ -210,53 +210,58 @@ class Application : public IEventObserver {
    */
   void update(sf::Time deltaTime = sf::seconds(0.01)) {
     static bool maze_changed = true;
-    //    sf::RenderWindow& window = *m_window->getRenderWindow();
-    // sf::Vector2u window_size = window.getSize();
     m_window->update();  // call this first to process window events
     m_elapsed += deltaTime;
     ImGui::SFML::Update(*m_window->getRenderWindow(), m_frame_clock.restart());
+
+    RobotState robot_state = m_robot.getState();
+
     std::stringstream ss;
-    SensorData sensors = m_robot.getSensorData();
+    SensorData sensors = robot_state.sensor_data;
     int sensor_update_time = m_process_time.asMicroseconds();
     ss << "power:  " + formatSensorData((int)sensors.lfs_power, (int)sensors.lds_power, (int)sensors.rds_power, (int)sensors.rfs_power);
     ss << " Dist:  " + formatSensorData((int)sensors.lfs_distance, (int)sensors.lds_distance, (int)sensors.rds_distance, (int)sensors.rfs_distance);
     ss << "\n";
-    ss << formatRobotState();
-    m_adhoc_text.setString(ss.str());
-    ImGui::SetNextWindowSize(ImVec2(400, 150));
-    ImGui::Begin("MouseUI", nullptr, ImGuiWindowFlags_NoResize);
-    const uint8_t leds = m_robot.getLeds();
+    ss << formatRobotState(robot_state);
+
+    /////  IMGUI ////////////////////////////////////////////////////////////////////////////
+    ImGui::Begin("MouseUI", nullptr);
+    const uint8_t leds = robot_state.leds;
+    const uint8_t buttons = robot_state.buttons;
     for (int i = 7; i >= 0; i--) {
       bool bitState = leds & BIT(i);
       DrawLED(bitState, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));  // Green color for ON state
-      if (i > 0) {
-        ImGui::SameLine();
-      }
+      ImGui::SameLine();
     }
-    m_robot.setButton(0, ImGui::Button("X", ImVec2(104, 24)));
+    ImGui::Text("LEDS");
+    for (int i = 7; i >= 0; i--) {
+      bool bitState = buttons & BIT(i);
+      DrawLED(bitState, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));  // Green color for ON state
+      ImGui::SameLine();
+    }
+    ImGui::Text("BUTTONS");
+    m_robot.setButton(1, CustomButton("X", ImVec2(104, 24)));
     ImGui::SameLine();
-    m_robot.setButton(1, ImGui::Button("Y", ImVec2(104, 24)));
-    ImGui::Text("%02X", m_robot.getButtons());
-    ImGui::Text("Sensor update Time (us) %3d", sensor_update_time);
+    m_robot.setButton(0, CustomButton("Y", ImVec2(104, 24)));
+    ImGui::Text("Sensor update (us) %3d", sensor_update_time);
     ImGui::SameLine();
     ImVec2 p = ImGui::GetCursorScreenPos();
-    ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + sensor_update_time, p.y + 20), IM_COL32(255, 0, 0, 255));
-
+    ImGui::GetWindowDrawList()->AddRect(p, ImVec2(p.x + 150, p.y + 20), IM_COL32(255, 200, 0, 255));
+    ImColor bar_color = IM_COL32(0, 255, 0, 128);
+    p.x += 1;
+    p.y += 1;
+    ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + sensor_update_time, p.y + 18), bar_color);
+    ImGui::NewLine();
+    ImGui::Text("%s", ss.str().c_str());
     ImGui::End();
 
     /////  IMGUI ////////////////////////////////////////////////////////////////////////////
-    ImGui::SetNextWindowSize(ImVec2(400, 600));
-    //    ImGui::SetNextWindowPos(ImVec2(1440, 10));
-    bool True = true;
-    ImGui::Begin("ImGui dialog", &True, ImGuiWindowFlags_NoResize);
-    //    ImGui::PushFont(m_guiFont);
+    ImGui::Begin("Behaviour Control", nullptr);
     ImGui::Text("Select the Maze data:");
     if (ImGui::Combo("Maze", &m_maze_index, m_maze_names.data(), (int)m_maze_names.size())) {
       maze_changed = true;
     }
-
     static int counts = 2;
-
     ImGui::AlignTextToFramePadding();
     ImGui::Text("Turn Count:");
     ImGui::SameLine();
@@ -269,10 +274,10 @@ class Application : public IEventObserver {
     if (ImGui::ArrowButton("##right", ImGuiDir_Right)) {
       counts++;
     }
+    ImGui::PopItemFlag();
     counts = std::clamp(counts, 1, 20);
     ImGui::SameLine();
     ImGui::Text("%d", counts);
-    ImGui::PopItemFlag();
     float b_wide = ImGui::CalcTextSize("TEST SS180R").x;
     b_wide += ImGui::GetStyle().FramePadding.x * 2.0;
     sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
@@ -292,27 +297,27 @@ class Application : public IEventObserver {
     if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
     }
-    RobotState state = m_robot.getState();
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "    time     X      Y   Theta     Vel   Omega");
     char s[60];
-    sprintf(s, "%8u %5.1f  %5.1f  %6.2f  %6.1f  %6.1f  ", state.timestamp, state.x, state.y, state.angle, state.velocity, state.omega);
+    sprintf(s, "%8u %5.1f  %5.1f  %6.2f  %6.1f  %6.1f  ",  //
+            robot_state.timestamp, robot_state.x, robot_state.y, robot_state.angle, robot_state.velocity, robot_state.omega);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", s);
     const int frames = 60 * 4;
     static float speed[frames];
     static float omega[frames];
-    static float rds[frames];
     static int index = 0;
-    speed[index] = state.velocity;
-    omega[index] = state.omega;
-    rds[index] = m_robot.getSensorData().rds_power;
+    speed[index] = robot_state.velocity;
+    omega[index] = robot_state.omega;
     index = (index + 1) % IM_ARRAYSIZE(speed);
     ImGui::PlotLines("speed", speed, IM_ARRAYSIZE(speed), index, "", 0, 3000, ImVec2(330, 100));
     ImGui::PlotLines("omega", omega, IM_ARRAYSIZE(omega), index, "", -1000, 1000, ImVec2(330, 140));
-    ImGui::PlotLines("RDS", rds, IM_ARRAYSIZE(rds), index, "", 00, 500, ImVec2(330, 100));
 
     //    ImGui::PopFont();
     ImGui::End();
+    /////  IMGUI ////////////////////////////////////////////////////////////////////////////
+
     m_textbox.render();
+
     ImGui::ShowDemoWindow();
     //////////////////////////////////////////////////////////////////////////////////////////
 

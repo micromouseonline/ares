@@ -6,7 +6,7 @@
 #define ROBOT_STATE_H
 
 #include <SFML/Graphics.hpp>
-
+#include "sensor-data.h"
 /**
  * Positions here are in world coordinates with
  * the origin in the bottom left, x-axis to the right
@@ -25,6 +25,9 @@ struct RobotState {
   float move_distance;   // accumulated from last movement start
   float move_angle;      // accumulated from last movement start
   float cell_offset;     // distance through cell from border
+  uint8_t leds;          // bitfield for led states
+  uint8_t buttons;       // bitfield for button states
+  SensorData sensor_data;
 
   RobotState()
       : x(0.0f),
@@ -35,7 +38,10 @@ struct RobotState {
         total_distance(0.0f),
         move_distance(0.0f),
         move_angle(0.0f),
-        cell_offset(0.0f) {
+        cell_offset(0.0f),
+        leds(0),
+        buttons(0),
+        sensor_data() {
     //
   }
 };

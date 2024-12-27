@@ -2,8 +2,10 @@
 // Created by peter on 20/12/24.
 //
 
-#ifndef MOUSE_SIMULATOR_POSE_H
-#define MOUSE_SIMULATOR_POSE_H
+#pragma once
+
+#include <cmath>
+#include "core.h"
 
 class Pose {
  public:
@@ -81,5 +83,3 @@ class Pose {
   float m_distance;
   float m_theta;
 };
-
-#endif  // MOUSE_SIMULATOR_POSE_H
