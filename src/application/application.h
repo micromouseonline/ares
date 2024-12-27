@@ -247,9 +247,9 @@ class Application : public IEventObserver {
         ImGui::SameLine();
       }
     }
-    m_robot.setButton(0, ImGui::Button("X", ImVec2(100, 24)));
+    m_robot.setButton(0, ImGui::Button("X", ImVec2(104, 24)));
     ImGui::SameLine();
-    m_robot.setButton(1, ImGui::Button("Y", ImVec2(100, 24)));
+    m_robot.setButton(1, ImGui::Button("Y", ImVec2(104, 24)));
     ImGui::Text("%02X", m_robot.getButtons());
     ImGui::End();
 
