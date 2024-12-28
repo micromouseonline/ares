@@ -71,6 +71,7 @@
 #include "common/timer.h"
 #include "cubic.h"
 #include "cubic_parameters.h"
+#include "maze.h"
 #include "robot/robot.h"
 #include "robot/sensor-data.h"
 #include "trajectory.h"

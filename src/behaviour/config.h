@@ -52,15 +52,16 @@
 #define HARDWARE_UNKNOWN 0
 #define HARDWARE_UKMARSBOT_1_3A 1
 #define HARDWARE_DECIMUS4 2
+#define HARDWARE_ARES_SIM 3
 
-#define HARDWARE HARDWARE_DECIMUS4
+#define HARDWARE HARDWARE_ARES_SIM
 
 #if HARDWARE == HARDWARE_DECIMUS4
 #include "chassis.h"
 #include "pins.h"
 #include "settings.h"
 #else
-#error "NO HARDWARE DEFINED"
+// #error "NO HARDWARE DEFINED"
 #endif
 
 /*************************************************************************/
@@ -75,5 +76,7 @@
 const float FULL_CELL = 180.0f;
 const float HALF_CELL = FULL_CELL * 0.5f;
 const float DIAG_CELL = FULL_CELL * 0.707f;
+
+const int BT_SERIAL_DELAY = 10;
 
 #endif

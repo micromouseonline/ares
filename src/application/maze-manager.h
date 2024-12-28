@@ -2,8 +2,7 @@
 // Created by peter on 19/11/2024.
 //
 
-#ifndef MAZE_H
-#define MAZE_H
+#pragma once
 
 #include <SFML/Graphics.hpp>
 #include <cassert>
@@ -605,5 +604,3 @@ class MazeManager {
 
   // clang_format on
 };
-
-#endif  // MAZE_H
