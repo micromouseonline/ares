@@ -56,3 +56,10 @@ inline bool CustomButton(const char* label, const ImVec2& size = ImVec2(0, 0)) {
 
   return is_inside && is_down;
 }
+
+// Function to draw an LED indicator
+inline void DrawLED(bool state, const ImVec4& color) {
+  ImGui::PushStyleColor(ImGuiCol_Button, state ? color : ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+  ImGui::Button("##LED", ImVec2(20, 20));
+  ImGui::PopStyleColor();
+}

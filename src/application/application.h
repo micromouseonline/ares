@@ -188,12 +188,6 @@ class Application : public IEventObserver {
     return ss.str();
   }
 
-  // Function to draw an LED indicator
-  void DrawLED(bool state, const ImVec4& color) {
-    ImGui::PushStyleColor(ImGuiCol_Button, state ? color : ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
-    ImGui::Button("##LED", ImVec2(20, 20));
-    ImGui::PopStyleColor();
-  }
   /***
    * This is where the work gets done. All the application logic and behaviour
    * is performed from this method. By passing in a deltaTime we can choose to
