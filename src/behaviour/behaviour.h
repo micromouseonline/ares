@@ -243,7 +243,13 @@ class Behaviour {
       if (m_robot) {
         m_robot->setSpeeds(v, w);
         m_robot->systick(m_step_time);
+        RobotState state = m_robot->getState();
+        m_robot->setLed(7, state.sensor_data.lfs_power > 18);
+        m_robot->setLed(6, state.sensor_data.lds_power > 100);
+        m_robot->setLed(5, state.sensor_data.rds_power > 100);
+        m_robot->setLed(4, state.sensor_data.rfs_power > 18);
       }
+
       m_timeStamp++;
       ms--;
       timer.wait_us(1000);
