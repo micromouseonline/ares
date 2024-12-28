@@ -386,7 +386,7 @@ class Application : public IEventObserver {
       sf::Vector2f ray{cosf((float)angle * RADIANS), sinf((float)angle * RADIANS)};
       float min_d = range;
       for (auto& i : walls) {
-        if (m_maze_manager.getWallState(i) == WallType::WT_WorldPresent) {
+        if (m_maze_manager.getWallState(i) == WallType::WT_Present) {
           sf::FloatRect w = m_maze_manager.getWallRect(i);
           float d = Collisions::getRayDistanceToAlignedRectangle(pos, ray, w, range);
           if (d < min_d) {

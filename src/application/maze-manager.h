@@ -17,26 +17,44 @@
 #include "drawing.h"
 #include "world/mazedata.h"
 
-enum class WallType {
-  WT_MapAbsent,   //
-  WT_MapPresent,  //
-  WT_MapUnknown,
-  WT_MapVirtual,
-  WT_WorldAbsent,   //
-  WT_WorldPresent,  //
+/***
+ * The types represent a bit mask where the LSB is present
+ * and the other bits represent the class.
+ *
+ *    x x x
+ *    | | `- 0 = absent, 1 = present
+ *    | `--- 0 = observed, 1 = unseen
+ *    `----- 1 => state taken from mouse map
+ */
+
+enum WallType : uint8_t {
+  WT_Absent = 0x00,   //  absent  - from world maze
+  WT_Present = 0x01,  //  present - from world maze
+  WT_Unknown = 0x02,  //  unknown - from world maze - should never happen
+  WT_Virtual = 0x03,  //  virtual - from world maze - should never happen
+
+  WT_MappedAbsent = 0x04,   // absent  - from mouse map
+  WT_MappedPresent = 0x05,  // present - from mouse map
+  WT_MappedUnknown = 0x06,  // unknown - from mouse map
+  WT_MappedVirtual = 0x07,  // virtual - from mouse map
 };
 
-inline const std::map<WallType, sf::Color> WallColours = {
-    {WallType::WT_MapAbsent, sf::Color(0, 0, 0, 255)},      //
-    {WallType::WT_MapPresent, sf::Color(255, 0, 0, 255)},   //
-    {WallType::WT_MapUnknown, sf::Color(32, 32, 32, 128)},  //
-    {WallType::WT_MapVirtual, sf::Color(255, 0, 255, 64)},  //
-    {WallType::WT_WorldAbsent, sf::Color(32, 32, 32, 0)},   //
-    {WallType::WT_WorldPresent, sf::Color(255, 0, 0, 16)},  //
+inline const sf::Color WallColours[] = {
+
+    {sf::Color(20, 20, 20, 64)},   //
+    {sf::Color(255, 0, 0, 64)},    //
+    {sf::Color(0, 128, 128, 64)},  //
+    {sf::Color(0, 128, 128, 64)},  //
+
+    {sf::Color(0, 0, 0, 255)},      //
+    {sf::Color(255, 0, 0, 255)},    //
+    {sf::Color(64, 32, 64, 128)},   //
+    {sf::Color(255, 0, 255, 128)},  //
+
 };
 
 struct Wall {
-  WallType state = WallType::WT_WorldAbsent;
+  WallType state = WallType::WT_MappedUnknown;
   sf::RectangleShape shape;
 };
 
@@ -107,7 +125,7 @@ class MazeManager {
     m_maze_base_rectangle.setPosition(0.0f, 0.0f);
     m_maze_base_rectangle.setFillColor(conf::MazeBaseColour);
 
-    m_wall_states.resize(m_wall_count, WallType::WT_WorldAbsent);
+    m_wall_states.resize(m_wall_count, WallType::WT_MappedAbsent);
     m_wall_rectangles.resize(m_wall_count);
     m_post_rectangles.resize(m_post_count);
     m_walls_vertex_array.resize(m_wall_count * 4);
@@ -166,15 +184,45 @@ class MazeManager {
         for (int d = 0; d < 4; d++) {
           // we need only do the North and East walls
           if (walls & BIT(0)) {
-            setWallState(x, y, Direction::North, WallType::WT_WorldPresent);
+            setWallState(x, y, Direction::North, WallType::WT_Present);
           }
           if (walls & BIT(1)) {
-            setWallState(x, y, Direction::East, WallType::WT_WorldPresent);
+            setWallState(x, y, Direction::East, WallType::WT_Present);
           }
         }
       }
     }
-    setWallState(0, 0, Direction::East, WallType::WT_WorldPresent);
+    setWallState(0, 0, Direction::East, WallType::WT_Present);
+    return true;
+  }
+
+  /***
+   * Similar to loadFromMemory except that  the wall states get updated from
+   * the map data held by the mouse. To do this, we leave the world data
+   * bit set
+   * @param data
+   * @param mazeWidth
+   * @return
+   */
+  bool updateFromMap(const uint8_t* data, int mazeWidth) {
+    resize(mazeWidth);
+    initialiseWallStates();
+    for (int y = 0; y < mazeWidth; y++) {
+      for (int x = 0; x < mazeWidth; x++) {
+        int index = x * mazeWidth + y;
+        int walls = data[index];
+        for (int d = 0; d < 4; d++) {
+          // we need only do the North and East walls
+          if (walls & BIT(0)) {
+            setWallState(x, y, Direction::North, WallType::WT_Present);
+          }
+          if (walls & BIT(1)) {
+            setWallState(x, y, Direction::East, WallType::WT_Present);
+          }
+        }
+      }
+    }
+    setWallState(0, 0, Direction::East, WallType::WT_Present);
     return true;
   }
 
@@ -240,7 +288,7 @@ class MazeManager {
    */
   void setWallState(int index, WallType state) {
     m_wall_states[index] = state;  //
-    sf::Color color = WallColours.at(state);
+    sf::Color color = WallColours[state];
     m_walls_vertex_array[index * 4 + 0].color = color;
     m_walls_vertex_array[index * 4 + 1].color = color;
     m_walls_vertex_array[index * 4 + 2].color = color;
@@ -254,11 +302,6 @@ class MazeManager {
 
   WallType getWallState(int index) {
     return m_wall_states[index];  //
-  }
-
-  WallType getWallState(int x, int y, Direction direction) {
-    int index = getWallIndex(x, y, direction);
-    return getWallState(index);
   }
 
   /**
@@ -363,7 +406,7 @@ class MazeManager {
         wall_shape.top = origin.y + offset.y;
         index = getWallIndex(x, y, Direction::North);
         m_wall_rectangles[index] = wall_shape;
-        setWallState(index, WallType::WT_WorldAbsent);
+        setWallState(index, WallType::WT_MappedUnknown);
         /// West Wall
         offset.x = 0;
         offset.y = m_wall_thickness;
@@ -372,7 +415,7 @@ class MazeManager {
         wall_shape.top = origin.y + offset.y;
         index = getWallIndex(x, y, Direction::West);
         m_wall_rectangles[index] = wall_shape;
-        setWallState(index, WallType::WT_WorldAbsent);
+        setWallState(index, WallType::WT_MappedUnknown);
       }
     }
     // now the South and East border
@@ -389,7 +432,7 @@ class MazeManager {
       wall_shape.top = origin.y + offset.y;
       index = getWallIndex(i, 0, Direction::South);
       m_wall_rectangles[index] = wall_shape;
-      setWallState(index, WallType::WT_WorldAbsent);
+      setWallState(index, WallType::WT_MappedUnknown);
 
       // East Wall
       origin = getCellOrigin(m_maze_width - 1, i);
@@ -400,7 +443,7 @@ class MazeManager {
       wall_shape.top = origin.y + offset.y;
       index = getWallIndex(m_maze_width - 1, i, Direction::East);
       m_wall_rectangles[index] = wall_shape;
-      setWallState(index, WallType::WT_WorldAbsent);
+      setWallState(index, WallType::WT_MappedUnknown);
     }
     // Now we have the geometry, we can create the vertex array positions
     for (int i = 0; i < m_wall_count; ++i) {
@@ -416,7 +459,6 @@ class MazeManager {
 
   void setWallColour(int index, sf::Color colour) {
     assert(index >= 0);
-
     m_walls_vertex_array[index * 4 + 0].color = colour;
     m_walls_vertex_array[index * 4 + 1].color = colour;
     m_walls_vertex_array[index * 4 + 2].color = colour;
@@ -425,7 +467,7 @@ class MazeManager {
 
   void resetWallColours() {
     for (int i = 0; i < m_wall_count; i++) {
-      sf::Color color = WallColours.at(m_wall_states[i]);
+      sf::Color color = WallColours[m_wall_states[i]];
       m_walls_vertex_array[i * 4 + 0].color = color;
       m_walls_vertex_array[i * 4 + 1].color = color;
       m_walls_vertex_array[i * 4 + 2].color = color;
@@ -439,28 +481,30 @@ class MazeManager {
   void initialiseWallStates() {
     for (int y = 0; y < m_maze_width; y++) {
       for (int x = 0; x < m_maze_width; x++) {
-        setWallState(x, y, Direction::North, WallType::WT_WorldAbsent);
-        setWallState(x, y, Direction::West, WallType::WT_WorldAbsent);
+        setWallState(x, y, Direction::North, WallType::WT_Absent);
+        setWallState(x, y, Direction::West, WallType::WT_Absent);
       }
     }
     for (int i = 0; i < m_maze_width; i++) {
-      setWallState(i, 0, Direction::South, WallType::WT_WorldPresent);
-      setWallState(i, m_maze_width - 1, Direction::North, WallType::WT_WorldPresent);
-      setWallState(0, i, Direction::West, WallType::WT_WorldPresent);
-      setWallState(m_maze_width - 1, i, Direction::East, WallType::WT_WorldPresent);
+      setWallState(i, 0, Direction::South, WallType::WT_Present);
+      setWallState(i, m_maze_width - 1, Direction::North, WallType::WT_Present);
+      setWallState(0, i, Direction::West, WallType::WT_Present);
+      setWallState(m_maze_width - 1, i, Direction::East, WallType::WT_Present);
     }
-    setWallState(0, 0, Direction::East, WallType::WT_WorldPresent);
-    setWallState(0, 0, Direction::North, WallType::WT_WorldAbsent);
+    setWallState(0, 0, Direction::East, WallType::WT_Present);
+    setWallState(0, 0, Direction::North, WallType::WT_Absent);
   }
 
   void render(sf::RenderWindow& window) {
     window.draw(m_maze_base_rectangle);
-    setWallState(40, WallType::WT_MapAbsent);
-    setWallState(41, WallType::WT_MapPresent);
-    setWallState(42, WallType::WT_MapUnknown);
-    setWallState(43, WallType::WT_MapVirtual);
-    setWallState(44, WallType::WT_WorldAbsent);
-    setWallState(45, WallType::WT_WorldPresent);
+    //    setWallState(40, WallType::WT_Absent);
+    //    setWallState(41, WallType::WT_Present);
+    //    setWallState(42, WallType::WT_Unknown);
+    //    setWallState(43, WallType::WT_Virtual);
+    //    setWallState(44, WallType::WT_MappedAbsent);
+    //    setWallState(45, WallType::WT_MappedPresent);
+    //    setWallState(46, WallType::WT_MappedUnknown);
+    //    setWallState(47, WallType::WT_MappedVirtual);
     window.draw(m_walls_vertex_array);
     window.draw(m_posts_vertex_array);
   }
@@ -568,7 +612,9 @@ class MazeManager {
     }
 
     int index = getWallIndex(x, y, d);
-    if (m_wall_states[index] == WallType::WT_WorldPresent) {
+    /// we only want walls that are present in the world
+    WallType wall = m_wall_states[index];
+    if (wall == WallType::WT_Present) {
       list.insert(index);
     }
   }
