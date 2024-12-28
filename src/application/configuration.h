@@ -25,18 +25,8 @@ namespace conf {
   const float WindowPadding = 10.0f;
   const float MazeViewScreenSize = 964.0f;
 
-  // maze colours
-  const sf::Color KnownPresentColour = (sf::Color(255, 0, 0));
-  const sf::Color KnownAbsentColour = (sf::Color(0, 0, 0));
-  const sf::Color UnknownColour = (sf::Color(64, 64, 64, 32));
-  const sf::Color VirtualColour = (sf::Color(0, 255, 255));
-  const sf::Color MysteryColour = (sf::Color(255, 0, 0, 32));
-  const sf::Color ErrorColour = (sf::Color(255, 0, 255, 128));
   const sf::Color MazeBaseColour = sf::Color(30, 30, 30, 64);
   const sf::Color PostColour = sf::Color(192, 0, 0);
-  const sf::Color WallHighlightColour = sf::Color(192, 64, 0);
-
-  const sf::Color WallStateColors[] = {KnownAbsentColour, KnownPresentColour, UnknownColour, VirtualColour, MysteryColour};
 
   // Robot configuration defaults
   // TODO: Add the body details

@@ -367,10 +367,10 @@ class Application : public IEventObserver {
     int w_e = m_maze_manager.getWallIndex(x, y, Direction::East);
     int w_s = m_maze_manager.getWallIndex(x, y, Direction::South);
     int w_w = m_maze_manager.getWallIndex(x, y, Direction::West);
-    WallState s_n = m_maze_manager.getWallState(w_n);
-    WallState s_e = m_maze_manager.getWallState(w_e);
-    WallState s_s = m_maze_manager.getWallState(w_s);
-    WallState s_w = m_maze_manager.getWallState(w_w);
+    WallType s_n = m_maze_manager.getWallState(w_n);
+    WallType s_e = m_maze_manager.getWallState(w_e);
+    WallType s_s = m_maze_manager.getWallState(w_s);
+    WallType s_w = m_maze_manager.getWallState(w_w);
     char str[50];
     sprintf(str, "%5d (%d) %5d (%d) %5d (%d) %5d (%d)\n", w_n, (int)s_n, w_e, (int)s_e, w_s, (int)s_s, w_w, (int)s_w);
     return std::string(str);
@@ -386,7 +386,7 @@ class Application : public IEventObserver {
       sf::Vector2f ray{cosf((float)angle * RADIANS), sinf((float)angle * RADIANS)};
       float min_d = range;
       for (auto& i : walls) {
-        if (m_maze_manager.getWallState(i) == WallState::KnownPresent) {
+        if (m_maze_manager.getWallState(i) == WallType::WT_WorldPresent) {
           sf::FloatRect w = m_maze_manager.getWallRect(i);
           float d = Collisions::getRayDistanceToAlignedRectangle(pos, ray, w, range);
           if (d < min_d) {

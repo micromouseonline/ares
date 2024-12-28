@@ -17,16 +17,26 @@
 #include "drawing.h"
 #include "world/mazedata.h"
 
-enum class WallState {
-  KnownAbsent,   //
-  KnownPresent,  //
-  Unknown,       //
-  Virtual,       //
-  Mystery
+enum class WallType {
+  WT_MapAbsent,   //
+  WT_MapPresent,  //
+  WT_MapUnknown,
+  WT_MapVirtual,
+  WT_WorldAbsent,   //
+  WT_WorldPresent,  //
+};
+
+inline const std::map<WallType, sf::Color> WallColours = {
+    {WallType::WT_MapAbsent, sf::Color(0, 0, 0, 255)},      //
+    {WallType::WT_MapPresent, sf::Color(255, 0, 0, 255)},   //
+    {WallType::WT_MapUnknown, sf::Color(32, 32, 32, 128)},  //
+    {WallType::WT_MapVirtual, sf::Color(255, 0, 255, 64)},  //
+    {WallType::WT_WorldAbsent, sf::Color(32, 32, 32, 0)},   //
+    {WallType::WT_WorldPresent, sf::Color(255, 0, 0, 16)},  //
 };
 
 struct Wall {
-  WallState state = WallState::Unknown;
+  WallType state = WallType::WT_WorldAbsent;
   sf::RectangleShape shape;
 };
 
@@ -97,7 +107,7 @@ class MazeManager {
     m_maze_base_rectangle.setPosition(0.0f, 0.0f);
     m_maze_base_rectangle.setFillColor(conf::MazeBaseColour);
 
-    m_wall_states.resize(m_wall_count, WallState::Unknown);
+    m_wall_states.resize(m_wall_count, WallType::WT_WorldAbsent);
     m_wall_rectangles.resize(m_wall_count);
     m_post_rectangles.resize(m_post_count);
     m_walls_vertex_array.resize(m_wall_count * 4);
@@ -156,15 +166,15 @@ class MazeManager {
         for (int d = 0; d < 4; d++) {
           // we need only do the North and East walls
           if (walls & BIT(0)) {
-            setWallState(x, y, Direction::North, WallState::KnownPresent);
+            setWallState(x, y, Direction::North, WallType::WT_WorldPresent);
           }
           if (walls & BIT(1)) {
-            setWallState(x, y, Direction::East, WallState::KnownPresent);
+            setWallState(x, y, Direction::East, WallType::WT_WorldPresent);
           }
         }
       }
     }
-    setWallState(0, 0, Direction::East, WallState::KnownPresent);
+    setWallState(0, 0, Direction::East, WallType::WT_WorldPresent);
     return true;
   }
 
@@ -228,24 +238,25 @@ class MazeManager {
    * Changing a wall state is a relatively infrequent operation so
    * we update the vertex array here rather than during the draw method.
    */
-  void setWallState(int index, WallState state) {
+  void setWallState(int index, WallType state) {
     m_wall_states[index] = state;  //
-    m_walls_vertex_array[index * 4 + 0].color = conf::WallStateColors[(int)state];
-    m_walls_vertex_array[index * 4 + 1].color = conf::WallStateColors[(int)state];
-    m_walls_vertex_array[index * 4 + 2].color = conf::WallStateColors[(int)state];
-    m_walls_vertex_array[index * 4 + 3].color = conf::WallStateColors[(int)state];
+    sf::Color color = WallColours.at(state);
+    m_walls_vertex_array[index * 4 + 0].color = color;
+    m_walls_vertex_array[index * 4 + 1].color = color;
+    m_walls_vertex_array[index * 4 + 2].color = color;
+    m_walls_vertex_array[index * 4 + 3].color = color;
   }
 
-  void setWallState(int x, int y, Direction direction, WallState state) {
+  void setWallState(int x, int y, Direction direction, WallType state) {
     int index = getWallIndex(x, y, direction);
     setWallState(index, state);
   }
 
-  WallState getWallState(int index) {
+  WallType getWallState(int index) {
     return m_wall_states[index];  //
   }
 
-  WallState getWallState(int x, int y, Direction direction) {
+  WallType getWallState(int x, int y, Direction direction) {
     int index = getWallIndex(x, y, direction);
     return getWallState(index);
   }
@@ -328,7 +339,7 @@ class MazeManager {
    *
    * Walls can be set or cleared just by changing the state and
    * then applying the relevant colour. In this function, we just
-   * create the geometry and set each wall as unknown.
+   * create the geometry and set each wall as WT_WorldAbsent.
    * The caller is then responsible for setting the state of each
    * wall according to the physical maze.
    *
@@ -352,7 +363,7 @@ class MazeManager {
         wall_shape.top = origin.y + offset.y;
         index = getWallIndex(x, y, Direction::North);
         m_wall_rectangles[index] = wall_shape;
-        setWallState(index, WallState::Unknown);
+        setWallState(index, WallType::WT_WorldAbsent);
         /// West Wall
         offset.x = 0;
         offset.y = m_wall_thickness;
@@ -361,7 +372,7 @@ class MazeManager {
         wall_shape.top = origin.y + offset.y;
         index = getWallIndex(x, y, Direction::West);
         m_wall_rectangles[index] = wall_shape;
-        setWallState(index, WallState::Unknown);
+        setWallState(index, WallType::WT_WorldAbsent);
       }
     }
     // now the South and East border
@@ -378,7 +389,7 @@ class MazeManager {
       wall_shape.top = origin.y + offset.y;
       index = getWallIndex(i, 0, Direction::South);
       m_wall_rectangles[index] = wall_shape;
-      setWallState(index, WallState::Unknown);
+      setWallState(index, WallType::WT_WorldAbsent);
 
       // East Wall
       origin = getCellOrigin(m_maze_width - 1, i);
@@ -389,7 +400,7 @@ class MazeManager {
       wall_shape.top = origin.y + offset.y;
       index = getWallIndex(m_maze_width - 1, i, Direction::East);
       m_wall_rectangles[index] = wall_shape;
-      setWallState(index, WallState::Unknown);
+      setWallState(index, WallType::WT_WorldAbsent);
     }
     // Now we have the geometry, we can create the vertex array positions
     for (int i = 0; i < m_wall_count; ++i) {
@@ -414,10 +425,11 @@ class MazeManager {
 
   void resetWallColours() {
     for (int i = 0; i < m_wall_count; i++) {
-      m_walls_vertex_array[i * 4 + 0].color = conf::WallStateColors[(int)m_wall_states[i]];
-      m_walls_vertex_array[i * 4 + 1].color = conf::WallStateColors[(int)m_wall_states[i]];
-      m_walls_vertex_array[i * 4 + 2].color = conf::WallStateColors[(int)m_wall_states[i]];
-      m_walls_vertex_array[i * 4 + 3].color = conf::WallStateColors[(int)m_wall_states[i]];
+      sf::Color color = WallColours.at(m_wall_states[i]);
+      m_walls_vertex_array[i * 4 + 0].color = color;
+      m_walls_vertex_array[i * 4 + 1].color = color;
+      m_walls_vertex_array[i * 4 + 2].color = color;
+      m_walls_vertex_array[i * 4 + 3].color = color;
     }
   }
 
@@ -427,36 +439,28 @@ class MazeManager {
   void initialiseWallStates() {
     for (int y = 0; y < m_maze_width; y++) {
       for (int x = 0; x < m_maze_width; x++) {
-        setWallState(x, y, Direction::North, WallState::Unknown);
-        setWallState(x, y, Direction::West, WallState::Unknown);
+        setWallState(x, y, Direction::North, WallType::WT_WorldAbsent);
+        setWallState(x, y, Direction::West, WallType::WT_WorldAbsent);
       }
     }
     for (int i = 0; i < m_maze_width; i++) {
-      setWallState(i, 0, Direction::South, WallState::KnownPresent);
-      setWallState(i, m_maze_width - 1, Direction::North, WallState::KnownPresent);
-      setWallState(0, i, Direction::West, WallState::KnownPresent);
-      setWallState(m_maze_width - 1, i, Direction::East, WallState::KnownPresent);
+      setWallState(i, 0, Direction::South, WallType::WT_WorldPresent);
+      setWallState(i, m_maze_width - 1, Direction::North, WallType::WT_WorldPresent);
+      setWallState(0, i, Direction::West, WallType::WT_WorldPresent);
+      setWallState(m_maze_width - 1, i, Direction::East, WallType::WT_WorldPresent);
     }
-    setWallState(0, 0, Direction::East, WallState::KnownPresent);
-    setWallState(0, 0, Direction::North, WallState::KnownAbsent);
+    setWallState(0, 0, Direction::East, WallType::WT_WorldPresent);
+    setWallState(0, 0, Direction::North, WallType::WT_WorldAbsent);
   }
 
   void render(sf::RenderWindow& window) {
     window.draw(m_maze_base_rectangle);
-    resetPostColours();
-    resetWallColours();
-    if (m_highlight_obstacles) {
-      /// the walls and posts seen can be modified by the robot thread
-      /// TODO: there  is a concurrency error here. I need to guard the sensor callback
-      ///       but do not know how to use the right mutex
-      std::lock_guard<std::mutex> lock(g_mutex_obstacles);
-      for (auto& i : m_walls_visible) {
-        setWallColour(i, conf::WallHighlightColour);
-      }
-      for (auto& i : m_posts_visible) {
-        setPostColour(i, conf::WallHighlightColour);
-      }
-    }
+    setWallState(40, WallType::WT_MapAbsent);
+    setWallState(41, WallType::WT_MapPresent);
+    setWallState(42, WallType::WT_MapUnknown);
+    setWallState(43, WallType::WT_MapVirtual);
+    setWallState(44, WallType::WT_WorldAbsent);
+    setWallState(45, WallType::WT_WorldPresent);
     window.draw(m_walls_vertex_array);
     window.draw(m_posts_vertex_array);
   }
@@ -503,9 +507,6 @@ class MazeManager {
 
     for (auto i : m_walls_visible) {
       m_obstacles.push_back(m_wall_rectangles[i]);
-      if (m_highlight_obstacles) {
-        setWallColour(i, conf::WallHighlightColour);
-      }
     }
 
     m_posts_visible.clear();
@@ -517,9 +518,6 @@ class MazeManager {
     }
     for (auto& post_index : m_posts_visible) {
       m_obstacles.push_back(m_post_rectangles[post_index]);
-      if (m_highlight_obstacles) {
-        setPostColour(post_index, conf::WallHighlightColour);
-      }
     }
     return m_obstacles;  //
   }
@@ -570,7 +568,7 @@ class MazeManager {
     }
 
     int index = getWallIndex(x, y, d);
-    if (m_wall_states[index] == WallState::KnownPresent) {
+    if (m_wall_states[index] == WallType::WT_WorldPresent) {
       list.insert(index);
     }
   }
@@ -581,7 +579,7 @@ class MazeManager {
 
   // these hold the precalculated geometry of
   // the maze
-  std::vector<WallState> m_wall_states;  // the logical state of the walls in the world maze
+  std::vector<WallType> m_wall_states;  // the logical state of the walls in the world maze
   sf::RectangleShape m_maze_base_rectangle;
   std::vector<sf::FloatRect> m_wall_rectangles;
   std::vector<sf::FloatRect> m_post_rectangles;
