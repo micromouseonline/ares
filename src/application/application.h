@@ -218,7 +218,6 @@ class Application : public IEventObserver {
 
     std::stringstream ss;
     SensorData sensors = robot_state.sensor_data;
-    int sensor_update_time = m_process_time.asMicroseconds();
     ss << "power:  " + formatSensorData((int)sensors.lfs_power, (int)sensors.lds_power, (int)sensors.rds_power, (int)sensors.rfs_power);
     ss << " Dist:  " + formatSensorData((int)sensors.lfs_distance, (int)sensors.lds_distance, (int)sensors.rds_distance, (int)sensors.rfs_distance);
     ss << "\n";
@@ -243,14 +242,19 @@ class Application : public IEventObserver {
     m_robot.setButton(1, CustomButton("X", ImVec2(104, 24)));
     ImGui::SameLine();
     m_robot.setButton(0, CustomButton("Y", ImVec2(104, 24)));
-    ImGui::Text("Sensor update (us) %3d", sensor_update_time);
+    int sensor_update_time = m_process_time.asMicroseconds();
+    static int update_time = sensor_update_time;
+    float alpha = 0.025;
+    update_time = alpha * (sensor_update_time) + (1 - alpha) * update_time;
+    ImGui::Text("Sensor update %3d us", update_time);
     ImGui::SameLine();
     ImVec2 p = ImGui::GetCursorScreenPos();
     ImGui::GetWindowDrawList()->AddRect(p, ImVec2(p.x + 200, p.y + 20), IM_COL32(255, 200, 0, 255));
     ImColor bar_color = IM_COL32(0, 255, 0, 128);
     p.x += 1;
     p.y += 1;
-    ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + sensor_update_time, p.y + 18), bar_color);
+    ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + sensor_update_time, p.y + 18), IM_COL32(200, 0, 0, 128));
+    ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + update_time, p.y + 18), bar_color);
     ImGui::NewLine();
     ImGui::Text("%s", ss.str().c_str());
     ImGui::End();
