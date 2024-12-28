@@ -246,7 +246,7 @@ class Application : public IEventObserver {
     ImGui::Text("Sensor update (us) %3d", sensor_update_time);
     ImGui::SameLine();
     ImVec2 p = ImGui::GetCursorScreenPos();
-    ImGui::GetWindowDrawList()->AddRect(p, ImVec2(p.x + 150, p.y + 20), IM_COL32(255, 200, 0, 255));
+    ImGui::GetWindowDrawList()->AddRect(p, ImVec2(p.x + 200, p.y + 20), IM_COL32(255, 200, 0, 255));
     ImColor bar_color = IM_COL32(0, 255, 0, 128);
     p.x += 1;
     p.y += 1;
