@@ -225,10 +225,10 @@ class Robot {
       if (m_sensor_callback) {
         m_state.sensor_data = m_sensor_callback(m_state.x, m_state.y, m_state.angle);
       }
-      setLed(7, m_state.sensor_data.lfs_distance < 100);
-      setLed(6, m_state.sensor_data.lds_distance < 100);
-      setLed(5, m_state.sensor_data.rds_distance < 100);
-      setLed(4, m_state.sensor_data.rfs_distance < 100);
+      setLed(7, m_state.sensor_data.lfs_power > 18);
+      setLed(6, m_state.sensor_data.lds_power > 100);
+      setLed(5, m_state.sensor_data.rds_power > 100);
+      setLed(4, m_state.sensor_data.rfs_power > 18);
 
       // accumulate distances
       float deltaDistance = m_state.velocity * deltaTime;
