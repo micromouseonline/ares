@@ -147,6 +147,7 @@ class Behaviour {
     }
     doMove(5.0 * 180 - lead_out, v_max, 0, acc);
     doInPlaceTurn(-90, 318, 0, 50000);
+    doMove(90, v_max, 0, acc);
   }
 
   void test_SS180(int counts) {
