@@ -146,7 +146,7 @@ class Behaviour {
     }
     doMove(5.0 * 180 - lead_out, v_max, 0, acc);
     doInPlaceTurn(-90, 318, 0, 50000);
-    doMove(70, v_max, 0, acc);  // normal sensing position
+    doMove(75, v_max, 0, acc);  // normal sensing position
   }
 
   void test_SS180(int counts) {
@@ -164,7 +164,7 @@ class Behaviour {
     }
     doMove(5.0 * 180 - lead_out, v_max, 0, acc);
     doInPlaceTurn(-180, 318, 0, 3000);
-    doMove(70, v_max, 0, acc);  // normal sensing position
+    doMove(75, v_max, 0, acc);  // normal sensing position
   }
 
   void test_circuit_run(int counts) {
