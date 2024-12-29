@@ -12,6 +12,7 @@
 #include <sstream>
 #include <string>
 #include <unordered_set>
+#include "behaviour/maze.h"
 #include "common/core.h"
 #include "configuration.h"
 #include "drawing.h"
@@ -28,28 +29,28 @@
  */
 
 enum WallType : uint8_t {
-  WT_Absent = 0x00,   //  absent  - from world maze
-  WT_Present = 0x01,  //  present - from world maze
-  WT_Unknown = 0x02,  //  unknown - from world maze - should never happen
-  WT_Virtual = 0x03,  //  virtual - from world maze - should never happen
 
-  WT_MappedAbsent = 0x04,   // absent  - from mouse map
-  WT_MappedPresent = 0x05,  // present - from mouse map
-  WT_MappedUnknown = 0x06,  // unknown - from mouse map
-  WT_MappedVirtual = 0x07,  // virtual - from mouse map
+  WT_MappedAbsent = 0x00,   // absent  - from mouse map
+  WT_MappedPresent = 0x01,  // present - from mouse map
+  WT_MappedUnknown = 0x02,  // unknown - from mouse map
+  WT_MappedVirtual = 0x03,  // virtual - from mouse map
+
+  WT_Absent = 0x04,   //  absent  - from world maze
+  WT_Present = 0x05,  //  present - from world maze
+  WT_Unknown = 0x06,  //  unknown - from world maze - should never happen
+  WT_Virtual = 0x07,  //  virtual - from world maze - should never happen
 };
 
 inline const sf::Color WallColours[] = {
-
-    {sf::Color(20, 20, 20, 64)},   //
-    {sf::Color(255, 0, 0, 64)},    //
-    {sf::Color(0, 128, 128, 64)},  //
-    {sf::Color(0, 128, 128, 64)},  //
-
     {sf::Color(0, 0, 0, 255)},      //
     {sf::Color(255, 0, 0, 255)},    //
     {sf::Color(64, 32, 64, 128)},   //
     {sf::Color(255, 0, 255, 128)},  //
+
+    {sf::Color(20, 20, 20, 64)},   //
+    {sf::Color(128, 0, 0, 64)},    //
+    {sf::Color(0, 128, 128, 64)},  //
+    {sf::Color(0, 128, 128, 64)},  //
 
 };
 
@@ -57,8 +58,6 @@ struct Wall {
   WallType state = WallType::WT_MappedUnknown;
   sf::RectangleShape shape;
 };
-
-enum class Direction { North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest };
 
 /***
  * The MazeManager class looks after the maze for the application, not for the robot or its controller.
@@ -184,15 +183,15 @@ class MazeManager {
         for (int d = 0; d < 4; d++) {
           // we need only do the North and East walls
           if (walls & BIT(0)) {
-            setWallState(x, y, Direction::North, WallType::WT_Present);
+            setWallState(x, y, Direction::DIR_N, WallType::WT_Present);
           }
           if (walls & BIT(1)) {
-            setWallState(x, y, Direction::East, WallType::WT_Present);
+            setWallState(x, y, Direction::DIR_E, WallType::WT_Present);
           }
         }
       }
     }
-    setWallState(0, 0, Direction::East, WallType::WT_Present);
+    setWallState(0, 0, Direction::DIR_E, WallType::WT_Present);
     return true;
   }
 
@@ -200,29 +199,45 @@ class MazeManager {
    * Similar to loadFromMemory except that  the wall states get updated from
    * the map data held by the mouse. To do this, we leave the world data
    * bit set
+   *
+   * TODO: This is pretty horrible. Sort it out.
    * @param data
    * @param mazeWidth
    * @return
    */
-  bool updateFromMap(const uint8_t* data, int mazeWidth) {
-    resize(mazeWidth);
-    initialiseWallStates();
+  bool updateFromMap(Maze& maze, int mazeWidth) {
+    MazeMask mask = maze.get_mask();
+    maze.set_mask(MASK_CLOSED);
     for (int y = 0; y < mazeWidth; y++) {
       for (int x = 0; x < mazeWidth; x++) {
-        int index = x * mazeWidth + y;
-        int walls = data[index];
-        for (int d = 0; d < 4; d++) {
-          // we need only do the North and East walls
-          if (walls & BIT(0)) {
-            setWallState(x, y, Direction::North, WallType::WT_Present);
-          }
-          if (walls & BIT(1)) {
-            setWallState(x, y, Direction::East, WallType::WT_Present);
-          }
+        std::lock_guard<std::mutex> lock(g_behaviour_mutex);
+        if (maze.wall_state(x, y, DIR_N) == EXIT) {
+          setWallState(x, y, Direction::DIR_N, WT_MappedAbsent);
+        }
+        if (maze.wall_state(x, y, DIR_N) == WALL) {
+          setWallState(x, y, Direction::DIR_N, WT_MappedPresent);
+        }
+        if (maze.wall_state(x, y, DIR_E) == EXIT) {
+          setWallState(x, y, Direction::DIR_E, WT_MappedAbsent);
+        }
+        if (maze.wall_state(x, y, DIR_E) == WALL) {
+          setWallState(x, y, Direction::DIR_E, WT_MappedPresent);
+        }
+        if (maze.wall_state(x, y, DIR_S) == EXIT) {
+          setWallState(x, y, Direction::DIR_S, WT_MappedAbsent);
+        }
+        if (maze.wall_state(x, y, DIR_S) == WALL) {
+          setWallState(x, y, Direction::DIR_S, WT_MappedPresent);
+        }
+        if (maze.wall_state(x, y, DIR_W) == EXIT) {
+          setWallState(x, y, Direction::DIR_W, WT_MappedAbsent);
+        }
+        if (maze.wall_state(x, y, DIR_W) == WALL) {
+          setWallState(x, y, Direction::DIR_W, WT_MappedPresent);
         }
       }
     }
-    setWallState(0, 0, Direction::East, WallType::WT_Present);
+    maze.set_mask(mask);
     return true;
   }
 
@@ -260,16 +275,16 @@ class MazeManager {
   int getWallIndex(int cellX, int cellY, Direction direction) const {
     int index = cellX + (m_maze_width * 2 + 1) * cellY;
     switch (direction) {
-      case Direction::North:
+      case Direction::DIR_N:
         index += (m_maze_width * 2 + 1);
         break;
-      case Direction::East:
+      case Direction::DIR_E:
         index += (m_maze_width + 1);
         break;
-      case Direction::South:
+      case Direction::DIR_S:
         index += 0;
         break;
-      case Direction::West:
+      case Direction::DIR_W:
         index += m_maze_width;
         break;
       default:
@@ -404,7 +419,7 @@ class MazeManager {
         wall_shape = hWall;
         wall_shape.left = origin.x + offset.x;
         wall_shape.top = origin.y + offset.y;
-        index = getWallIndex(x, y, Direction::North);
+        index = getWallIndex(x, y, Direction::DIR_N);
         m_wall_rectangles[index] = wall_shape;
         setWallState(index, WallType::WT_MappedUnknown);
         /// West Wall
@@ -413,7 +428,7 @@ class MazeManager {
         wall_shape = vWall;
         wall_shape.left = origin.x + offset.x;
         wall_shape.top = origin.y + offset.y;
-        index = getWallIndex(x, y, Direction::West);
+        index = getWallIndex(x, y, Direction::DIR_W);
         m_wall_rectangles[index] = wall_shape;
         setWallState(index, WallType::WT_MappedUnknown);
       }
@@ -430,7 +445,7 @@ class MazeManager {
       wall_shape = hWall;
       wall_shape.left = origin.x + offset.x;
       wall_shape.top = origin.y + offset.y;
-      index = getWallIndex(i, 0, Direction::South);
+      index = getWallIndex(i, 0, Direction::DIR_S);
       m_wall_rectangles[index] = wall_shape;
       setWallState(index, WallType::WT_MappedUnknown);
 
@@ -441,7 +456,7 @@ class MazeManager {
       wall_shape = vWall;
       wall_shape.left = origin.x + offset.x;
       wall_shape.top = origin.y + offset.y;
-      index = getWallIndex(m_maze_width - 1, i, Direction::East);
+      index = getWallIndex(m_maze_width - 1, i, Direction::DIR_E);
       m_wall_rectangles[index] = wall_shape;
       setWallState(index, WallType::WT_MappedUnknown);
     }
@@ -481,18 +496,18 @@ class MazeManager {
   void initialiseWallStates() {
     for (int y = 0; y < m_maze_width; y++) {
       for (int x = 0; x < m_maze_width; x++) {
-        setWallState(x, y, Direction::North, WallType::WT_Absent);
-        setWallState(x, y, Direction::West, WallType::WT_Absent);
+        setWallState(x, y, Direction::DIR_N, WallType::WT_Absent);
+        setWallState(x, y, Direction::DIR_W, WallType::WT_Absent);
       }
     }
     for (int i = 0; i < m_maze_width; i++) {
-      setWallState(i, 0, Direction::South, WallType::WT_Present);
-      setWallState(i, m_maze_width - 1, Direction::North, WallType::WT_Present);
-      setWallState(0, i, Direction::West, WallType::WT_Present);
-      setWallState(m_maze_width - 1, i, Direction::East, WallType::WT_Present);
+      setWallState(i, 0, Direction::DIR_S, WallType::WT_Present);
+      setWallState(i, m_maze_width - 1, Direction::DIR_N, WallType::WT_Present);
+      setWallState(0, i, Direction::DIR_W, WallType::WT_Present);
+      setWallState(m_maze_width - 1, i, Direction::DIR_E, WallType::WT_Present);
     }
-    setWallState(0, 0, Direction::East, WallType::WT_Present);
-    setWallState(0, 0, Direction::North, WallType::WT_Absent);
+    setWallState(0, 0, Direction::DIR_E, WallType::WT_Present);
+    setWallState(0, 0, Direction::DIR_N, WallType::WT_Absent);
   }
 
   void render(sf::RenderWindow& window) {
@@ -540,10 +555,10 @@ class MazeManager {
     m_walls_visible.clear();
     for (int xx = x - 1; xx <= x + 1; xx++) {
       for (int yy = y - 1; yy <= y + 1; yy++) {
-        addWallToSet(m_walls_visible, xx, yy, Direction::North);
-        addWallToSet(m_walls_visible, xx, yy, Direction::East);
-        addWallToSet(m_walls_visible, xx, yy, Direction::South);
-        addWallToSet(m_walls_visible, xx, yy, Direction::West);
+        addWallToSet(m_walls_visible, xx, yy, Direction::DIR_N);
+        addWallToSet(m_walls_visible, xx, yy, Direction::DIR_E);
+        addWallToSet(m_walls_visible, xx, yy, Direction::DIR_S);
+        addWallToSet(m_walls_visible, xx, yy, Direction::DIR_W);
       }
     };
 
@@ -598,16 +613,16 @@ class MazeManager {
   }
 
   void addWallToSet(std::unordered_set<int>& list, int x, int y, Direction d) {
-    if (x < 0 && (d == Direction::West || d == Direction::North || d == Direction::South)) {
+    if (x < 0 && (d == Direction::DIR_W || d == Direction::DIR_N || d == Direction::DIR_S)) {
       return;
     }
-    if (x >= m_maze_width && (d == Direction::East || d == Direction::North || d == Direction::South)) {
+    if (x >= m_maze_width && (d == Direction::DIR_E || d == Direction::DIR_N || d == Direction::DIR_S)) {
       return;
     }
-    if (y < 0 && (d == Direction::East || d == Direction::South || d == Direction::West)) {
+    if (y < 0 && (d == Direction::DIR_E || d == Direction::DIR_S || d == Direction::DIR_W)) {
       return;
     }
-    if (y >= m_maze_width && (d == Direction::West || d == Direction::North || d == Direction::East)) {
+    if (y >= m_maze_width && (d == Direction::DIR_W || d == Direction::DIR_N || d == Direction::DIR_E)) {
       return;
     }
 

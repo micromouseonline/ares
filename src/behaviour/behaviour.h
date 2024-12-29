@@ -79,11 +79,10 @@
 
 class Behaviour {
  public:
-  Behaviour()
-      : m_robot(nullptr), m_running(false), m_terminate(false), m_timeStamp(0) {
-
-          //
-        };
+  Behaviour() : m_robot(nullptr), m_running(false), m_terminate(false), m_timeStamp(0) {
+    //
+    m_maze.initialise();
+  };
 
   ~Behaviour() {
     stop();  //
@@ -259,6 +258,8 @@ class Behaviour {
   void requestTerminate() {
     m_terminate = true;
   }
+
+  Maze m_maze;
 
  private:
   bool waitForMove() {

@@ -209,6 +209,7 @@ class Application : public IEventObserver {
     ImGui::SFML::Update(*m_window->getRenderWindow(), m_frame_clock.restart());
 
     RobotState robot_state = m_robot.getState();
+    m_maze_manager.updateFromMap(m_mouse.m_maze, 16);
 
     std::stringstream ss;
     SensorData sensors = robot_state.sensor_data;
@@ -342,10 +343,10 @@ class Application : public IEventObserver {
 
   std::vector<int> getLocalWallList(int x, int y) {
     std::vector<int> wall_list;
-    int w_n = m_maze_manager.getWallIndex(x, y, Direction::North);
-    int w_e = m_maze_manager.getWallIndex(x, y, Direction::East);
-    int w_s = m_maze_manager.getWallIndex(x, y, Direction::South);
-    int w_w = m_maze_manager.getWallIndex(x, y, Direction::West);
+    int w_n = m_maze_manager.getWallIndex(x, y, Direction::DIR_N);
+    int w_e = m_maze_manager.getWallIndex(x, y, Direction::DIR_E);
+    int w_s = m_maze_manager.getWallIndex(x, y, Direction::DIR_S);
+    int w_w = m_maze_manager.getWallIndex(x, y, Direction::DIR_W);
     wall_list.push_back(w_n);
     wall_list.push_back(w_e);
     wall_list.push_back(w_s);
@@ -361,10 +362,10 @@ class Application : public IEventObserver {
     int y = cell_y;
     //    for (int x = cell_x - 1; x <= cell_x + 1; x++) {
     //      for (int y = cell_y - 1; y <= cell_y + 1; y++) {
-    int w_n = m_maze_manager.getWallIndex(x, y, Direction::North);
-    int w_e = m_maze_manager.getWallIndex(x, y, Direction::East);
-    int w_s = m_maze_manager.getWallIndex(x, y, Direction::South);
-    int w_w = m_maze_manager.getWallIndex(x, y, Direction::West);
+    int w_n = m_maze_manager.getWallIndex(x, y, Direction::DIR_N);
+    int w_e = m_maze_manager.getWallIndex(x, y, Direction::DIR_E);
+    int w_s = m_maze_manager.getWallIndex(x, y, Direction::DIR_S);
+    int w_w = m_maze_manager.getWallIndex(x, y, Direction::DIR_W);
     WallType s_n = m_maze_manager.getWallState(w_n);
     WallType s_e = m_maze_manager.getWallState(w_e);
     WallType s_s = m_maze_manager.getWallState(w_s);
