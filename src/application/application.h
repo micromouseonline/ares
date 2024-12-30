@@ -310,6 +310,11 @@ class Application : public IEventObserver {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
       m_mouse.go(5, 0);
     }
+    ImGui::SameLine();
+    if (ImGui::Button("SEEKER", ImVec2(b_wide, 0))) {
+      m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
+      m_mouse.go(6, 0);
+    }
 
     if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
@@ -325,12 +330,16 @@ class Application : public IEventObserver {
     const int frames = 60 * 4;
     static float speed[frames];
     static float omega[frames];
+    static float rds[frames];
+
     static int index = 0;
     speed[index] = robot_state.velocity;
     omega[index] = robot_state.omega;
+    rds[index] = robot_state.sensor_data.rds_power;
     index = (index + 1) % IM_ARRAYSIZE(speed);
     ImGui::PlotLines("speed", speed, IM_ARRAYSIZE(speed), index, "", 0, 3000, ImVec2(330, 100));
     ImGui::PlotLines("omega", omega, IM_ARRAYSIZE(omega), index, "", -1000, 1000, ImVec2(330, 140));
+    ImGui::PlotLines("RDS", rds, IM_ARRAYSIZE(rds), index, "", -1000, 1000, ImVec2(330, 140));
 
     //    ImGui::PopFont();
     ImGui::End();

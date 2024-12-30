@@ -97,7 +97,7 @@ class Behaviour {
     m_act = 0;
     waitForMove();
     // m_robot->setSpeeds(0, 0);
-    m_reset = false;
+    // m_reset = false;
     m_maze.initialise();
   }
 
@@ -269,7 +269,7 @@ class Behaviour {
         break;
       }
       if (m_reset) {
-        m_reset = false;
+        // m_reset = false;
         break;
       }
       m_location = m_location.neighbour(m_heading);
@@ -336,6 +336,57 @@ class Behaviour {
     return turnDirection;
   }
 
+  int manhattanDistance(Location a, Location b) {
+    return abs(a.x - b.x) + abs(a.y - b.y);
+  }
+
+  uint8_t seekHeading() {
+    uint8_t turnDirection;
+    if (m_leftWall && m_rightWall && m_frontWall) {
+      return BEHIND;
+    }
+    if (m_leftWall && m_rightWall) {
+      return AHEAD;
+    }
+    if (m_leftWall && m_frontWall) {
+      return RIGHT;
+    }
+    if (m_rightWall && m_frontWall) {
+      return LEFT;
+    }
+    int distance_a = manhattanDistance(m_target, m_location.neighbour(m_heading));
+    int distance_l = manhattanDistance(m_target, m_location.neighbour(left_from(m_heading)));
+    int distance_r = manhattanDistance(m_target, m_location.neighbour(right_from(m_heading)));
+    int distance_b = manhattanDistance(m_target, m_location.neighbour(behind_from(m_heading)));
+
+    if (m_leftWall) {
+      distance_l = 255;
+    }
+    if (m_rightWall) {
+      distance_r = 255;
+    }
+    if (m_frontWall) {
+      distance_a = 255;
+    }
+    int smallest = distance_a;
+    turnDirection = AHEAD;
+
+    if (distance_l < smallest) {
+      smallest = distance_l;
+      turnDirection = LEFT;
+    }
+    if (distance_r < smallest) {
+      smallest = distance_r;
+      turnDirection = RIGHT;
+    }
+    // if (distance_b < smallest) {
+    //   smallest = distance_b;
+    //   turnDirection = BEHIND;
+    // }
+
+    return turnDirection;
+  }
+
   void wanderTo(Location target) {
     /// assume we are centred in the start cell.
 
@@ -345,7 +396,7 @@ class Behaviour {
         break;
       }
       if (m_reset) {
-        m_reset = false;
+        // m_reset = false;
         break;
       }
       m_location = m_location.neighbour(m_heading);
@@ -368,6 +419,60 @@ class Behaviour {
     }
     doMove(90, 700, 0, 3000);
   }
+
+  void seekTo(Location target) {
+    /// assume we are centred in the start cell.
+
+    bool finished = false;
+    while (!finished) {
+      if (m_terminate) {
+        break;
+      }
+      if (m_reset) {
+        // m_reset = false;
+        break;
+      }
+      m_location = m_location.neighbour(m_heading);
+      RobotState robot_state = m_robot->getState();
+      updateMap(robot_state);
+      if (m_location == target) {
+        break;
+      }
+
+      m_maze.flood_manhattan(target);
+      unsigned char newHeading = m_maze.direction_to_smallest(m_location, m_heading);
+      unsigned char hdgChange = (DIR_COUNT + newHeading - m_heading) % DIR_COUNT;
+      switch (hdgChange) {
+        // all these finish with the robot moving and at the sensing point
+        case 0:
+          goForward();
+          break;
+        case 2:
+          turnRight();
+          break;
+        case 4:
+          turnBack();
+          break;
+        case 6:
+          turnLeft();
+          break;
+      }
+      //
+      // uint8_t turn = seekHeading();
+      //
+      // if (turn == LEFT) {
+      //   turnLeft();
+      // } else if (turn == AHEAD) {
+      //   goForward();
+      // } else if (turn == RIGHT) {
+      //   turnRight();
+      // } else {
+      //   turnBack();
+      // }
+    }
+    doMove(90, 700, 0, 3000);
+  }
+
   void run() {
     while (m_running) {
       // do stuff
@@ -389,8 +494,10 @@ class Behaviour {
           m_act = 0;
           break;
         case 5: {
+          std::cout << "wander to..." << std::endl;
           m_heading = DIR_N;
           m_location = {0, 0};
+          m_target = Location(7, 7);
           m_robot->setPose(96.0f, 96.0f - 40.0f, 90.0f);
 
           RobotState robot_state = m_robot->getState();
@@ -398,7 +505,12 @@ class Behaviour {
           updateMap(robot_state);
           startMove(90 + 40.0f, 700, 700, 5000);
           waitForMove();
-          wanderTo(Location(7, 7));
+          wanderTo(m_target);
+          if (m_reset) {
+            m_act = 0;
+            break;
+          }
+          std::cout << "wander to... turning around" << std::endl;
           if (m_frontWall) {
             if (!m_leftWall) {
               doInPlaceTurn(90, 900, 0, 5000);
@@ -410,17 +522,70 @@ class Behaviour {
               doInPlaceTurn(180, 900, 0, 5000);
             }
           }
+          std::cout << "wander to... returning" << std::endl;
           startMove(90.04, 700, 700, 5000);
           waitForMove();
-
-          wanderTo(Location(0, 0));
+          m_target = Location(0, 0);
+          wanderTo(m_target);
+          if (m_reset) {
+            m_act = 0;
+            break;
+          }
           m_heading = behind_from(m_heading);
           doInPlaceTurn(180, 900, 0, 5000);
           m_heading = behind_from(m_heading);
           m_act = 0;
-        } break;
+        }
+          std::cout << "wander to... finished" << std::endl;
+          break;
+        case 6: {
+          std::cout << "wander to..." << std::endl;
+          m_heading = DIR_N;
+          m_location = {0, 0};
+          m_target = Location(7, 7);
+          m_robot->setPose(96.0f, 96.0f - 40.0f, 90.0f);
+
+          RobotState robot_state = m_robot->getState();
+          delay_ms(500);
+          updateMap(robot_state);
+          startMove(90 + 40.0f, 700, 700, 5000);
+          waitForMove();
+          seekTo(m_target);
+          if (m_reset) {
+            m_act = 0;
+            break;
+          }
+          std::cout << "wander to... turning around" << std::endl;
+          if (m_frontWall) {
+            if (!m_leftWall) {
+              doInPlaceTurn(90, 900, 0, 5000);
+              m_heading = left_from(m_heading);
+            } else if (!m_rightWall) {
+              doInPlaceTurn(-90, 900, 0, 5000);
+              m_heading = right_from(m_heading);
+            } else {
+              doInPlaceTurn(180, 900, 0, 5000);
+            }
+          }
+          std::cout << "wander to... returning" << std::endl;
+          startMove(90.04, 700, 700, 5000);
+          waitForMove();
+          m_target = Location(0, 0);
+          seekTo(m_target);
+          if (m_reset) {
+            m_act = 0;
+            break;
+          }
+          m_heading = behind_from(m_heading);
+          doInPlaceTurn(180, 900, 0, 5000);
+          m_heading = behind_from(m_heading);
+          m_act = 0;
+        }
+          std::cout << "wander to... finished" << std::endl;
+          break;
         default:
           // do nothing
+          m_act = 0;
           break;
       }
       delay_ms(10);
@@ -428,7 +593,9 @@ class Behaviour {
   }
 
   void go(int action, int i) {
+    std::lock_guard<std::mutex> lock(g_behaviour_mutex);
     m_iterations = i;
+    m_reset = false;
     m_act = action;  //
   }
 
@@ -536,6 +703,7 @@ class Behaviour {
   Robot* m_robot = nullptr;
   Direction m_heading;
   Location m_location;
+  Location m_target;
   bool m_leftWall;
   bool m_frontWall;
   bool m_rightWall;
