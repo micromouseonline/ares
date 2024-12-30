@@ -191,7 +191,9 @@ class MazeManager {
         }
       }
     }
-    setWallState(0, 0, Direction::DIR_E, WallType::WT_Present);
+    if (data[0] & BIT(1)) {
+      setWallState(0, 0, Direction::DIR_E, WallType::WT_Present);
+    }
     return true;
   }
 
@@ -506,7 +508,7 @@ class MazeManager {
       setWallState(0, i, Direction::DIR_W, WallType::WT_Present);
       setWallState(m_maze_width - 1, i, Direction::DIR_E, WallType::WT_Present);
     }
-    setWallState(0, 0, Direction::DIR_E, WallType::WT_Present);
+    //    setWallState(0, 0, Direction::DIR_E, WallType::WT_Present);
     setWallState(0, 0, Direction::DIR_N, WallType::WT_Absent);
   }
 

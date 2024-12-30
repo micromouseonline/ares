@@ -150,8 +150,8 @@ class Location {
   uint8_t x;
   uint8_t y;
 
-  Location() : x(0), y(0) {};
-  Location(uint8_t ix, uint8_t iy) : x(ix), y(iy) {};
+  Location() : x(0), y(0){};
+  Location(uint8_t ix, uint8_t iy) : x(ix), y(iy){};
 
   bool operator==(const Location &obj) const {
     return x == obj.x && y == obj.y;
@@ -378,7 +378,6 @@ class Maze {
       m_walls[0][y].west = WALL;
       m_walls[m_width - 1][y].east = WALL;
     }
-    set_wall_state(START, DIR_E, WALL);
     set_wall_state(START, DIR_N, EXIT);
 
     // the open maze treats unknowns as exits
