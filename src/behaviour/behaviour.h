@@ -94,7 +94,9 @@ class Behaviour {
 
   void reset() {
     m_reset = true;
+    m_act = 0;
     waitForMove();
+    // m_robot->setSpeeds(0, 0);
     m_reset = false;
     m_maze.initialise();
   }
@@ -305,7 +307,7 @@ class Behaviour {
         turnDirection = AHEAD;
       } else if (m_maze.has_unknown_walls(m_location.neighbour(right_from(m_heading)))) {
         turnDirection = RIGHT;
-      } else if (random() % 2) {
+      } else if (rand() % 2) {
         turnDirection = RIGHT;
       } else {
         turnDirection = AHEAD;
@@ -315,7 +317,7 @@ class Behaviour {
         turnDirection = AHEAD;
       } else if (m_maze.has_unknown_walls(m_location.neighbour(left_from(m_heading)))) {
         turnDirection = LEFT;
-      } else if (random() % 2) {
+      } else if (rand() % 2) {
         turnDirection = LEFT;
       } else {
         turnDirection = AHEAD;
@@ -325,7 +327,7 @@ class Behaviour {
         turnDirection = LEFT;
       } else if (m_maze.has_unknown_walls(m_location.neighbour(right_from(m_heading)))) {
         turnDirection = RIGHT;
-      } else if (random() % 2) {
+      } else if (rand() % 2) {
         turnDirection = LEFT;
       } else {
         turnDirection = RIGHT;
@@ -333,16 +335,10 @@ class Behaviour {
     }
     return turnDirection;
   }
+
   void wanderTo(Location target) {
     /// assume we are centred in the start cell.
-    m_heading = DIR_N;
-    m_location = {0, 0};
-    m_robot->setPose(96.0f, 96.0f - 40.0f, 90.0f);
-    RobotState robot_state = m_robot->getState();
-    delay_ms(500);
-    updateMap(robot_state);
-    startMove(90 + 40.0f, 700, 700, 5000);
-    waitForMove();
+
     bool finished = false;
     while (!finished) {
       if (m_terminate) {
@@ -392,10 +388,37 @@ class Behaviour {
           followTo(Location(0, 0));
           m_act = 0;
           break;
-        case 5:
+        case 5: {
+          m_heading = DIR_N;
+          m_location = {0, 0};
+          m_robot->setPose(96.0f, 96.0f - 40.0f, 90.0f);
+
+          RobotState robot_state = m_robot->getState();
+          delay_ms(500);
+          updateMap(robot_state);
+          startMove(90 + 40.0f, 700, 700, 5000);
+          waitForMove();
           wanderTo(Location(7, 7));
+          if (m_frontWall) {
+            if (!m_leftWall) {
+              doInPlaceTurn(90, 900, 0, 5000);
+              m_heading = left_from(m_heading);
+            } else if (!m_rightWall) {
+              doInPlaceTurn(-90, 900, 0, 5000);
+              m_heading = right_from(m_heading);
+            } else {
+              doInPlaceTurn(180, 900, 0, 5000);
+            }
+          }
+          startMove(90.04, 700, 700, 5000);
+          waitForMove();
+
+          wanderTo(Location(0, 0));
+          m_heading = behind_from(m_heading);
+          doInPlaceTurn(180, 900, 0, 5000);
+          m_heading = behind_from(m_heading);
           m_act = 0;
-          break;
+        } break;
         default:
           // do nothing
           break;
