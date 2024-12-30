@@ -1,28 +1,27 @@
 /************************************************************************
-*
-* Copyright (C) 2017 by Peter Harrison. www.micromouseonline.com
-*
-* Permission is hereby granted, free of charge, to any person obtaining a
-* copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without l> imitation the rights to use, copy, modify, merge, publish,
-* distribute, sublicense, and/or sell copies of the Software, and to
-* permit persons to whom the Software is furnished to do so, subject to
-* the following conditions:
-*
-* The above copyright notice and this permission notice shall be included
-* in all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*
-************************************************************************/
-
+ *
+ * Copyright (C) 2017 by Peter Harrison. www.micromouseonline.com
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without l> imitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ ************************************************************************/
 
 #ifndef MAZEDATA_H
 #define MAZEDATA_H
@@ -31,21 +30,19 @@
 #include <vector>
 typedef struct {
   const char title[64];
-  const uint8_t * data;
+  const uint8_t* data;
   const int size;
 } MazeDataSource;
 
 extern MazeDataSource mazeList[];
 
-
 extern int mazeCount;
 
+extern const uint8_t _follower_1[];
+extern const uint8_t _follower_2[];
 
-
-
-
-extern const uint8_t apec1996[] ;
-extern const uint8_t apec1997[] ;
+extern const uint8_t apec1996[];
+extern const uint8_t apec1997[];
 extern const uint8_t apec1998[];
 extern const uint8_t apec2012[];
 extern const uint8_t apec2013[];
@@ -63,8 +60,8 @@ extern const uint8_t japan4[];
 extern const uint8_t japan5[];
 extern const uint8_t japan95[];
 extern const uint8_t japan97[];
-extern const uint8_t japan98[] ;
-extern const uint8_t japan99[] ;
+extern const uint8_t japan98[];
+extern const uint8_t japan99[];
 extern const uint8_t japan1988[];
 extern const uint8_t japan1990[];
 extern const uint8_t japan1991[];
@@ -152,11 +149,9 @@ extern const uint8_t japan2015ef_half[];
 extern const uint8_t japan2016ef_half[];
 extern const uint8_t japan2017ef_half[];
 
-
 extern const uint8_t taiwan2014ef_half[];
 extern const uint8_t taiwan2015ef_half[];
 extern const uint8_t taiwan2016ef_half[];
 extern const uint8_t taiwan2017ef_half[];
 
-#endif    /* MAZEDATA_H */
-
+#endif /* MAZEDATA_H */
