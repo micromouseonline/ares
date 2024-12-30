@@ -255,7 +255,7 @@ class Application : public IEventObserver {
     ImColor bar_color = IM_COL32(0, 255, 0, 128);
     p.x += 1;
     p.y += 1;
-    ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + peak_time, p.y + 18), IM_COL32(200, 0, 0, 128));
+    ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + std::min(198, peak_time), p.y + 18), IM_COL32(200, 0, 0, 128));
     ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + update_time, p.y + 18), bar_color);
     ImGui::NewLine();
     ImGui::Text("%s", ss.str().c_str());
