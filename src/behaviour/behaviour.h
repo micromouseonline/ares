@@ -79,7 +79,7 @@
 
 class Behaviour {
  public:
-  Behaviour() : m_robot(nullptr), m_running(false), m_terminate(false), m_timeStamp(0) {
+  Behaviour() : m_robot(nullptr), m_running(false), m_terminate(false), m_timeStamp(0), m_reset(false) {
     //
     m_maze.initialise();
   };
@@ -93,6 +93,9 @@ class Behaviour {
   }
 
   void reset() {
+    m_reset = true;
+    waitForMove();
+    m_reset = false;
     m_maze.initialise();
   }
 
@@ -263,6 +266,10 @@ class Behaviour {
       if (m_terminate) {
         break;
       }
+      if (m_reset) {
+        m_reset = false;
+        break;
+      }
       m_location = m_location.neighbour(m_heading);
       RobotState robot_state = m_robot->getState();
       updateMap(robot_state);
@@ -283,6 +290,88 @@ class Behaviour {
     doMove(90, 700, 0, 3000);
   }
 
+  uint8_t randomHeading() {
+    uint8_t turnDirection;
+    if (m_leftWall && m_rightWall && m_frontWall) {
+      turnDirection = BEHIND;
+    } else if (m_leftWall && m_rightWall) {
+      turnDirection = AHEAD;
+    } else if (m_leftWall && m_frontWall) {
+      turnDirection = RIGHT;
+    } else if (m_rightWall && m_frontWall) {
+      turnDirection = LEFT;
+    } else if (m_leftWall) {
+      if (m_maze.has_unknown_walls(m_location.neighbour(m_heading))) {
+        turnDirection = AHEAD;
+      } else if (m_maze.has_unknown_walls(m_location.neighbour(right_from(m_heading)))) {
+        turnDirection = RIGHT;
+      } else if (random() % 2) {
+        turnDirection = RIGHT;
+      } else {
+        turnDirection = AHEAD;
+      }
+    } else if (m_rightWall) {
+      if (m_maze.has_unknown_walls(m_location.neighbour(m_heading))) {
+        turnDirection = AHEAD;
+      } else if (m_maze.has_unknown_walls(m_location.neighbour(left_from(m_heading)))) {
+        turnDirection = LEFT;
+      } else if (random() % 2) {
+        turnDirection = LEFT;
+      } else {
+        turnDirection = AHEAD;
+      }
+    } else {
+      if (m_maze.has_unknown_walls(m_location.neighbour(left_from(m_heading)))) {
+        turnDirection = LEFT;
+      } else if (m_maze.has_unknown_walls(m_location.neighbour(right_from(m_heading)))) {
+        turnDirection = RIGHT;
+      } else if (random() % 2) {
+        turnDirection = LEFT;
+      } else {
+        turnDirection = RIGHT;
+      }
+    }
+    return turnDirection;
+  }
+  void wanderTo(Location target) {
+    /// assume we are centred in the start cell.
+    m_heading = DIR_N;
+    m_location = {0, 0};
+    m_robot->setPose(96.0f, 96.0f - 40.0f, 90.0f);
+    RobotState robot_state = m_robot->getState();
+    delay_ms(500);
+    updateMap(robot_state);
+    startMove(90 + 40.0f, 700, 700, 5000);
+    waitForMove();
+    bool finished = false;
+    while (!finished) {
+      if (m_terminate) {
+        break;
+      }
+      if (m_reset) {
+        m_reset = false;
+        break;
+      }
+      m_location = m_location.neighbour(m_heading);
+      RobotState robot_state = m_robot->getState();
+      updateMap(robot_state);
+      if (m_location == target) {
+        break;
+      }
+      uint8_t turn = randomHeading();
+
+      if (turn == LEFT) {
+        turnLeft();
+      } else if (turn == AHEAD) {
+        goForward();
+      } else if (turn == RIGHT) {
+        turnRight();
+      } else {
+        turnBack();
+      }
+    }
+    doMove(90, 700, 0, 3000);
+  }
   void run() {
     while (m_running) {
       // do stuff
@@ -301,6 +390,10 @@ class Behaviour {
           break;
         case 4:
           followTo(Location(0, 0));
+          m_act = 0;
+          break;
+        case 5:
+          wanderTo(Location(7, 7));
           m_act = 0;
           break;
         default:
@@ -428,6 +521,7 @@ class Behaviour {
   std::atomic<bool> m_running;
   std::atomic<bool> m_terminate;
   std::atomic<long> m_timeStamp = 0;
+  bool m_reset = false;
 
   std::atomic<int> m_act = 0;
   std::atomic<int> m_iterations = 0;

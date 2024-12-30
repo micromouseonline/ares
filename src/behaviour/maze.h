@@ -33,6 +33,11 @@
 
 #define START Location(0, 0)
 
+#define AHEAD 0
+#define RIGHT 1
+#define BEHIND 2
+#define LEFT 3
+
 //// Set up all the data for a 32x32 maze
 //// but allow a 16x16 section to be used if needed
 #define MAZE_WIDTH (16)

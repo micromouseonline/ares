@@ -303,9 +303,15 @@ class Application : public IEventObserver {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
       m_mouse.go(4, 0);
     }
+    ImGui::SameLine();
+    if (ImGui::Button("WANDERER", ImVec2(b_wide, 0))) {
+      m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
+      m_mouse.go(5, 0);
+    }
 
     if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
+      m_mouse.reset();
     }
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "    time     X      Y   Theta     Vel   Omega");
     char s[60];
