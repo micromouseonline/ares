@@ -629,7 +629,7 @@ class MazeManager {
     int index = getWallIndex(x, y, d);
     /// we only want walls that are present in the world
     WallType wall = m_wall_states[index];
-    if (wall == WallType::WT_Present) {
+    if (wall == WallType::WT_Present || wall == WallType::WT_MappedPresent) {
       list.insert(index);
     }
   }

@@ -133,20 +133,19 @@ class Behaviour {
     float s = 1.0;
     float v_max = 5000.0f;
     float acc = 10000.0f;
-    float omega_max = 287.0f;
-    float alpha = 2866.0f;
     float turn_speed = 500.0f;
-    float lead_in = 124.0f;
-    float lead_out = 123.0f;
+    float lead_in = 70.0f;
+    float lead_out = 70.0f;
+    float length = 115.0f;
     doMove(5.0 * 180 - lead_in, v_max, s * turn_speed, acc);
-    doTurn(-90, s * omega_max, 0, alpha);
+    doCubicTurn(length, -90, turn_speed);
     for (int i = 0; i < counts - 2; i++) {
       doMove(5.0 * 180 - lead_in - lead_out, v_max, s * turn_speed, acc);
-      doTurn(-90, s * omega_max, 0, alpha);
+      doCubicTurn(length, -90, turn_speed);
     }
     doMove(5.0 * 180 - lead_out, v_max, 0, acc);
     doInPlaceTurn(-90, 318, 0, 50000);
-    doMove(75, v_max, 0, acc);  // normal sensing position
+    //    doMove(75, v_max, 0, acc);  // normal sensing position
   }
 
   void test_SS180(int counts) {
@@ -184,6 +183,95 @@ class Behaviour {
     doInPlaceTurn(-90, 318, 0, 3000);
   }
 
+  void updateMap(RobotState& state) {
+    m_leftWall = state.sensor_data.lds_power > 40;
+    m_frontWall = state.sensor_data.lfs_power > 20 && state.sensor_data.rfs_power > 20;
+    m_rightWall = state.sensor_data.rds_power > 40;
+    switch (m_heading) {
+      case DIR_N:
+
+        m_maze.update_wall_state(m_location, DIR_N, m_frontWall ? WALL : EXIT);
+        m_maze.update_wall_state(m_location, DIR_E, m_rightWall ? WALL : EXIT);
+        m_maze.update_wall_state(m_location, DIR_W, m_leftWall ? WALL : EXIT);
+        break;
+      case DIR_E:
+        m_maze.update_wall_state(m_location, DIR_E, m_frontWall ? WALL : EXIT);
+        m_maze.update_wall_state(m_location, DIR_S, m_rightWall ? WALL : EXIT);
+        m_maze.update_wall_state(m_location, DIR_N, m_leftWall ? WALL : EXIT);
+        break;
+      case DIR_S:
+        m_maze.update_wall_state(m_location, DIR_S, m_frontWall ? WALL : EXIT);
+        m_maze.update_wall_state(m_location, DIR_W, m_rightWall ? WALL : EXIT);
+        m_maze.update_wall_state(m_location, DIR_E, m_leftWall ? WALL : EXIT);
+        break;
+      case DIR_W:
+        m_maze.update_wall_state(m_location, DIR_W, m_frontWall ? WALL : EXIT);
+        m_maze.update_wall_state(m_location, DIR_N, m_rightWall ? WALL : EXIT);
+        m_maze.update_wall_state(m_location, DIR_S, m_leftWall ? WALL : EXIT);
+        break;
+      default:
+        // This is an error. We should handle it.
+        break;
+    }
+  }
+
+  void turnLeft() {
+    float speed = m_robot->getState().velocity;
+    doMove(20, speed, 700, 5000);
+    doCubicTurn(115, 90, speed);
+    doMove(20, speed, speed, 5000);
+    m_heading = left_from(m_heading);
+  }
+
+  void turnRight() {
+    float speed = m_robot->getState().velocity;
+    doMove(20, speed, 700, 5000);
+    doCubicTurn(115, -90, speed);
+    doMove(20, speed, speed, 5000);
+    m_heading = right_from(m_heading);
+  }
+
+  void turnBack() {
+    float speed = m_robot->getState().velocity;
+    doMove(90, speed, 0, 5000);
+    doTurn(180, 900, 0, 5000);
+    doMove(90, speed, speed, 5000);
+    m_heading = behind_from(m_heading);
+  }
+
+  void goForward() {
+    float speed = m_robot->getState().velocity;
+    doMove(180, speed, speed, 5000);
+  }
+
+  void followTo(Location target) {
+    /// assume we are centred in the start cell.
+    m_heading = DIR_N;
+    m_location = {0, 0};
+    startMove(90, 700, 700, 5000);
+    waitForMove();
+    m_location = m_location.neighbour(m_heading);
+    while (m_location != target) {
+      if (m_terminate) {
+        break;
+      }
+      RobotState robot_state = m_robot->getState();
+      updateMap(robot_state);
+
+      if (!m_leftWall) {
+        turnLeft();
+      } else if (!m_frontWall) {
+        goForward();
+      } else if (!m_rightWall) {
+        turnRight();
+      } else {
+        turnBack();
+      }
+      m_location = m_location.neighbour(m_heading);
+    }
+    doMove(90, 700, 0, 3000);
+  }
+
   void run() {
     while (m_running) {
       // do stuff
@@ -200,7 +288,10 @@ class Behaviour {
           test_circuit_run(m_iterations * 4);
           m_act = 0;
           break;
-
+        case 4:
+          followTo(Location(0, 0));
+          m_act = 0;
+          break;
         default:
           // do nothing
           break;
@@ -234,7 +325,6 @@ class Behaviour {
     Timer timer;
     while (ms > 0) {
       float v = m_trap_fwd.next();
-
       float w = 0;
       if (m_turn_trajectory != nullptr) {
         w = m_turn_trajectory->next();
@@ -244,8 +334,8 @@ class Behaviour {
         m_robot->systick(m_step_time);
         RobotState state = m_robot->getState();
         m_robot->setLed(7, state.sensor_data.lfs_power > 18);
-        m_robot->setLed(6, state.sensor_data.lds_power > 100);
-        m_robot->setLed(5, state.sensor_data.rds_power > 100);
+        m_robot->setLed(6, state.sensor_data.lds_power > 40);
+        m_robot->setLed(5, state.sensor_data.rds_power > 40);
         m_robot->setLed(4, state.sensor_data.rfs_power > 18);
       }
 
@@ -266,6 +356,7 @@ class Behaviour {
     while (!moveFinished() && !m_terminate) {
       delay_ms(1);
     }
+    delay_ms(1);
     return !m_terminate;
   }
 
@@ -316,6 +407,11 @@ class Behaviour {
   }
 
   Robot* m_robot = nullptr;
+  Direction m_heading;
+  Location m_location;
+  bool m_leftWall;
+  bool m_frontWall;
+  bool m_rightWall;
   float m_step_time = 0.001;
   std::thread m_thread;
   std::atomic<bool> m_running;
