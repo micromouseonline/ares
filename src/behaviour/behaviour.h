@@ -252,7 +252,11 @@ class Behaviour {
     /// assume we are centred in the start cell.
     m_heading = DIR_N;
     m_location = {0, 0};
-    startMove(90, 700, 700, 5000);
+    m_robot->setPose(96.0f, 96.0f - 40.0f, 90.0f);
+    RobotState robot_state = m_robot->getState();
+    delay_ms(500);
+    updateMap(robot_state);
+    startMove(90 + 40.0f, 700, 700, 5000);
     waitForMove();
     bool finished = false;
     while (!finished) {
