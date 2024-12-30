@@ -254,13 +254,17 @@ class Behaviour {
     m_location = {0, 0};
     startMove(90, 700, 700, 5000);
     waitForMove();
-    m_location = m_location.neighbour(m_heading);
-    while (m_location != target) {
+    bool finished = false;
+    while (!finished) {
       if (m_terminate) {
         break;
       }
+      m_location = m_location.neighbour(m_heading);
       RobotState robot_state = m_robot->getState();
       updateMap(robot_state);
+      if (m_location == target) {
+        break;
+      }
 
       if (!m_leftWall) {
         turnLeft();
@@ -271,7 +275,6 @@ class Behaviour {
       } else {
         turnBack();
       }
-      m_location = m_location.neighbour(m_heading);
     }
     doMove(90, 700, 0, 3000);
   }
