@@ -341,6 +341,9 @@ class Application : public IEventObserver {
       maze_name += std::to_string(m_maze_index);
       maze_name += ")";
       m_txt_maze_name.setString(maze_name);
+      m_mouse.reset();
+
+      m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
       maze_changed = false;
     }
   }

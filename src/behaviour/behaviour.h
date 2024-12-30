@@ -92,6 +92,10 @@ class Behaviour {
     m_robot = &robot;  //
   }
 
+  void reset() {
+    m_maze.initialise();
+  }
+
   void start() {
     if (!m_running) {
       m_running = true;
