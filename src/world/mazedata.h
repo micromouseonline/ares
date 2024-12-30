@@ -40,6 +40,7 @@ extern int mazeCount;
 
 extern const uint8_t _follower_1[];
 extern const uint8_t _follower_2[];
+extern const uint8_t _follower_3[];
 
 extern const uint8_t apec1996[];
 extern const uint8_t apec1997[];
