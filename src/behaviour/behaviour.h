@@ -218,7 +218,7 @@ class Behaviour {
   void turnLeft() {
     float speed = m_robot->getState().velocity;
     doMove(20, speed, 700, 5000);
-    doCubicTurn(115, 90, speed);
+    doCubicTurn(114.05, 90, speed);
     doMove(20, speed, speed, 5000);
     m_heading = left_from(m_heading);
   }
@@ -226,7 +226,7 @@ class Behaviour {
   void turnRight() {
     float speed = m_robot->getState().velocity;
     doMove(20, speed, 700, 5000);
-    doCubicTurn(115, -90, speed);
+    doCubicTurn(114.05, -90, speed);
     doMove(20, speed, speed, 5000);
     m_heading = right_from(m_heading);
   }
