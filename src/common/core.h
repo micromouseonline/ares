@@ -5,6 +5,7 @@
 #ifndef CORE_H
 #define CORE_H
 
+#include <atomic>
 #include <cmath>
 #include <limits>
 #include <mutex>
@@ -34,6 +35,8 @@ inline float toRadians(float deg) {
 inline float toDegrees(float rad) {
   return rad * DEGREES;
 }
+
+inline std::atomic<uint32_t> g_ticks = 0;
 
 /// Shared mutexes for access to the behaviour and robot from the application
 inline std::mutex g_behaviour_mutex;  // Protects access to mouse mapn

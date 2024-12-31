@@ -243,6 +243,24 @@ class MazeManager {
     return true;
   }
 
+  /// this is a bit ham-fisted as well
+  void clearDiscovery() {
+    WallType wt;
+    for (int y = 0; y < m_maze_width; y++) {
+      for (int x = 0; x < m_maze_width; x++) {
+        std::lock_guard<std::mutex> lock(g_behaviour_mutex);
+        wt = WallType(getWallState(x, y, DIR_N) | 0x04);
+        setWallState(x, y, Direction::DIR_N, wt);
+        wt = WallType(getWallState(x, y, DIR_E) | 0x04);
+        setWallState(x, y, Direction::DIR_E, wt);
+        wt = WallType(getWallState(x, y, DIR_S) | 0x04);
+        setWallState(x, y, Direction::DIR_S, wt);
+        wt = WallType(getWallState(x, y, DIR_W) | 0x04);
+        setWallState(x, y, Direction::DIR_W, wt);
+      }
+    }
+  }
+
   /***
    * A list (array) of previous contest mazes is held in the MazeDataSource struct.
    */
@@ -315,6 +333,11 @@ class MazeManager {
   void setWallState(int x, int y, Direction direction, WallType state) {
     int index = getWallIndex(x, y, direction);
     setWallState(index, state);
+  }
+
+  WallType getWallState(int x, int y, Direction direction) {
+    int index = getWallIndex(x, y, direction);
+    return getWallState(index);
   }
 
   WallType getWallState(int index) {

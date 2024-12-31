@@ -69,6 +69,7 @@
 #include <thread>
 #include <vector>
 #include "../../cmake-build-debug/_deps/fmt-src/include/fmt/format.h"
+#include "common/logger.h"
 #include "common/pose.h"
 #include "common/timer.h"
 #include "cubic.h"
@@ -284,7 +285,7 @@ class Behaviour {
         break;
       }
       m_location = m_location.neighbour(m_heading);
-      RobotState robot_state = m_robot->getState();
+      robot_state = m_robot->getState();
       updateMap(robot_state);
       if (m_location == target) {
         break;
@@ -307,77 +308,101 @@ class Behaviour {
     return abs(a.x - b.x) + abs(a.y - b.y);
   }
 
-  uint8_t seekHeading() {
-    uint8_t turnDirection;
-    if (m_leftWall && m_rightWall && m_frontWall) {
-      return BEHIND;
-    }
-    if (m_leftWall && m_rightWall) {
-      return AHEAD;
-    }
-    if (m_leftWall && m_frontWall) {
-      return RIGHT;
-    }
-    if (m_rightWall && m_frontWall) {
-      return LEFT;
-    }
-    int distance_a = manhattanDistance(m_target, m_location.neighbour(m_heading));
-    int distance_l = manhattanDistance(m_target, m_location.neighbour(left_from(m_heading)));
-    int distance_r = manhattanDistance(m_target, m_location.neighbour(right_from(m_heading)));
-    int distance_b = manhattanDistance(m_target, m_location.neighbour(behind_from(m_heading)));
+  bool testSearch() {
+    Log::add("Searching the maze");
+    m_heading = DIR_N;
+    m_location = {0, 0};
+    m_target = Location(7, 7);
+    m_robot->setPose(96.0f, 96.0f - 40.0f, 90.0f);
 
-    if (m_leftWall) {
-      distance_l = 255;
-    }
-    if (m_rightWall) {
-      distance_r = 255;
+    RobotState robot_state = m_robot->getState();
+    delay_ms(500);
+    updateMap(robot_state);
+    startMove(90 + 40.0f, 700, 700, 5000);
+    waitForMove();
+    searchTo(m_target);
+    if (m_reset) {
+      return false;
     }
     if (m_frontWall) {
-      distance_a = 255;
+      if (!m_leftWall) {
+        doInPlaceTurn(90, 900, 0, 5000);
+        m_heading = left_from(m_heading);
+      } else if (!m_rightWall) {
+        doInPlaceTurn(-90, 900, 0, 5000);
+        m_heading = right_from(m_heading);
+      } else {
+        doInPlaceTurn(180, 900, 0, 5000);
+      }
     }
-    int smallest = distance_a;
-    turnDirection = AHEAD;
-
-    if (distance_l < smallest) {
-      smallest = distance_l;
-      turnDirection = LEFT;
+    startMove(90.04, 700, 700, 5000);
+    waitForMove();
+    m_target = Location(0, 0);
+    searchTo(m_target);
+    if (m_reset) {
+      return false;
     }
-    if (distance_r < smallest) {
-      smallest = distance_r;
-      turnDirection = RIGHT;
-    }
-    // if (distance_b < smallest) {
-    //   smallest = distance_b;
-    //   turnDirection = BEHIND;
-    // }
-
-    return turnDirection;
+    m_heading = behind_from(m_heading);
+    doInPlaceTurn(180, 900, 0, 5000);
+    m_heading = behind_from(m_heading);
+    return true;
   }
 
-  void seekTo(Location target) {
-    /// assume we are centred in the start cell.
-
-    bool finished = false;
-    while (!finished) {
-      if (m_terminate) {
-        break;
-      }
-      if (m_reset) {
-        // m_reset = false;
-        break;
+  /***
+   * search_to will cause the mouse to move to the given target cell
+   * using safe, exploration speeds and turns.
+   *
+   * During the search, walls will be mapped but only when first seen.
+   * A wall will not be changed once it has been mapped.
+   *
+   * It is possible for the mapping process to make the mouse think it
+   * is walled in with no route to the target if walls are falsely
+   * identified as present.
+   *
+   * On entry, the mouse will know its location and heading and
+   * will begin by moving forward. The assumption is that the mouse
+   * is already facing in an appropriate direction.
+   *
+   * Note: that it should also be possible to have this function entered
+   *     with the mouse already moving and at the sensing point. It does
+   *     not do that now but will be added later. All that is required is
+   *     some kind of flag that does a prequel to get to the sensing point
+   *     while moving. The the main loop can tak over.
+   *
+   * All paths will start with a straight.
+   *
+   * If the function is called with handstart set true, you can
+   * assume that the mouse is already backed up to the wall behind.
+   *
+   * Otherwise, the mouse is assumed to be centrally placed in a cell
+   * and may be stationary or moving.
+   *
+   * The walls for the current location are assumed to be correct in
+   * the map since mapping is always done by looking ahead into the
+   * cell that is about to be entered.
+   *
+   * On exit, the mouse will be centered in the target cell still
+   * facing in the direction it entered that cell. This will
+   * always be one of the four cardinal directions NESW
+   *
+   */
+  bool searchTo(Location target) {
+    std::string msg;
+    msg = fmt::format("Searching from {},{} to {},{}", m_location.x, m_location.y, target.x, target.y);
+    Log::add(msg);
+    uint32_t ticks = g_ticks;
+    while (!(m_location == target)) {
+      if (m_terminate || m_reset) {  /// TODO: should m_terminate just set m_reset?
+        return false;
       }
       m_location = m_location.neighbour(m_heading);
       RobotState robot_state = m_robot->getState();
       updateMap(robot_state);
-      if (m_location == target) {
-        break;
-      }
-
       m_maze.flood_manhattan(target);
       unsigned char newHeading = m_maze.direction_to_smallest(m_location, m_heading);
       unsigned char hdgChange = (DIR_COUNT + newHeading - m_heading) % DIR_COUNT;
       switch (hdgChange) {
-        // all these finish with the robot moving and at the sensing point
+        /// all these finish with the robot moving and at the sensing point
         case 0:
           goForward();
           break;
@@ -391,96 +416,36 @@ class Behaviour {
           turnLeft();
           break;
       }
-      //
-      // uint8_t turn = seekHeading();
-      //
-      // if (turn == LEFT) {
-      //   turnLeft();
-      // } else if (turn == AHEAD) {
-      //   goForward();
-      // } else if (turn == RIGHT) {
-      //   turnRight();
-      // } else {
-      //   turnBack();
-      // }
     }
+    /// come to a halt in the cell centre
     doMove(90, 700, 0, 3000);
+    Log::add(fmt::format("  - completed after {:>8} ms", g_ticks - ticks).c_str());
+    return true;
   }
 
   void run() {
     while (m_running) {
-      // do stuff
       switch (m_act) {
         case ACT_TEST_SS90:
           test_SS90(m_iterations);
-          m_act = ACT_NONE;
           break;
         case ACT_TEST_SS180:
           test_SS180(m_iterations);
-          m_act = ACT_NONE;
           break;
         case ACT_TEST_CIRCUIT:
           test_circuit_run(m_iterations * 4);
-          m_act = ACT_NONE;
           break;
         case ACT_TEST_FOLLOW_TO:
           followTo(Location(0, 0));
-          m_act = ACT_NONE;
           break;
         case ACT_TEST_SEARCH: {
-          std::string ss;
-          uint32_t start_time = m_timeStamp;
-          ss = fmt::format("{:>7} Searching...", m_timeStamp - start_time);
-          logMessage(ss);
-          m_heading = DIR_N;
-          m_location = {0, 0};
-          m_target = Location(7, 7);
-          m_robot->setPose(96.0f, 96.0f - 40.0f, 90.0f);
-
-          RobotState robot_state = m_robot->getState();
-          delay_ms(500);
-          updateMap(robot_state);
-          startMove(90 + 40.0f, 700, 700, 5000);
-          waitForMove();
-          seekTo(m_target);
-          if (m_reset) {
-            m_act = ACT_NONE;
-            break;
-          }
-          ss = fmt::format("{:>7} Arrived at target", m_timeStamp - start_time);
-          logMessage(ss);
-          if (m_frontWall) {
-            if (!m_leftWall) {
-              doInPlaceTurn(90, 900, 0, 5000);
-              m_heading = left_from(m_heading);
-            } else if (!m_rightWall) {
-              doInPlaceTurn(-90, 900, 0, 5000);
-              m_heading = right_from(m_heading);
-            } else {
-              doInPlaceTurn(180, 900, 0, 5000);
-            }
-          }
-          startMove(90.04, 700, 700, 5000);
-          waitForMove();
-          m_target = Location(0, 0);
-          seekTo(m_target);
-          if (m_reset) {
-            m_act = ACT_NONE;
-            break;
-          }
-          m_heading = behind_from(m_heading);
-          doInPlaceTurn(180, 900, 0, 5000);
-          m_heading = behind_from(m_heading);
-          m_act = ACT_NONE;
-          ss = fmt::format("{:>7} Returned to start", m_timeStamp - start_time);
-          logMessage(ss);
+          testSearch();
         } break;
-        default:
-          // do nothing
-          m_act = ACT_NONE;
+        default:  // do nothing
           break;
       }
-      delay_ms(10);
+      m_act = ACT_NONE;
+      delay_ms(10);  /// make sure the regular tasks get updated
     }
   }
 
@@ -527,6 +492,7 @@ class Behaviour {
 
       m_timeStamp++;
       ms--;
+      g_ticks++;
       timer.wait_us(1000 * m_speed_up);
     }
   }
@@ -606,9 +572,9 @@ class Behaviour {
   float m_step_time = 0.001;
   std::thread m_thread;
   std::atomic<bool> m_running;
-  std::atomic<bool> m_terminate;
+  std::atomic<bool> m_terminate;  /// shuts down the thread
   std::atomic<long> m_timeStamp = 0;
-  bool m_reset = false;
+  volatile std::atomic<bool> m_reset = false;
 
   std::atomic<int> m_act = ACT_NONE;
   std::atomic<int> m_iterations = 0;

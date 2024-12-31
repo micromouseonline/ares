@@ -323,8 +323,10 @@ class Application : public IEventObserver {
     if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
       m_robot.setSpeeds(0.0f, 0.0f);
-
       m_mouse.reset();
+      m_maze_manager.clearDiscovery();
+
+      g_ticks = 0;
     }
     static float speedup = 1.0f;
     ImGui::SliderFloat("Speedup", &speedup, 0.25, 4.0, "%4.2f");
