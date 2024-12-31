@@ -635,12 +635,16 @@ class Behaviour {
 
       m_timeStamp++;
       ms--;
-      timer.wait_us(1000);
+      timer.wait_us(1000 * m_speed_up);
     }
   }
 
   void requestTerminate() {
     m_terminate = true;
+  }
+
+  void setSpeedUp(float speed_up) {
+    m_speed_up = 1.0f / speed_up;
   }
 
   Maze m_maze;
@@ -716,6 +720,7 @@ class Behaviour {
 
   std::atomic<int> m_act = 0;
   std::atomic<int> m_iterations = 0;
+  std::atomic<float> m_speed_up = 1.0f;
 
   Trapezoid m_trap_fwd;
   std::unique_ptr<Trajectory> m_turn_trajectory = nullptr;

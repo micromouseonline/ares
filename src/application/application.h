@@ -322,6 +322,9 @@ class Application : public IEventObserver {
 
       m_mouse.reset();
     }
+    static float speedup = 1.0f;
+    ImGui::SliderFloat("Speedup", &speedup, 0.25, 4.0, "%4.2f");
+    m_mouse.setSpeedUp(speedup);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "    time     X      Y   Theta     Vel   Omega");
     char s[60];
     sprintf(s, "%8u %5.1f  %5.1f  %6.2f  %6.1f  %6.1f  ",  //
