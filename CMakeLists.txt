@@ -124,6 +124,7 @@ target_link_libraries(${APP}
         ${SANITIZER_FLAGS}
         ${SFML_LIBS}
         ${IMGUI_LIBS}
+        fmt::fmt
 )
 
 include_directories(src)

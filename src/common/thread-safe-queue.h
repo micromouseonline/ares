@@ -12,16 +12,20 @@ class ThreadSafeQueue {
  public:
   void push(const std::string& message) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    mQueue.push(message);
+    m_queue.push(message);
   }
 
   bool tryPop(std::string& message) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    if (mQueue.empty())
+    if (m_queue.empty())
       return false;
-    message = mQueue.front();
-    mQueue.pop();
+    message = m_queue.front();
+    m_queue.pop();
     return true;
+  }
+
+  bool empty() {
+    return m_queue.empty();
   }
 
  private:

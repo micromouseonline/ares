@@ -56,6 +56,7 @@
  *
  */
 
+#include <fmt/format.h>
 #include <SFML/Graphics.hpp>
 #include <atomic>
 #include <queue>
@@ -67,6 +68,7 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include "../../cmake-build-debug/_deps/fmt-src/include/fmt/format.h"
 #include "common/pose.h"
 #include "common/timer.h"
 #include "cubic.h"
@@ -494,7 +496,7 @@ class Behaviour {
           m_act = 0;
           break;
         case 5: {
-          std::cout << "wander to..." << std::endl;
+          logMessage("wander to...");
           m_heading = DIR_N;
           m_location = {0, 0};
           m_target = Location(7, 7);
@@ -539,7 +541,10 @@ class Behaviour {
           std::cout << "wander to... finished" << std::endl;
           break;
         case 6: {
-          std::cout << "wander to..." << std::endl;
+          std::string ss;
+          uint32_t start_time = m_timeStamp;
+          ss = fmt::format("{:>7} Searching...", m_timeStamp - start_time);
+          logMessage(ss);
           m_heading = DIR_N;
           m_location = {0, 0};
           m_target = Location(7, 7);
@@ -555,7 +560,8 @@ class Behaviour {
             m_act = 0;
             break;
           }
-          std::cout << "wander to... turning around" << std::endl;
+          ss = fmt::format("{:>7} Arrived at target", m_timeStamp - start_time);
+          logMessage(ss);
           if (m_frontWall) {
             if (!m_leftWall) {
               doInPlaceTurn(90, 900, 0, 5000);
@@ -567,7 +573,6 @@ class Behaviour {
               doInPlaceTurn(180, 900, 0, 5000);
             }
           }
-          std::cout << "wander to... returning" << std::endl;
           startMove(90.04, 700, 700, 5000);
           waitForMove();
           m_target = Location(0, 0);
@@ -580,9 +585,9 @@ class Behaviour {
           doInPlaceTurn(180, 900, 0, 5000);
           m_heading = behind_from(m_heading);
           m_act = 0;
-        }
-          std::cout << "wander to... finished" << std::endl;
-          break;
+          ss = fmt::format("{:>7} Returned to start", m_timeStamp - start_time);
+          logMessage(ss);
+        } break;
         default:
           // do nothing
           m_act = 0;

@@ -9,6 +9,7 @@
 #include <limits>
 #include <mutex>
 #include "SFML/Graphics.hpp"
+#include "thread-safe-queue.h"
 #include "types.h"
 
 constexpr float kPI = 3.14159265358979323846f;  // More precise
@@ -38,6 +39,13 @@ inline float toDegrees(float rad) {
 inline std::mutex g_behaviour_mutex;  // Protects access to mouse mapn
 inline std::mutex g_robot_mutex;      // Protects access to m_pose and m_orientation
 inline std::mutex g_mutex_obstacles;  // Protects access when building collision list
+inline std::mutex g_log_mutex;        // Protects the global log
+
+inline std::queue<std::string> g_log_messages;
+inline void logMessage(const std::string msg) {
+  std::lock_guard<std::mutex> lock(g_log_mutex);
+  g_log_messages.push(msg);
+}
 
 /** * CRITICAL_SECTION
  *

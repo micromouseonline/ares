@@ -165,6 +165,14 @@ class Application : public IEventObserver {
     /// This is a silly example of how HandleInput can be used
   }
 
+  void displayLogMessages() {
+    std::lock_guard<std::mutex> lock(g_log_mutex);
+    while (!g_log_messages.empty()) {
+      m_textbox.addText(g_log_messages.front());
+      g_log_messages.pop();
+    }
+  }
+
   std::string formatSensorData(int lfs, int lds, int rds, int rfs) {
     std::stringstream ss;
     ss << std::setw(5) << lfs << " "    //
@@ -207,6 +215,7 @@ class Application : public IEventObserver {
     m_window->update();  // call this first to process window events
     m_elapsed += deltaTime;
     ImGui::SFML::Update(*m_window->getRenderWindow(), m_frame_clock.restart());
+    displayLogMessages();
 
     RobotState robot_state = m_robot.getState();
     m_maze_manager.updateFromMap(m_mouse.m_maze, 16);
@@ -311,7 +320,7 @@ class Application : public IEventObserver {
       m_mouse.go(5, 0);
     }
     ImGui::SameLine();
-    if (ImGui::Button("SEEKER", ImVec2(b_wide, 0))) {
+    if (ImGui::Button("SEARCHER", ImVec2(b_wide, 0))) {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
       m_mouse.go(6, 0);
     }
@@ -546,7 +555,6 @@ class Application : public IEventObserver {
   bool snapped = false;
   bool m_highlight_sensor_region = false;
   ImFont* m_guiFont = nullptr;
-  ;
 };
 
 #endif  // APPLICATION_H
