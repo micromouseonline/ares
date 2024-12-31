@@ -79,6 +79,15 @@
 #include "trajectory.h"
 #include "trapezoid.h"
 
+enum Activity {
+  ACT_NONE,
+  ACT_TEST_SS90,
+  ACT_TEST_SS180,
+  ACT_TEST_CIRCUIT,
+  ACT_TEST_FOLLOW_TO,
+  ACT_TEST_SEARCH,
+};
+
 class Behaviour {
  public:
   Behaviour() : m_robot(nullptr), m_running(false), m_terminate(false), m_timeStamp(0), m_reset(false) {
@@ -96,7 +105,7 @@ class Behaviour {
 
   void reset() {
     m_reset = true;
-    m_act = 0;
+    m_act = ACT_NONE;
     waitForMove();
     // m_robot->setSpeeds(0, 0);
     // m_reset = false;
@@ -294,50 +303,6 @@ class Behaviour {
     doMove(90, 700, 0, 3000);
   }
 
-  uint8_t randomHeading() {
-    uint8_t turnDirection;
-    if (m_leftWall && m_rightWall && m_frontWall) {
-      turnDirection = BEHIND;
-    } else if (m_leftWall && m_rightWall) {
-      turnDirection = AHEAD;
-    } else if (m_leftWall && m_frontWall) {
-      turnDirection = RIGHT;
-    } else if (m_rightWall && m_frontWall) {
-      turnDirection = LEFT;
-    } else if (m_leftWall) {
-      if (m_maze.has_unknown_walls(m_location.neighbour(m_heading))) {
-        turnDirection = AHEAD;
-      } else if (m_maze.has_unknown_walls(m_location.neighbour(right_from(m_heading)))) {
-        turnDirection = RIGHT;
-      } else if (rand() % 2) {
-        turnDirection = RIGHT;
-      } else {
-        turnDirection = AHEAD;
-      }
-    } else if (m_rightWall) {
-      if (m_maze.has_unknown_walls(m_location.neighbour(m_heading))) {
-        turnDirection = AHEAD;
-      } else if (m_maze.has_unknown_walls(m_location.neighbour(left_from(m_heading)))) {
-        turnDirection = LEFT;
-      } else if (rand() % 2) {
-        turnDirection = LEFT;
-      } else {
-        turnDirection = AHEAD;
-      }
-    } else {
-      if (m_maze.has_unknown_walls(m_location.neighbour(left_from(m_heading)))) {
-        turnDirection = LEFT;
-      } else if (m_maze.has_unknown_walls(m_location.neighbour(right_from(m_heading)))) {
-        turnDirection = RIGHT;
-      } else if (rand() % 2) {
-        turnDirection = LEFT;
-      } else {
-        turnDirection = RIGHT;
-      }
-    }
-    return turnDirection;
-  }
-
   int manhattanDistance(Location a, Location b) {
     return abs(a.x - b.x) + abs(a.y - b.y);
   }
@@ -387,39 +352,6 @@ class Behaviour {
     // }
 
     return turnDirection;
-  }
-
-  void wanderTo(Location target) {
-    /// assume we are centred in the start cell.
-
-    bool finished = false;
-    while (!finished) {
-      if (m_terminate) {
-        break;
-      }
-      if (m_reset) {
-        // m_reset = false;
-        break;
-      }
-      m_location = m_location.neighbour(m_heading);
-      RobotState robot_state = m_robot->getState();
-      updateMap(robot_state);
-      if (m_location == target) {
-        break;
-      }
-      uint8_t turn = randomHeading();
-
-      if (turn == LEFT) {
-        turnLeft();
-      } else if (turn == AHEAD) {
-        goForward();
-      } else if (turn == RIGHT) {
-        turnRight();
-      } else {
-        turnBack();
-      }
-    }
-    doMove(90, 700, 0, 3000);
   }
 
   void seekTo(Location target) {
@@ -479,68 +411,23 @@ class Behaviour {
     while (m_running) {
       // do stuff
       switch (m_act) {
-        case 1:
+        case ACT_TEST_SS90:
           test_SS90(m_iterations);
-          m_act = 0;
+          m_act = ACT_NONE;
           break;
-        case 2:
+        case ACT_TEST_SS180:
           test_SS180(m_iterations);
-          m_act = 0;
+          m_act = ACT_NONE;
           break;
-        case 3:
+        case ACT_TEST_CIRCUIT:
           test_circuit_run(m_iterations * 4);
-          m_act = 0;
+          m_act = ACT_NONE;
           break;
-        case 4:
+        case ACT_TEST_FOLLOW_TO:
           followTo(Location(0, 0));
-          m_act = 0;
+          m_act = ACT_NONE;
           break;
-        case 5: {
-          logMessage("wander to...");
-          m_heading = DIR_N;
-          m_location = {0, 0};
-          m_target = Location(7, 7);
-          m_robot->setPose(96.0f, 96.0f - 40.0f, 90.0f);
-
-          RobotState robot_state = m_robot->getState();
-          delay_ms(500);
-          updateMap(robot_state);
-          startMove(90 + 40.0f, 700, 700, 5000);
-          waitForMove();
-          wanderTo(m_target);
-          if (m_reset) {
-            m_act = 0;
-            break;
-          }
-          std::cout << "wander to... turning around" << std::endl;
-          if (m_frontWall) {
-            if (!m_leftWall) {
-              doInPlaceTurn(90, 900, 0, 5000);
-              m_heading = left_from(m_heading);
-            } else if (!m_rightWall) {
-              doInPlaceTurn(-90, 900, 0, 5000);
-              m_heading = right_from(m_heading);
-            } else {
-              doInPlaceTurn(180, 900, 0, 5000);
-            }
-          }
-          std::cout << "wander to... returning" << std::endl;
-          startMove(90.04, 700, 700, 5000);
-          waitForMove();
-          m_target = Location(0, 0);
-          wanderTo(m_target);
-          if (m_reset) {
-            m_act = 0;
-            break;
-          }
-          m_heading = behind_from(m_heading);
-          doInPlaceTurn(180, 900, 0, 5000);
-          m_heading = behind_from(m_heading);
-          m_act = 0;
-        }
-          std::cout << "wander to... finished" << std::endl;
-          break;
-        case 6: {
+        case ACT_TEST_SEARCH: {
           std::string ss;
           uint32_t start_time = m_timeStamp;
           ss = fmt::format("{:>7} Searching...", m_timeStamp - start_time);
@@ -557,7 +444,7 @@ class Behaviour {
           waitForMove();
           seekTo(m_target);
           if (m_reset) {
-            m_act = 0;
+            m_act = ACT_NONE;
             break;
           }
           ss = fmt::format("{:>7} Arrived at target", m_timeStamp - start_time);
@@ -578,26 +465,26 @@ class Behaviour {
           m_target = Location(0, 0);
           seekTo(m_target);
           if (m_reset) {
-            m_act = 0;
+            m_act = ACT_NONE;
             break;
           }
           m_heading = behind_from(m_heading);
           doInPlaceTurn(180, 900, 0, 5000);
           m_heading = behind_from(m_heading);
-          m_act = 0;
+          m_act = ACT_NONE;
           ss = fmt::format("{:>7} Returned to start", m_timeStamp - start_time);
           logMessage(ss);
         } break;
         default:
           // do nothing
-          m_act = 0;
+          m_act = ACT_NONE;
           break;
       }
       delay_ms(10);
     }
   }
 
-  void go(int action, int i) {
+  void go(int action, int i = 1) {
     std::lock_guard<std::mutex> lock(g_behaviour_mutex);
     m_iterations = i;
     m_reset = false;
@@ -723,7 +610,7 @@ class Behaviour {
   std::atomic<long> m_timeStamp = 0;
   bool m_reset = false;
 
-  std::atomic<int> m_act = 0;
+  std::atomic<int> m_act = ACT_NONE;
   std::atomic<int> m_iterations = 0;
   std::atomic<float> m_speed_up = 1.0f;
 

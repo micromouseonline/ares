@@ -298,31 +298,26 @@ class Application : public IEventObserver {
     sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
     if (ImGui::Button("TEST SS90", ImVec2(b_wide, 0))) {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
-      m_mouse.go(1, counts);
+      m_mouse.go(ACT_TEST_SS90, counts);
     }
     ImGui::SameLine();
     if (ImGui::Button("TEST SS180", ImVec2(b_wide, 0))) {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
-      m_mouse.go(2, counts);
+      m_mouse.go(ACT_TEST_SS180, counts);
     }
     ImGui::SameLine();
     if (ImGui::Button("CIRCUIT RUN", ImVec2(b_wide, 0))) {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
-      m_mouse.go(3, counts);
+      m_mouse.go(ACT_TEST_CIRCUIT, counts);
     }
     if (ImGui::Button("FOLLOWER", ImVec2(b_wide, 0))) {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
-      m_mouse.go(4, 0);
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("WANDERER", ImVec2(b_wide, 0))) {
-      m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
-      m_mouse.go(5, 0);
+      m_mouse.go(ACT_TEST_FOLLOW_TO, 0);
     }
     ImGui::SameLine();
     if (ImGui::Button("SEARCHER", ImVec2(b_wide, 0))) {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
-      m_mouse.go(6, 0);
+      m_mouse.go(ACT_TEST_SEARCH, 0);
     }
 
     if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
