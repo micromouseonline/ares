@@ -119,8 +119,7 @@ class MazeManager {
     m_wall_length = (ClassicCell - ClassicWall) * Scale;
     m_cell_size = ClassicCell * Scale;
     m_maze_base_size = (float)new_width * ClassicCell * Scale + m_wall_length;
-
-    m_maze_base_rectangle.setSize({conf::MazeSize, conf::MazeSize});
+    m_maze_base_rectangle.setSize({m_maze_base_size, m_maze_base_size});
     m_maze_base_rectangle.setPosition(0.0f, 0.0f);
     m_maze_base_rectangle.setFillColor(conf::MazeBaseColour);
 
@@ -241,24 +240,6 @@ class MazeManager {
     }
     maze.set_mask(mask);
     return true;
-  }
-
-  /// this is a bit ham-fisted as well
-  void clearDiscovery() {
-    WallType wt;
-    for (int y = 0; y < m_maze_width; y++) {
-      for (int x = 0; x < m_maze_width; x++) {
-        std::lock_guard<std::mutex> lock(g_behaviour_mutex);
-        wt = WallType(getWallState(x, y, DIR_N) | 0x04);
-        setWallState(x, y, Direction::DIR_N, wt);
-        wt = WallType(getWallState(x, y, DIR_E) | 0x04);
-        setWallState(x, y, Direction::DIR_E, wt);
-        wt = WallType(getWallState(x, y, DIR_S) | 0x04);
-        setWallState(x, y, Direction::DIR_S, wt);
-        wt = WallType(getWallState(x, y, DIR_W) | 0x04);
-        setWallState(x, y, Direction::DIR_W, wt);
-      }
-    }
   }
 
   /***
@@ -395,22 +376,6 @@ class MazeManager {
       m_posts_vertex_array[i * 4 + 1].color = colour;
       m_posts_vertex_array[i * 4 + 2].color = colour;
       m_posts_vertex_array[i * 4 + 3].color = colour;
-    }
-  }
-
-  void setPostColour(int index, sf::Color colour) {
-    m_posts_vertex_array[index * 4 + 0].color = colour;
-    m_posts_vertex_array[index * 4 + 1].color = colour;
-    m_posts_vertex_array[index * 4 + 2].color = colour;
-    m_posts_vertex_array[index * 4 + 3].color = colour;
-  }
-
-  void resetPostColours() {
-    for (int i = 0; i < m_post_count; ++i) {
-      m_posts_vertex_array[i * 4 + 0].color = conf::PostColour;
-      m_posts_vertex_array[i * 4 + 1].color = conf::PostColour;
-      m_posts_vertex_array[i * 4 + 2].color = conf::PostColour;
-      m_posts_vertex_array[i * 4 + 3].color = conf::PostColour;
     }
   }
 
@@ -616,14 +581,6 @@ class MazeManager {
     return cx * m_maze_width + cy;
   }
 
-  sf::FloatRect getWallRect(int index) {
-    return m_wall_rectangles[index];  //
-  }
-
-  void setHighlightObstacles(bool state = false) {
-    m_highlight_obstacles = state;  //
-  }
-
  private:
   /// Just add the bottom left post of all the relevant cells
   void addPostToList(std::vector<int>& list, int x, int y) {
@@ -661,7 +618,6 @@ class MazeManager {
 
   // stuff to track edits and changes
   std::string m_maze_data_string;
-  bool m_maze_changed = false;
 
   // these hold the precalculated geometry of
   // the maze
@@ -684,7 +640,6 @@ class MazeManager {
   float m_wall_thickness;
   int m_wall_count;
   int m_post_count;
-  bool m_highlight_obstacles;
 
   // clang_format on
 };

@@ -131,6 +131,15 @@ target_compile_options(${APP} PUBLIC
         ${DEFAULT_COMPILER_OPTIONS_AND_WARNINGS}
 )
 
+
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread")
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=thread -static-libtsan")
+
+
+# Move ThreadSanitizer and map file flags to the linker flags
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DEFAULT_COMPILER_OPTIONS_AND_WARNINGS}")
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=thread -static-libtsan -Wl,-Map=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/mouse-simulator.map")
+
 target_link_libraries(${APP}
         ${SANITIZER_FLAGS}
         ${SFML_LIBS}

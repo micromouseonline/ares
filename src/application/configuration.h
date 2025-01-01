@@ -14,14 +14,12 @@ namespace conf {
   // Window configuration
   const std::string AppName = "ARES Simulator for Micromouse";
   const sf::Vector2u WindowSize = {1900, 1000};
-  const sf::Vector2f WindoSizef = static_cast<sf::Vector2f>(WindowSize);
   const sf::VideoMode VideoMode = {WindowSize.x, WindowSize.y, 32};
   const sf::Color WindowBackGround = sf::Color(16, 16, 16, 255);
 
   const sf::View MazeView({MazeSize / 2.0f, MazeSize / 2.0f}, {MazeSize, -MazeSize});
 
   const uint32_t FrameRate = 60;
-  const float FrameDeltaTime = 1.0f / static_cast<float>(FrameRate);
   const float WindowPadding = 10.0f;
   const float MazeViewScreenSize = 964.0f;
 
@@ -40,17 +38,5 @@ namespace conf {
   const float SENSOR_MAX_RANGE = 355.0f;
   const uint8_t SENSOR_ALPHA = 128;
   const sf::Color SENSOR_COLOUR(255, 0, 255, SENSOR_ALPHA);
-
-  /// describes the offsets of all the neighbouring walls for the sensor checks
-  // clang-format off
-
-const int SensorPostOffsets[] = {
-  -15,      2,    19,    36,
-  -16,      1,    18,    35,
-  -17,      0,    17,    34,
-  -18,     -1,    16,    33,
-};
-
-  // clang-format on
 
 }  // namespace conf

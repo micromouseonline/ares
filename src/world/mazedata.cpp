@@ -61,24 +61,22 @@ MazeDataSource mazeList[] = {
     {"apec1998", apec1998, 16},                //
     {"apec2012", apec2012, 16},                //
     {"apec2013", apec2013, 16},                //
-    {"japan11", japan11, 16},                  //
-    {"japan13", japan13, 16},                  //
-    {"japan2011ff", japan2011ff, 16},          //
-    {"japan2011eq", japan2011eq, 16},          //
     {"japan4", japan4, 16},                    //
     {"japan5", japan5, 16},                    //
-    {"japan95", japan95, 16},                  //
-    {"japan97", japan97, 16},                  //
-    {"japan98", japan98, 16},                  //
-    {"japan99", japan99, 16},                  //
+    {"japan11", japan11, 16},                  //
+    {"japan13", japan13, 16},                  //
     {"japan1988", japan1988, 16},              //
     {"japan1990", japan1990, 16},              //
     {"japan1991", japan1991, 16},              //
     {"japan1993ef", japan1993ef, 16},          //
     {"japan1994ef", japan1994ef, 16},          //
+    {"japan95", japan95, 16},                  //
     {"japan1996ef", japan1996ef, 16},          //
+    {"japan97", japan97, 16},                  //
     {"japan1997eq", japan1997eq, 16},          //
+    {"japan98", japan98, 16},                  //
     {"japan1998f", japan1998f, 16},            //
+    {"japan99", japan99, 16},                  //
     {"japan1999f", japan1999f, 16},            //
     {"japan2000", japan2000, 16},              //
     {"japan2000ef", japan2000ef, 16},          //
@@ -95,6 +93,8 @@ MazeDataSource mazeList[] = {
     {"japan2009ef", japan2009ef, 16},          //
     {"japan2009eq", japan2009eq, 16},          //
     {"japan2011ef", japan2011ef, 16},          //
+    {"japan2011ff", japan2011ff, 16},          //
+    {"japan2011eq", japan2011eq, 16},          //
     {"japan2012ef", japan2012ef, 16},          //
     {"japan2012eq", japan2012eq, 16},          //
     {"japan2013ef", japan2013ef, 16},          //
@@ -116,9 +116,6 @@ MazeDataSource mazeList[] = {
     {"mont88", mont88, 16},                    //
     {"nagoya2002", nagoya2002, 16},            //
     {"niigata03", niigata03, 16},              //
-    {"robotic2009", robotic2009, 16},          //
-    {"robotic2010", robotic2010, 16},          //
-    {"robotic2011", robotic2011, 16},          //
     {"seoul2", seoul2, 16},                    //
     {"sg87", sg87, 16},                        //
     {"sg88", sg88, 16},                        //
@@ -129,6 +126,9 @@ MazeDataSource mazeList[] = {
     {"taiwan2015", taiwan2015, 16},            //
     {"testMazeClassic", testMazeClassic, 16},  //
     {"tyubu200906", tyubu200906, 16},          //
+    {"robotic2009", robotic2009, 16},          //
+    {"robotic2010", robotic2010, 16},          //
+    {"robotic2011", robotic2011, 16},          //
     {"uk1987f", uk1987f, 16},                  //
     {"uk1988f", uk1988f, 16},                  //
     {"uk1989", uk1989, 16},                    //
@@ -829,8 +829,8 @@ const uint8_t japan2003[] = {
     0x05, 0x0C, 0x02, 0x0A, 0x09, 0x04, 0x0B, 0x86, 0x81, 0x0D, 0x06, 0x09, 0x0C, 0x0A, 0x09, 0x05,  //
     0x05, 0x06, 0x09, 0x0D, 0x06, 0x01, 0x0C, 0x09, 0x06, 0x00, 0x09, 0x06, 0x03, 0x0C, 0x03, 0x05,  //
     0x05, 0x0C, 0x02, 0x00, 0x0A, 0x01, 0x05, 0x06, 0x09, 0x07, 0x06, 0x09, 0x0C, 0x02, 0x09, 0x05,  //
-    0x05, 0x06, 0x08, 0x03, 0x0C, 0x03, 0x05, 0x0E, 0x02, 0x09, 0x0C, 0x01, 0x05, 0x0C, 0x03, 0x05,  //
-    0x05, 0x0C, 0x02, 0x09, 0x06, 0x09, 0x05, 0x0C, 0x0A, 0x03, 0x06, 0x01, 0x04, 0x00, 0x0B, 0x05,  //
+    0x05, 0x06, 0x08, 0x03, 0x0C, 0x03, 0x05, 0x0E, 0x02, 0x09, 0x0C, 0x03, 0x05, 0x0C, 0x03, 0x05,  //
+    0x05, 0x0C, 0x02, 0x09, 0x06, 0x09, 0x05, 0x0C, 0x0A, 0x03, 0x06, 0x09, 0x04, 0x00, 0x0B, 0x05,  //
     0x05, 0x06, 0x08, 0x03, 0x0C, 0x03, 0x05, 0x05, 0x0C, 0x09, 0x0C, 0x03, 0x07, 0x06, 0x09, 0x05,  //
     0x05, 0x0C, 0x02, 0x09, 0x04, 0x09, 0x05, 0x05, 0x05, 0x04, 0x03, 0x0C, 0x09, 0x0E, 0x00, 0x01,  //
     0x06, 0x02, 0x0A, 0x03, 0x07, 0x06, 0x03, 0x06, 0x03, 0x06, 0x0A, 0x03, 0x06, 0x0A, 0x03, 0x07,  //

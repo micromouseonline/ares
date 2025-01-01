@@ -109,18 +109,10 @@ class Application : public IEventObserver {
       case EventType::SFML_EVENT:
         if (event.event.type == sf::Event::MouseButtonPressed) {
           sf::RenderWindow* window = m_window->getRenderWindow();
-          sf::Vector2i pixelPos(sf::Mouse::getPosition(*window));
-          sf::Vector2f mazePos{0, 0};
           window->setView(m_window->getMazeView());
-          sf::View mazeView = m_window->getMazeView();  // TODO: where should we store the mazeView? In config?
-          sf::FloatRect mazeBounds = getBoundingRectangle(conf::MazeView);
-          if (mazeBounds.contains(float(pixelPos.x), float(pixelPos.y))) {
-            mazePos = (window->mapPixelToCoords(pixelPos, mazeView));
-          }
         }
         if (event.event.type == sf::Event::KeyReleased) {
           if (event.event.key.code == sf::Keyboard::A || event.event.key.code == sf::Keyboard::D) {
-            snapped = false;
           }
         }
         break;
@@ -131,19 +123,6 @@ class Application : public IEventObserver {
         m_textbox.addText("UNHANDLED AppEvent");
         break;
     }
-  }
-
-  float snapToNearest45(float angle) {
-    return std::round(angle / 45.0f) * 45.0f;  //
-  }
-
-  // Function to snap to the next lower multiple of 45 degrees
-  float snapToLower45(float angle) {
-    return std::floor(angle / 45.0f) * 45.0f;  //
-  }
-  // Function to/ snap to the next higher multiple of 45 degrees
-  float snapToHigher45(float angle) {
-    return std::ceil(angle / 45.0f) * 45.0f;  //
   }
 
   /***
@@ -358,7 +337,6 @@ class Application : public IEventObserver {
     ImGui::ShowDemoWindow();
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    m_maze_manager.setHighlightObstacles(m_highlight_sensor_region);
     if (maze_changed) {
       MazeDataSource m = mazeList[m_maze_index];
       m_maze_manager.loadFromMemory(m.data, m.size);
@@ -375,71 +353,6 @@ class Application : public IEventObserver {
     }
   }
 
-  std::string getWallInfo(int index) {
-    sf::FloatRect r = m_maze_manager.getWallRect(index);
-    char str[50];
-    sprintf(str, "%5d:  %5d  %5d  %5d  %5d  state:%2d\n", index, (int)r.left, (int)r.top, (int)r.width, (int)r.height, (int)m_maze_manager.getWallState(index));
-    return std::string(str);
-  }
-
-  std::vector<int> getLocalWallList(int x, int y) {
-    std::vector<int> wall_list;
-    int w_n = m_maze_manager.getWallIndex(x, y, Direction::DIR_N);
-    int w_e = m_maze_manager.getWallIndex(x, y, Direction::DIR_E);
-    int w_s = m_maze_manager.getWallIndex(x, y, Direction::DIR_S);
-    int w_w = m_maze_manager.getWallIndex(x, y, Direction::DIR_W);
-    wall_list.push_back(w_n);
-    wall_list.push_back(w_e);
-    wall_list.push_back(w_s);
-    wall_list.push_back(w_w);
-    return wall_list;
-  }
-
-  std::string showWallIDs() {
-    sf::Vector2f pos = {m_robot.getState().x, m_robot.getState().y};
-    int cell_x = pos.x / m_maze_manager.getCellSize();
-    int cell_y = pos.y / m_maze_manager.getCellSize();
-    int x = cell_x;
-    int y = cell_y;
-    //    for (int x = cell_x - 1; x <= cell_x + 1; x++) {
-    //      for (int y = cell_y - 1; y <= cell_y + 1; y++) {
-    int w_n = m_maze_manager.getWallIndex(x, y, Direction::DIR_N);
-    int w_e = m_maze_manager.getWallIndex(x, y, Direction::DIR_E);
-    int w_s = m_maze_manager.getWallIndex(x, y, Direction::DIR_S);
-    int w_w = m_maze_manager.getWallIndex(x, y, Direction::DIR_W);
-    WallType s_n = m_maze_manager.getWallState(w_n);
-    WallType s_e = m_maze_manager.getWallState(w_e);
-    WallType s_s = m_maze_manager.getWallState(w_s);
-    WallType s_w = m_maze_manager.getWallState(w_w);
-    char str[50];
-    sprintf(str, "%5d (%d) %5d (%d) %5d (%d) %5d (%d)\n", w_n, (int)s_n, w_e, (int)s_e, w_s, (int)s_s, w_w, (int)s_w);
-    return std::string(str);
-  }
-
-  void drawLidar(sf::RenderTarget& window) {
-    float range = conf::SENSOR_MAX_RANGE;
-    sf::Vector2f pos = {m_robot.getState().x, m_robot.getState().y};
-    // sf::FloatRect wall = m_maze_manager.getWallRect(m_maze_manager.getWallIndex(3, 3, Direction::East));
-    auto walls = getLocalWallList(pos.x / m_maze_manager.getCellSize(), pos.y / m_maze_manager.getCellSize());
-    for (int a = -179; a < 179; a += 1) {
-      float angle = a + m_robot.getState().angle;
-      sf::Vector2f ray{cosf((float)angle * RADIANS), sinf((float)angle * RADIANS)};
-      float min_d = range;
-      for (auto& i : walls) {
-        if (m_maze_manager.getWallState(i) == WallType::WT_Present) {
-          sf::FloatRect w = m_maze_manager.getWallRect(i);
-          float d = Collisions::getRayDistanceToAlignedRectangle(pos, ray, w, range);
-          if (d < min_d) {
-            min_d = d;  //
-          }
-        }
-      }
-      // sf::Vector2f p = origin;
-      //      Drawing::drawLine(window, p, q, sf::Color(255, 255, 255, 32));
-      sf::Vector2f q = pos + ray * min_d;
-      Drawing::drawDot(window, q);
-    }
-  }
   /// The Render() method is the only place that output is generated for the
   /// window - and any audio devices if used. It is called after the Update()
   /// method and will may be called once per frame or after every update depending
@@ -458,7 +371,6 @@ class Application : public IEventObserver {
     m_maze_manager.render(window);
 
     m_robot_body.draw(window);
-    //    drawLidar(window);
 
     window.setView(m_window->getUIView());
     // we can draw anything else we want here.
@@ -475,16 +387,6 @@ class Application : public IEventObserver {
 
   Window* getWindow() {
     return m_window.get();
-  }
-
-  sf::Time getElapsed() {
-    return m_elapsed;
-  }
-
-  /// This would be a good place to create any overlay information or to log
-  /// performance data for example.
-  void UpdateStatistics(sf::Time elapsedTime) {
-    (void)elapsedTime;  //
   }
 
   /**
@@ -548,8 +450,6 @@ class Application : public IEventObserver {
   sf::Text m_adhoc_text;
   sf::Text m_txt_maze_name;
   TextBox m_textbox;
-  bool snapped = false;
-  bool m_highlight_sensor_region = false;
   ImFont* m_guiFont = nullptr;
   LogManager m_logger;
 };
