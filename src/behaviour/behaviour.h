@@ -205,6 +205,7 @@ class Behaviour {
   }
 
   void updateMap(RobotState& state) {
+    std::lock_guard<std::mutex> lock(g_behaviour_mutex);
     m_leftWall = state.sensor_data.lds_power > 40;
     m_frontWall = state.sensor_data.lfs_power > 20 && state.sensor_data.rfs_power > 20;
     m_rightWall = state.sensor_data.rds_power > 40;
