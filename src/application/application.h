@@ -324,8 +324,7 @@ class Application : public IEventObserver {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
       m_robot.setSpeeds(0.0f, 0.0f);
       m_mouse.reset();
-      m_maze_manager.clearDiscovery();
-
+      maze_changed = true;
       g_ticks = 0;
     }
     static float speedup = 1.0f;
