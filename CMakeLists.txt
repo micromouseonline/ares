@@ -92,7 +92,9 @@ FetchContent_Declare(fmt
 
         # Enhanced formatting for IOSTREAM
         GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-        GIT_TAG 8.0.1 # You can specify the version you need
+        GIT_TAG 8.0.1
+        # Do not change the version without checking spdlog below
+        # as they may conflict
 )
 FetchContent_MakeAvailable(fmt)
 
