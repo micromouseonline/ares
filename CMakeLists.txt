@@ -109,6 +109,24 @@ set(SFML_LIBS PUBLIC sfml-graphics sfml-system sfml-window)
 set(IMGUI_LIBS PUBLIC ImGui-SFML::ImGui-SFML)
 
 # ###############################################################
+find_package(spdlog NO_CMAKE_PACKAGE_REGISTRY QUIET)
+if (NOT spdlog_FOUND)
+    message("-- spdlog not found. Using internal spdlog.")
+
+    include(FetchContent)
+
+    FetchContent_Declare(spdlog
+            GIT_REPOSITORY https://github.com/gabime/spdlog.git
+            GIT_TAG v1.3.1
+    )
+    FetchContent_MakeAvailable(spdlog)
+else ()
+    message("-- spdlog found. Using system spdlog.")
+endif ()
+# ###############################################################
+# ###############################################################
+
+
 set(APP mouse-simulator)
 add_definitions(-DWINDOW_TITLE=\"${APP}\")
 
@@ -125,6 +143,7 @@ target_link_libraries(${APP}
         ${SFML_LIBS}
         ${IMGUI_LIBS}
         fmt::fmt
+        spdlog::spdlog
 )
 
 include_directories(src)

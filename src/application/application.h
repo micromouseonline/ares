@@ -24,6 +24,7 @@
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #include "imgui_internal.h"
 #pragma GCC diagnostic pop
+#include "logmanager.h"
 #include "robot-body.h"
 #include "robot/robot.h"
 #include "robot/sensor-data.h"
@@ -32,6 +33,8 @@
 class Application : public IEventObserver {
  public:
   Application() : m_window(std::make_unique<Window>(conf::AppName, conf::WindowSize)), m_elapsed(sf::Time::Zero) {
+    m_logger.initialise();
+    ARES_INFO("Initialising");
     m_elapsed = sf::Time::Zero;
 
     m_default_font.loadFromFile("assets/fonts/ubuntu-mono-r.ttf");
@@ -44,13 +47,9 @@ class Application : public IEventObserver {
     m_txt_maze_name.setFillColor(sf::Color::Yellow);
     m_txt_maze_name.setPosition(10, 973);
 
-    /// The UI components are defined in world pixels in the window's default view
-    //    m_sfml_textbox.initialise(10, 14, 400, sf::Vector2f(1000, 10));
-
     m_textbox.addText("Hello World");
-    m_textbox.addText("WASD keys to move robot");
 
-    m_maze_index = 0;  // Japan2007ef is 48
+    m_maze_index = 48;  // Japan2007ef is 48
     /// Have the window inform us of any events
     m_window->addObserver(this);
 
@@ -83,6 +82,7 @@ class Application : public IEventObserver {
     m_mouse.stop();
     m_window.reset();  // destroys the window explicitly so that we can clean up
     ImGui::SFML::Shutdown();
+    m_logger.Shutdown();
   }
 
   void run() {
@@ -551,6 +551,7 @@ class Application : public IEventObserver {
   bool snapped = false;
   bool m_highlight_sensor_region = false;
   ImFont* m_guiFont = nullptr;
+  LogManager m_logger;
 };
 
 #endif  // APPLICATION_H
