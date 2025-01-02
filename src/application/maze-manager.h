@@ -211,7 +211,6 @@ class MazeManager {
     maze.set_mask(MASK_CLOSED);
     for (int y = 0; y < mazeWidth; y++) {
       for (int x = 0; x < mazeWidth; x++) {
-        std::lock_guard<std::mutex> lock(g_behaviour_mutex);
         if (maze.wall_state(x, y, DIR_N) == EXIT) {
           setWallState(x, y, Direction::DIR_N, WT_MappedAbsent);
         }

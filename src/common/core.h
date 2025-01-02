@@ -39,8 +39,6 @@ inline float toDegrees(float rad) {
 inline std::atomic<uint32_t> g_ticks = 0;
 
 /// Shared mutexes for access to the behaviour and robot from the application
-inline std::mutex g_behaviour_mutex;  // Protects access to mouse mapn
-inline std::mutex g_robot_mutex;      // Protects access to m_pose and m_orientation
 inline std::mutex g_mutex_obstacles;  // Protects access when building collision list
 inline std::mutex g_log_mutex;        // Protects the global log
 

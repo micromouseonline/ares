@@ -16,6 +16,12 @@
 #include "common/pose.h"
 #include "robot-state.h"
 #include "sensor-data.h"
+#ifdef ARES
+#include <mutex>
+#define LOCK_GUARD(mtx) std::lock_guard<std::mutex> lock(mtx)
+#else
+#define LOCK_GUARD(mtx) (void)0
+#endif
 
 /**
  * @brief The Robot class models the physical robot's behavior and movement.
@@ -95,17 +101,17 @@ class Robot {
   ////// Accessors
 
   [[nodiscard]] RobotState getState() const {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    LOCK_GUARD(m_robot_mutex);
     return m_state;
   }
 
   void setState(RobotState state) {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    LOCK_GUARD(m_robot_mutex);
     m_state = state;
   }
 
   void setPose(float x, float y, float angle) {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    LOCK_GUARD(m_robot_mutex);
     m_state.x = x;
     m_state.y = y;
     m_state.angle = angle;
@@ -125,7 +131,7 @@ class Robot {
   /// Here we assume the controllers are really good and that
   /// only realistic demands are made of the robot.
   void setSpeeds(float velocity, float omega) {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    LOCK_GUARD(m_robot_mutex);
     m_state.velocity = velocity;
     m_state.omega = omega;
     // TODO: should this be clamped here or handled elsewhere?
@@ -136,37 +142,37 @@ class Robot {
   }
 
   void adjustCellOffset(float delta) {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    LOCK_GUARD(m_robot_mutex);
     m_state.cell_offset += delta;
   }
 
   void setCellOffset(float offset) {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    LOCK_GUARD(m_robot_mutex);
     m_state.cell_offset = offset;
   }
 
   void resetMoveDistance() {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    LOCK_GUARD(m_robot_mutex);
     m_state.move_distance = 0.0f;
   }
 
   void resetTotalDistance() {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    LOCK_GUARD(m_robot_mutex);
     m_state.total_distance = 0.0f;
   }
 
   void resetMoveAngle() {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    LOCK_GUARD(m_robot_mutex);
     m_state.move_angle = 0.0f;
   }
 
   [[nodiscard]] bool isRunning() const {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    LOCK_GUARD(m_robot_mutex);
     return m_running;
   }
 
   [[nodiscard]] uint32_t millis() const {
-    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    LOCK_GUARD(m_robot_mutex);
     return m_ticks;
   }
 
@@ -222,7 +228,7 @@ class Robot {
     }
     // The mutex will lock out the main thread while this block runs.
     {
-      std::lock_guard<std::mutex> lock(g_robot_mutex);
+      LOCK_GUARD(m_robot_mutex);
       m_ticks++;
       m_state.timestamp = m_ticks;
 
@@ -264,6 +270,9 @@ class Robot {
   Pose m_pose;
   float m_vMax;
   float m_omegaMax;
+#ifdef ARES
+  mutable std::mutex m_robot_mutex;
+#endif
 };
 
 #endif  // ROBOT_H
