@@ -177,6 +177,7 @@ class Robot {
   }
 
   void setLed(const int i, const bool state) {
+    LOCK_GUARD(m_robot_mutex);
     const uint8_t mask = BIT(i);
     m_state.leds &= ~(mask);
     m_state.leds |= state ? mask : 0;
@@ -192,6 +193,7 @@ class Robot {
   //  }
 
   void setButton(const int i, const bool state) {
+    LOCK_GUARD(m_robot_mutex);
     const uint8_t mask = BIT(i);
     m_state.buttons &= ~(mask);
     m_state.buttons |= state ? mask : 0;
@@ -226,33 +228,50 @@ class Robot {
     if (!isRunning()) {
       return;
     }
-    // The mutex will lock out the main thread while this block runs.
+
+    // Temporary variables for calculations outside the critical section
+    RobotState localState;
+    SensorData sensorData;
+
+    // Critical section: read the state and increment ticks
     {
       LOCK_GUARD(m_robot_mutex);
       m_ticks++;
       m_state.timestamp = m_ticks;
 
-      // Ask the Application for a sensor update
-      if (m_sensor_callback) {
-        m_state.sensor_data = m_sensor_callback(m_state.x, m_state.y, m_state.angle);
-      }
+      // Copy the current state for calculations
+      localState = m_state;
+    }
 
-      // accumulate distances
-      float deltaDistance = m_state.velocity * deltaTime;
-      float deltaAngle = m_state.omega * deltaTime;
+    // Perform calculations outside the critical section
+    float deltaDistance = localState.velocity * deltaTime;
+    float deltaAngle = localState.omega * deltaTime;
 
+    float newX = localState.x + deltaDistance * std::cos(localState.angle * RADIANS);
+    float newY = localState.y + deltaDistance * std::sin(localState.angle * RADIANS);
+    float newAngle = std::fmod(localState.angle + deltaAngle + 360.0f, 360.0f);
+
+    // If a sensor callback is set, get sensor data (this may involve external threads)
+    if (m_sensor_callback) {
+      sensorData = m_sensor_callback(localState.x, localState.y, localState.angle);
+    }
+
+    // Critical section: update the state with new calculations
+    {
+      LOCK_GUARD(m_robot_mutex);
       m_state.total_distance += deltaDistance;
-      m_state.cell_offset += deltaDistance;    // TODO: should be a behaviour thing
+      m_state.cell_offset += deltaDistance;    // TODO: should be a behavior thing
       m_state.move_distance += deltaDistance;  // TODO: NOT USED
 
-      // calculate new location
-      m_state.x += deltaDistance * std::cos(m_state.angle * RADIANS);
-      m_state.y += deltaDistance * std::sin(m_state.angle * RADIANS);
-      m_state.angle += deltaAngle;
+      m_state.x = newX;
+      m_state.y = newY;
+      m_state.angle = newAngle;
 
-      // wrap the angle
-      m_state.angle = std::fmod(m_state.angle + 360.0f, 360.0f);
+      if (m_sensor_callback) {
+        m_state.sensor_data = sensorData;
+      }
 
+      // Advance the pose with the new delta time
       m_pose.advance(deltaTime);
     }
   }
@@ -262,7 +281,7 @@ class Robot {
   Robot& operator=(const Robot&) = delete;
 
   uint32_t m_ticks;
-  bool m_running;
+  std::atomic<bool> m_running;
 
   SensorDataCallback m_sensor_callback = nullptr;
 
