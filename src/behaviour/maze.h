@@ -66,6 +66,8 @@ enum Direction {
   DIR_BLOCKED
 };
 
+const Direction ortho_directions[] = {DIR_N, DIR_E, DIR_S, DIR_W};
+
 /***
  * Walls exist in the map in one of four states and so get recorded using
  * two bits in the map. There are various schemes for this but here the
@@ -155,8 +157,8 @@ class Location {
   uint8_t x;
   uint8_t y;
 
-  Location() : x(0), y(0){};
-  Location(uint8_t ix, uint8_t iy) : x(ix), y(iy){};
+  Location() : x(0), y(0) {};
+  Location(uint8_t ix, uint8_t iy) : x(ix), y(iy) {};
 
   bool operator==(const Location &obj) const {
     return x == obj.x && y == obj.y;
@@ -258,31 +260,32 @@ class Maze {
 
   /// @brief return true if ANY walls in a cell have NOT been seen
   bool has_unknown_walls(const int x, const int y) const {
-    CellWalls walls_here = m_walls[x][y];
+    CellWalls walls_here = walls(x, y);
     if (walls_here.north == UNKNOWN || walls_here.east == UNKNOWN || walls_here.south == UNKNOWN || walls_here.west == UNKNOWN) {
       return true;
     } else {
       return false;
     }
   }
+
   bool has_unknown_walls(const Location cell) const {
     return has_unknown_walls(cell.x, cell.y);
   }
 
   WallState wall_state(const int x, const int y, const Direction heading) const {
-    CellWalls walls = m_walls[x][y];
+    CellWalls walls_here = walls(x, y);
     switch (heading) {
       case DIR_N:
-        return walls.north;
+        return walls_here.north;
         break;
       case DIR_E:
-        return walls.east;
+        return walls_here.east;
         break;
       case DIR_S:
-        return walls.south;
+        return walls_here.south;
         break;
       case DIR_W:
-        return walls.west;
+        return walls_here.west;
         break;
       default:
         //// TODO: this is is an error we should probably capture
@@ -294,9 +297,17 @@ class Maze {
   /// @brief  Use the current mask to test if a given wall is an exit
   /// if mask is MASK_CLOSED, we also get the UNSEEN bit
   bool is_exit(const int x, const int y, const Direction heading) const {
+    CellWalls walls_here = walls(x, y);
+    return isExit(walls_here, heading);
+  }
+
+  bool is_exit(const Location cell, const Direction heading) const {
+    return is_exit(cell.x, cell.y, heading);
+  }
+
+  bool isExit(CellWalls walls, Direction dir) const {
     bool result = false;
-    CellWalls walls = m_walls[x][y];
-    switch (heading) {
+    switch (dir) {
       case DIR_N:
         result = ((uint8_t)walls.north & (uint8_t)m_mask) == EXIT;
         break;
@@ -316,8 +327,32 @@ class Maze {
     return result;
   }
 
-  bool is_exit(const Location cell, const Direction heading) const {
-    return is_exit(cell.x, cell.y, heading);
+  /**
+   * Returns true if there is a real, mapped exit. The mask is not used/
+   * @param walls - The wall data for the cell
+   * @param dir  - one of the cardinal directions
+   * @return
+   */
+  bool isMappedExit(CellWalls walls, Direction dir) const {
+    bool result = false;
+    switch (dir) {
+      case DIR_N:
+        result = walls.north == EXIT;
+        break;
+      case DIR_E:
+        result = walls.east == EXIT;
+        break;
+      case DIR_S:
+        result = walls.south == EXIT;
+        break;
+      case DIR_W:
+        result = walls.west == EXIT;
+        break;
+      default:
+        result = false;
+        break;
+    }
+    return result;
   }
 
   bool is_unknown(Location loc, const Direction heading) const {
@@ -325,25 +360,25 @@ class Maze {
   }
   bool is_unknown(const int x, const int y, const Direction heading) const {
     bool result = false;
-    CellWalls walls = m_walls[x][y];
+    CellWalls walls_here = walls(x, y);
     switch (heading) {
       case DIR_N:
-        if ((walls.north & UNKNOWN) == UNKNOWN) {
+        if ((walls_here.north & UNKNOWN) == UNKNOWN) {
           result = true;
         }
         break;
       case DIR_E:
-        if ((walls.east & UNKNOWN) == UNKNOWN) {
+        if ((walls_here.east & UNKNOWN) == UNKNOWN) {
           result = true;
         }
         break;
       case DIR_W:
-        if ((walls.west & UNKNOWN) == UNKNOWN) {
+        if ((walls_here.west & UNKNOWN) == UNKNOWN) {
           result = true;
         }
         break;
       case DIR_S:
-        if ((walls.south & UNKNOWN) == UNKNOWN) {
+        if ((walls_here.south & UNKNOWN) == UNKNOWN) {
           result = true;
         }
         break;
@@ -405,12 +440,12 @@ class Maze {
       return UINT16_MAX;
     }
     Location next_cell = cell.neighbour(heading);
-    return m_cost[next_cell.x][next_cell.y];
+    return cost(next_cell);
   }
 
   /// @brief  return the cost associated withthe supplied cell location
   uint16_t cost(const Location cell) const {
-    return m_cost[cell.x][cell.y];
+    return cost(cell.x, cell.y);
   }
   uint16_t cost(const int x, const int y) const {
     return m_cost[x][y];
@@ -452,11 +487,9 @@ class Maze {
       ARES_ASSERT(queue.size() < QUEUE_LENGTH, "Flood Queue overrun");
       Location here = queue.head();
       uint16_t newCost = m_cost[here.x][here.y] + 1;
-      for (int h = DIR_N; h < DIR_COUNT; h += 2) {
-        std::lock_guard<std::mutex> lock(g_behaviour_mutex);
-        Direction heading = static_cast<Direction>(h);
-        if (is_exit(here, heading)) {
-          Location nextCell = here.neighbour(heading);
+      for (auto &dir : ortho_directions) {
+        if (is_exit(here, dir)) {
+          Location nextCell = here.neighbour(dir);
           if (m_cost[nextCell.x][nextCell.y] > newCost) {
             m_cost[nextCell.x][nextCell.y] = newCost;
             queue.add(nextCell);
@@ -522,10 +555,11 @@ class Maze {
 
   uint8_t walls_as_uint8(const int x, const int y) const {
     uint8_t wall_data = 0x00;
-    wall_data |= is_exit(x, y, DIR_N) ? 0 : 0x01;
-    wall_data |= is_exit(x, y, DIR_E) ? 0 : 0x02;
-    wall_data |= is_exit(x, y, DIR_S) ? 0 : 0x04;
-    wall_data |= is_exit(x, y, DIR_W) ? 0 : 0x08;
+    CellWalls cell_walls = walls(x, y);
+    wall_data |= isExit(cell_walls, DIR_N) ? 0 : 0x01;
+    wall_data |= isExit(cell_walls, DIR_E) ? 0 : 0x02;
+    wall_data |= isExit(cell_walls, DIR_S) ? 0 : 0x04;
+    wall_data |= isExit(cell_walls, DIR_W) ? 0 : 0x08;
     return wall_data;
   }
 
@@ -691,5 +725,6 @@ class Maze {
   int m_width = MAZE_WIDTH;
   uint16_t m_cost[MAZE_WIDTH][MAZE_WIDTH];
   CellWalls m_walls[MAZE_WIDTH][MAZE_WIDTH];
+  mutable std::mutex m_maze_mutex;  // used for thread safe access
 };
 extern Maze g_maze;

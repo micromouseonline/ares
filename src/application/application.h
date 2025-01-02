@@ -197,7 +197,7 @@ class Application : public IEventObserver {
     displayLogMessages();
 
     RobotState robot_state = m_robot.getState();
-    m_maze_manager.updateFromMap(m_mouse.m_maze, 16);
+    m_maze_manager.updateFromMap(m_mouse.getMaze(), 16);
 
     std::stringstream ss;
     SensorData sensors = robot_state.sensor_data;

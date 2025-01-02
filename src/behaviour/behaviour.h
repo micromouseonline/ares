@@ -573,7 +573,9 @@ class Behaviour {
     m_speed_up = 1.0f / speed_up;
   }
 
-  Maze m_maze;
+  Maze& getMaze() {
+    return m_maze;
+  }
 
  private:
   bool waitForMove() {
@@ -583,6 +585,8 @@ class Behaviour {
     delay_ms(1);
     return !m_terminate;
   }
+
+  Maze m_maze;
 
   bool waitForTurn() {
     while (!turnFinished() && !m_terminate) {
