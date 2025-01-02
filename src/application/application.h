@@ -289,6 +289,14 @@ class Application : public IEventObserver {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
       m_mouse.go(ACT_TEST_CIRCUIT, counts);
     }
+    if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
+      m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
+      m_robot.setSpeeds(0.0f, 0.0f);
+      m_mouse.reset();
+      maze_changed = true;
+      g_ticks = 0;
+    }
+    ImGui::SameLine();
     if (ImGui::Button("FOLLOWER", ImVec2(b_wide, 0))) {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
       m_mouse.go(ACT_TEST_FOLLOW_TO, 0);
@@ -298,13 +306,9 @@ class Application : public IEventObserver {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
       m_mouse.go(ACT_TEST_SEARCH, 0);
     }
-
-    if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
-      m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
-      m_robot.setSpeeds(0.0f, 0.0f);
-      m_mouse.reset();
-      maze_changed = true;
-      g_ticks = 0;
+    bool detailed_event_log = m_mouse.getEventLogDetailed();
+    if (ImGui::Checkbox("Show Detailed Behaviour Event Log", &detailed_event_log)) {
+      m_mouse.setEventLogDetailed(detailed_event_log);
     }
     static float speedup = 1.0f;
     ImGui::SliderFloat("Speedup", &speedup, 0.25, 4.0, "%4.2f");

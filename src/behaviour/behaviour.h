@@ -346,13 +346,10 @@ class Behaviour {
     startMove(90.04, 700, 700, 5000);
     waitForMove();
     m_target = Location(0, 0);
-    Log::add("Search for start begins");
     searchTo(m_target);
-    Log::add("Search for start ends");
     if (m_reset) {
       return false;
     }
-    Log::add("Turn around");
     m_heading = behind_from(m_heading);
     doInPlaceTurn(180, 900, 0, 5000);
     m_heading = behind_from(m_heading);
@@ -482,10 +479,11 @@ class Behaviour {
           ARES_ERROR("UNKNOWN DIRECTION CHANGE IN SEARCH ({})", hdgChange);
           break;
       }
-      Log::add(msg);
+      if (m_event_log_detailed) {
+        Log::add(msg);
+      }
     }
     /// come to a halt in the cell centre
-    Log::add(fmt::format("Halting in cell {},{} HDG {},", m_location.x, m_location.y, m_heading).c_str());
     doMove(90, 700, 0, 3000);
     Log::add(fmt::format("  - completed after {:>8} ms", g_ticks - ticks).c_str());
     return true;
@@ -577,6 +575,14 @@ class Behaviour {
     return m_maze;
   }
 
+  void setEventLogDetailed(bool state) {
+    m_event_log_detailed = state;
+  }
+
+  bool getEventLogDetailed() {
+    return m_event_log_detailed;
+  }
+
  private:
   bool waitForMove() {
     while (!moveFinished() && !m_terminate) {
@@ -643,6 +649,7 @@ class Behaviour {
   bool m_rightWall;
   float m_step_time = 0.001;
   std::thread m_thread;
+  std::atomic<bool> m_event_log_detailed = false;
   std::atomic<bool> m_running;
   std::atomic<bool> m_terminate;  /// shuts down the thread
   std::atomic<long> m_timeStamp = 0;
