@@ -155,8 +155,8 @@ class Location {
   uint8_t x;
   uint8_t y;
 
-  Location() : x(0), y(0) {};
-  Location(uint8_t ix, uint8_t iy) : x(ix), y(iy) {};
+  Location() : x(0), y(0){};
+  Location(uint8_t ix, uint8_t iy) : x(ix), y(iy){};
 
   bool operator==(const Location &obj) const {
     return x == obj.x && y == obj.y;
@@ -442,13 +442,18 @@ class Maze {
      * possibly be for a classic maze is 64 (MAZE_CELL_COUNT/4) cells.
      * HOWEVER, this is unproven
      */
-    Queue<Location, MAZE_CELL_COUNT / 4> queue;
+    const int QUEUE_LENGTH = MAZE_CELL_COUNT / 4;
+    int max_length = 0;
+    Queue<Location, QUEUE_LENGTH> queue;
     m_cost[target.x][target.y] = 0;
     queue.add(target);
     while (queue.size() > 0) {
+      max_length = std::max(max_length, queue.size());
+      ARES_ASSERT(queue.size() < QUEUE_LENGTH, "Flood Queue overrun");
       Location here = queue.head();
       uint16_t newCost = m_cost[here.x][here.y] + 1;
       for (int h = DIR_N; h < DIR_COUNT; h += 2) {
+        std::lock_guard<std::mutex> lock(g_behaviour_mutex);
         Direction heading = static_cast<Direction>(h);
         if (is_exit(here, heading)) {
           Location nextCell = here.neighbour(heading);
