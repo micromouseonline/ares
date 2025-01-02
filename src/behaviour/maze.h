@@ -419,12 +419,12 @@ class Maze {
       }
     }
     for (int x = 0; x < m_width; x++) {
-      //  std::lock_guard<std::mutex> lock(m_maze_mutex);
+      LOCK_GUARD(m_maze_mutex);
       m_walls[x][0].south = WALL;
       m_walls[x][m_width - 1].north = WALL;
     }
     for (int y = 0; y < m_width; y++) {
-      //    std::lock_guard<std::mutex> lock(m_maze_mutex);
+      LOCK_GUARD(m_maze_mutex);
       m_walls[0][y].west = WALL;
       m_walls[m_width - 1][y].east = WALL;
     }
@@ -437,12 +437,12 @@ class Maze {
   }
 
   void set_mask(const MazeMask mask) {
-    //   std::lock_guard<std::mutex> lock(m_maze_mutex);
+    LOCK_GUARD(m_maze_mutex);
     m_mask = mask;
   }
 
   MazeMask get_mask() const {
-    //  std::lock_guard<std::mutex> lock(m_maze_mutex);
+    LOCK_GUARD(m_maze_mutex);
     return m_mask;
   }
 
@@ -459,9 +459,19 @@ class Maze {
   uint16_t cost(const Location cell) const {
     return cost(cell.x, cell.y);
   }
+
   uint16_t cost(const int x, const int y) const {
-    //  std::lock_guard<std::mutex> lock(m_maze_mutex);
+    LOCK_GUARD(m_maze_mutex);
     return m_cost[x][y];
+  }
+
+  void setCost(const int x, const int y, const uint16_t cost) {
+    LOCK_GUARD(m_maze_mutex);
+    m_cost[x][y] = cost;
+  }
+
+  void setCost(Location cell, const uint16_t cost) {
+    setCost(cell.x, cell.y, cost);
   }
 
   /***
@@ -480,8 +490,7 @@ class Maze {
   int flood_manhattan(const Location target) {
     for (int x = 0; x < m_width; x++) {
       for (int y = 0; y < m_width; y++) {
-        //  std::lock_guard<std::mutex> lock(m_maze_mutex);
-        m_cost[x][y] = UINT16_MAX;
+        setCost(x, y, UINT16_MAX);
       }
     }
     /***
@@ -494,26 +503,25 @@ class Maze {
     const int QUEUE_LENGTH = MAZE_CELL_COUNT / 4;
     int max_length = 0;
     Queue<Location, QUEUE_LENGTH> queue;
-    m_cost[target.x][target.y] = 0;
+    setCost(target, 0);
     queue.add(target);
     while (queue.size() > 0) {
-      std::lock_guard<std::mutex> lock(m_maze_mutex);
       max_length = std::max(max_length, queue.size());
       ARES_ASSERT(queue.size() < QUEUE_LENGTH, "Flood Queue overrun");
       Location here = queue.head();
-      uint16_t newCost = m_cost[here.x][here.y] + 1;
+      uint16_t newCost = cost(here) + 1;
       for (auto &dir : ortho_directions) {
         if (is_exit(here, dir)) {
           Location nextCell = here.neighbour(dir);
-          if (m_cost[nextCell.x][nextCell.y] > newCost) {
-            m_cost[nextCell.x][nextCell.y] = newCost;
+          if (cost(nextCell) > newCost) {
+            setCost(nextCell, newCost);
             queue.add(nextCell);
           }
         }
       }
     }
-    ARES_ASSERT(m_cost[0][0] != 65535, "Flood failure");
-    return m_cost[0][0];
+    ARES_ASSERT(cost(0, 0) != 65535, "Flood failure");
+    return cost(0, 0);
   }
 
   /***
@@ -566,19 +574,6 @@ class Maze {
 
   int width() {
     return m_width;
-  }
-
-  uint8_t walls_as_uint8(const int x, const int y) const {
-    /// TODO: rewrite this to get all the walls for one cell and then do the masking
-    ///       This will be faster and safer
-    ///       OR - write a function that will act on the wall data passed in as a parameter
-    uint8_t wall_data = 0x00;
-    CellWalls cell_walls = walls(x, y);
-    wall_data |= isExit(cell_walls, DIR_N) ? 0 : 0x01;
-    wall_data |= isExit(cell_walls, DIR_E) ? 0 : 0x02;
-    wall_data |= isExit(cell_walls, DIR_S) ? 0 : 0x04;
-    wall_data |= isExit(cell_walls, DIR_W) ? 0 : 0x08;
-    return wall_data;
   }
 
   CellWalls *getMazeData() {
@@ -696,26 +691,10 @@ class Maze {
     printf("o\n");
   }
 
-  //  int save_to_flash() {
-  //    writeFlash(FLASH_Sector_1, (char *)m_walls, sizeof(m_walls));
-  //    return 0;
-  //  }
-  //
-  //  int load_from_flash() {
-  //    readFlash(FLASH_Sector_1, (char *)m_walls, sizeof(m_walls));
-  //    writeFlash(FLASH_Sector_1, (char *)m_walls, sizeof(m_walls));
-  //    return 0;
-  //  }
-
  private:
-  // Unconditionally set a wall state.
-  // use update_wall_state() when exploring
-  //  void set_wall_state(const int x, const int y, const Direction heading, const WallState state) {
-  //
-  //  }
+
   void set_wall_state(const Location loc, const Direction heading, const WallState state) {
-    //    set_wall_state(loc.x,loc.y,heading,state);
-    //  std::lock_guard<std::mutex> lock(m_maze_mutex);
+    LOCK_GUARD(m_maze_mutex);
     switch (heading) {
       case DIR_N:
         m_walls[loc.x][loc.y].north = state;
@@ -739,12 +718,22 @@ class Maze {
     }
   }
 
+  uint8_t walls_as_uint8(const int x, const int y) const {
+    uint8_t wall_data = 0x00;
+    CellWalls cell_walls = walls(x, y);
+    wall_data |= isExit(cell_walls, DIR_N) ? 0 : 0x01;
+    wall_data |= isExit(cell_walls, DIR_E) ? 0 : 0x02;
+    wall_data |= isExit(cell_walls, DIR_S) ? 0 : 0x04;
+    wall_data |= isExit(cell_walls, DIR_W) ? 0 : 0x08;
+    return wall_data;
+  }
+
   MazeMask m_mask = MASK_OPEN;
   Location m_goal;
   int m_width = MAZE_WIDTH;
   uint16_t m_cost[MAZE_WIDTH][MAZE_WIDTH];
   CellWalls m_walls[MAZE_WIDTH][MAZE_WIDTH];
 #ifdef ARES
-  std::mutex m_maze_mutex;  // used for thread safe access
+  mutable std::mutex m_maze_mutex;  // used for thread safe access
 #endif
 };
