@@ -313,6 +313,7 @@ class Behaviour {
     m_location = {0, 0};
     m_target = Location(7, 7);
     m_robot->setPose(96.0f, 96.0f - 40.0f, 90.0f);
+    m_robot->resetTotalDistance();
 
     RobotState robot_state = m_robot->getState();
     delay_ms(500);
@@ -322,7 +323,7 @@ class Behaviour {
     Log::add("Searching starts");
     searchTo(m_target);
     Log::add("Searching stops");
-    return true;
+    // return true;
     if (m_reset) {
       return false;
     }
@@ -357,6 +358,35 @@ class Behaviour {
     m_heading = behind_from(m_heading);
     Log::add("This round complete");
     return true;
+  }
+
+  int differenceBetween(Direction a, Direction b) {
+    return (a - b + DIR_COUNT) % DIR_COUNT;
+  }
+
+  void turnToHeading(Direction newHeading) {
+    uint8_t turnDirection;
+    turnDirection = differenceBetween(m_heading, newHeading);
+    if (turnDirection == 0) {
+      return;
+    }
+    switch (turnDirection) {
+      case LEFT:
+        doTurn(90, 900, 0, 5000);
+        ;
+        break;
+      case RIGHT:
+        doTurn(-90, 900, 0, 5000);
+        ;
+        break;
+      case BEHIND:
+        doTurn(-80, 900, 0, 5000);
+        ;
+        break;
+      default:  // anything else means we are stuck
+        // do nohting
+        break;
+    }
   }
 
   /***
@@ -398,7 +428,13 @@ class Behaviour {
    *
    */
   bool searchTo(Location target) {
+    if (m_location == target) {
+      Log::add("Already at target");
+      return true;
+    }
     m_maze.set_mask(MASK_OPEN);
+    m_maze.flood_manhattan(target);  /////////////////////////////////////////////////////////////////The flood can fail, leaving all cells with 65535
+    unsigned char newHeading = m_maze.direction_to_smallest(m_location, m_heading);
     std::string msg;
     msg = fmt::format("Searching from {},{} HDG = {} to {},{}", m_location.x, m_location.y, m_heading, target.x, target.y);
     Log::add(msg);
@@ -415,6 +451,9 @@ class Behaviour {
       msg = "";
       msg += fmt::format(" @ {:>5} ", (int)robot_state.total_distance);
       msg += fmt::format("[{:>2},{:>2}], HDG {} ", m_location.x, m_location.y, m_heading);
+      if (m_location == target) {
+        break;
+      }
       m_maze.flood_manhattan(target);  /////////////////////////////////////////////////////////////////The flood can fail, leaving all cells with 65535
       unsigned char newHeading = m_maze.direction_to_smallest(m_location, m_heading);
 
