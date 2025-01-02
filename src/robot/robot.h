@@ -150,6 +150,11 @@ class Robot {
     m_state.move_distance = 0.0f;
   }
 
+  void resetTotalDistance() {
+    std::lock_guard<std::mutex> lock(g_robot_mutex);
+    m_state.total_distance = 0.0f;
+  }
+
   void resetMoveAngle() {
     std::lock_guard<std::mutex> lock(g_robot_mutex);
     m_state.move_angle = 0.0f;
