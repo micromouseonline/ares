@@ -122,6 +122,7 @@ FetchContent_MakeAvailable(spdlog)
 
 set(APP mouse-simulator)
 add_definitions(-DWINDOW_TITLE=\"${APP}\")
+add_compile_definitions(ARES)
 
 add_executable(${APP} "")
 copy_resources(${APP})

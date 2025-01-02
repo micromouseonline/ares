@@ -455,7 +455,7 @@ class Behaviour {
         break;
       }
       m_maze.flood_manhattan(target);  /////////////////////////////////////////////////////////////////The flood can fail, leaving all cells with 65535
-      unsigned char newHeading = m_maze.direction_to_smallest(m_location, m_heading);
+      newHeading = m_maze.direction_to_smallest(m_location, m_heading);
 
       unsigned char hdgChange = (DIR_COUNT + newHeading - m_heading) % DIR_COUNT;
 
