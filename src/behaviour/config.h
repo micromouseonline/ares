@@ -25,7 +25,7 @@
 #define EVENT_PORTUGAL 3
 #define EVENT_APEC 4
 
-#define EVENT EVENT_HOME
+#define EVENT EVENT_UK
 /***
  * The config.h file determines the actual robot variant that
  * will be the target for the build.
