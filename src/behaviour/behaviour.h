@@ -70,6 +70,7 @@
 #include <vector>
 #include "../../cmake-build-debug/_deps/fmt-src/include/fmt/format.h"
 #include "common/logger.h"
+#include "common/logmanager.h"
 #include "common/pose.h"
 #include "common/timer.h"
 #include "cubic.h"
@@ -267,6 +268,7 @@ class Behaviour {
   }
 
   void followTo(Location target) {
+    ARES_INFO("Begin following to {},{}", target.x, target.y);
     /// assume we are centred in the start cell.
     m_heading = DIR_N;
     m_location = {0, 0};
@@ -276,16 +278,9 @@ class Behaviour {
     updateMap(robot_state);
     startMove(90 + 40.0f, 700, 700, 5000);
     waitForMove();
-    bool finished = false;
-    while (!finished) {
-      if (m_terminate) {
-        break;
-      }
-      if (m_reset) {
-        // m_reset = false;
-        break;
-      }
+    while (!m_terminate && !m_reset) {
       m_location = m_location.neighbour(m_heading);
+      ARES_INFO("Entering {},{}", m_location.x, m_location.y);
       robot_state = m_robot->getState();
       updateMap(robot_state);
       if (m_location == target) {
@@ -302,7 +297,10 @@ class Behaviour {
         turnBack();
       }
     }
+    ARES_INFO("Complete at {},{}", m_location.x, m_location.y);
+    ARES_INFO("Come to a halt");
     doMove(90, 700, 0, 3000);
+    ARES_INFO("Finished following");
   }
 
   int manhattanDistance(Location a, Location b) {
@@ -321,31 +319,43 @@ class Behaviour {
     updateMap(robot_state);
     startMove(90 + 40.0f, 700, 700, 5000);
     waitForMove();
+    Log::add("Searching starts");
     searchTo(m_target);
+    Log::add("Searching stops");
+    return true;
     if (m_reset) {
       return false;
     }
     if (m_frontWall) {
+      Log::add("Turning around");
       if (!m_leftWall) {
         doInPlaceTurn(90, 900, 0, 5000);
+        delay_ms(200);
         m_heading = left_from(m_heading);
       } else if (!m_rightWall) {
         doInPlaceTurn(-90, 900, 0, 5000);
+        delay_ms(200);
         m_heading = right_from(m_heading);
       } else {
         doInPlaceTurn(180, 900, 0, 5000);
+        delay_ms(200);
       }
     }
+    Log::add("Begin return to start");
     startMove(90.04, 700, 700, 5000);
     waitForMove();
     m_target = Location(0, 0);
+    Log::add("Search for start begins");
     searchTo(m_target);
+    Log::add("Search for start ends");
     if (m_reset) {
       return false;
     }
+    Log::add("Turn around");
     m_heading = behind_from(m_heading);
     doInPlaceTurn(180, 900, 0, 5000);
     m_heading = behind_from(m_heading);
+    Log::add("This round complete");
     return true;
   }
 
@@ -388,37 +398,55 @@ class Behaviour {
    *
    */
   bool searchTo(Location target) {
+    m_maze.set_mask(MASK_OPEN);
     std::string msg;
-    msg = fmt::format("Searching from {},{} to {},{}", m_location.x, m_location.y, target.x, target.y);
+    msg = fmt::format("Searching from {},{} HDG = {} to {},{}", m_location.x, m_location.y, m_heading, target.x, target.y);
     Log::add(msg);
     uint32_t ticks = g_ticks;
+    //////////////////////////////////////////////////////////////////////////////////////TERMINATING CONDITION IS WRONG !
     while (!(m_location == target)) {
       if (m_terminate || m_reset) {  /// TODO: should m_terminate just set m_reset?
+        ARES_ERROR("Aborted search");
         return false;
       }
       m_location = m_location.neighbour(m_heading);
       RobotState robot_state = m_robot->getState();
       updateMap(robot_state);
-      m_maze.flood_manhattan(target);
+      msg = "";
+      msg += fmt::format(" @ {:>5} ", (int)robot_state.total_distance);
+      msg += fmt::format("[{:>2},{:>2}], HDG {} ", m_location.x, m_location.y, m_heading);
+      m_maze.flood_manhattan(target);  /////////////////////////////////////////////////////////////////The flood can fail, leaving all cells with 65535
       unsigned char newHeading = m_maze.direction_to_smallest(m_location, m_heading);
+
       unsigned char hdgChange = (DIR_COUNT + newHeading - m_heading) % DIR_COUNT;
+
+      msg += fmt::format(">{} -> {} ", newHeading, hdgChange);
       switch (hdgChange) {
         /// all these finish with the robot moving and at the sensing point
         case 0:
+          msg += " FWD01";
           goForward();
           break;
         case 2:
+          msg += " SS90ER";
           turnRight();
           break;
         case 4:
+          msg += " SS180";
           turnBack();
           break;
         case 6:
+          msg += " SS90L";
           turnLeft();
           break;
+        default:
+          ARES_ERROR("UNKNOWN DIRECTION CHANGE IN SEARCH ({})", hdgChange);
+          break;
       }
+      Log::add(msg);
     }
     /// come to a halt in the cell centre
+    Log::add(fmt::format("Halting in cell {},{} HDG {},", m_location.x, m_location.y, m_heading).c_str());
     doMove(90, 700, 0, 3000);
     Log::add(fmt::format("  - completed after {:>8} ms", g_ticks - ticks).c_str());
     return true;

@@ -155,8 +155,8 @@ class Location {
   uint8_t x;
   uint8_t y;
 
-  Location() : x(0), y(0){};
-  Location(uint8_t ix, uint8_t iy) : x(ix), y(iy){};
+  Location() : x(0), y(0) {};
+  Location(uint8_t ix, uint8_t iy) : x(ix), y(iy) {};
 
   bool operator==(const Location &obj) const {
     return x == obj.x && y == obj.y;
@@ -459,6 +459,7 @@ class Maze {
         }
       }
     }
+    ARES_ASSERT(m_cost[0][0] != 65535, "Flood failure");
     return m_cost[0][0];
   }
 
@@ -478,7 +479,7 @@ class Maze {
   Direction direction_to_smallest(const Location cell, const Direction start_heading) const {
     Direction next_heading = start_heading;
     Direction best_heading = DIR_BLOCKED;
-    uint16_t best_cost = cost(cell);
+    uint16_t best_cost = UINT16_MAX;  // cost(cell);
     uint16_t cost;
     cost = neighbour_cost(cell, next_heading);
     if (cost < best_cost) {
@@ -506,6 +507,7 @@ class Maze {
     if (best_cost == UINT16_MAX) {
       best_heading = DIR_BLOCKED;
     }
+    ARES_ASSERT(best_heading != DIR_BLOCKED, "No valid exit found")
     return best_heading;
   }
 

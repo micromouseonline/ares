@@ -24,7 +24,7 @@
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #include "imgui_internal.h"
 #pragma GCC diagnostic pop
-#include "logmanager.h"
+#include "common/logmanager.h"
 #include "robot-body.h"
 #include "robot/robot.h"
 #include "robot/sensor-data.h"
