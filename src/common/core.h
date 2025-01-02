@@ -38,9 +38,8 @@ inline float toDegrees(float rad) {
 
 inline std::atomic<uint32_t> g_ticks = 0;
 
-/// Shared mutexes for access to the behaviour and robot from the application
-inline std::mutex g_mutex_obstacles;  // Protects access when building collision list
-inline std::mutex g_log_mutex;        // Protects the global log
+/// TODO - use a thread-safe class for this
+inline std::mutex g_log_mutex;  // Protects the global log
 
 inline std::queue<std::string> g_log_messages;
 inline void logMessage(const std::string msg) {
