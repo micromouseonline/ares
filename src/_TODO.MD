@@ -5,13 +5,13 @@
 - [ ] RobotControl to be the main robot thread
 - [ ] Create status dashboard
 - [ ] Add basic logging
-- [ ] Add Robot status LEDs - on Robot?
-- [ ] Add Robot input buttons
-- [ ] Add Robot status display 
-- [ ] Link UI to virtual Robot hardware
+- [ ] Add Vehicle status LEDs - on Vehicle?
+- [ ] Add Vehicle input buttons
+- [ ] Add Vehicle status display 
+- [ ] Link UI to virtual Vehicle hardware
 - [ ] Figure out how to get maze back from RobotController and display it.
 - [ ] Add sprite to RobotDisplay
-- [ ] Implement collision Detection for Robot
+- [ ] Implement collision Detection for Vehicle
 - [ ] Decide where to put steering correction.
 - [ ] Add wall detection and mapping
 - [ ] Implement Actions/Operations

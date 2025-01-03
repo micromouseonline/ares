@@ -1,4 +1,4 @@
-# Robot
+# Vehicle
 
 In here should be those things that concern the physical robot. The vehicle if you like.
 

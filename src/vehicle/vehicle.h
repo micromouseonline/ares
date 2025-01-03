@@ -2,10 +2,7 @@
 // Created by peter on 22/11/24.
 // Defines the Robot class which models the physical behaviour of the robot
 //
-
-#ifndef ROBOT_H
-#define ROBOT_H
-
+#pragma once
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <cmath>
@@ -14,8 +11,8 @@
 #include "behaviour/trapezoid.h"
 #include "common/core.h"
 #include "common/pose.h"
-#include "robot-state.h"
 #include "sensor-data.h"
+#include "vehicle-state.h"
 #ifdef ARES
 #include <mutex>
 #define LOCK_GUARD(mtx) std::lock_guard<std::mutex> lock(mtx)
@@ -68,16 +65,16 @@
  * on physical behavior, and the Behavior or Application layers handle interpretation
  * and control logic.
  */
-class Robot {
+class Vehicle {
  public:
   const float VELOCITY_MAX = 8000.0f;
   const float OMEGA_MAX = 4000.0f;
 
-  Robot() : m_ticks(0), m_running(false), m_state(), m_vMax(VELOCITY_MAX), m_omegaMax(OMEGA_MAX) {
+  Vehicle() : m_ticks(0), m_running(false), m_state(), m_vMax(VELOCITY_MAX), m_omegaMax(OMEGA_MAX) {
     //
   }
 
-  ~Robot() {
+  ~Vehicle() {
     stop();
   }
 
@@ -277,8 +274,8 @@ class Robot {
   }
 
  private:
-  Robot(const Robot&) = delete;
-  Robot& operator=(const Robot&) = delete;
+  Vehicle(const Vehicle&) = delete;
+  Vehicle& operator=(const Vehicle&) = delete;
 
   uint32_t m_ticks;
   std::atomic<bool> m_running;
@@ -293,5 +290,3 @@ class Robot {
   mutable std::mutex m_robot_mutex;
 #endif
 };
-
-#endif  // ROBOT_H

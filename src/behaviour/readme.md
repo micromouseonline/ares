@@ -1,6 +1,6 @@
 # Behaviour
 
-This is where you get to determine what the Robot can do. By looking at sensor values and issuing commands, the
+This is where you get to determine what the Vehicle can do. By looking at sensor values and issuing commands, the
 Behaviour is everything that turns this robot into a maze solving micromouse, a line following robot, a sumo robot or
 whatever you desire.
 

@@ -9,7 +9,7 @@
 #include "common/collisions.h"
 #include "drawing.h"
 #include "robot-wall-sensor.h"
-#include "robot/robot.h"
+#include "vehicle/vehicle.h"
 /**
  * The RobotBody holds the physical arrangement of the robot and describes its appearance on
  * the display.
@@ -60,7 +60,7 @@ class RobotBody {
     addShape(std::move(dot), sf::Vector2f(0, 0));
   }
 
-  void setRobot(Robot& robot) {
+  void setRobot(Vehicle& robot) {
     m_robot = &robot;
   }
 
@@ -176,7 +176,7 @@ class RobotBody {
   float m_angle = 0;
   sf::Color m_colour = sf::Color::White;
   std::vector<ShapeData> m_body_shapes;  // List of shapes and their offsets
-  Robot* m_robot = nullptr;
+  Vehicle* m_robot = nullptr;
 };
 
 #endif  // OBJECT_H

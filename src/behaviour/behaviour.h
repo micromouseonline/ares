@@ -77,10 +77,10 @@
 #include "cubic.h"
 #include "cubic_parameters.h"
 #include "maze.h"
-#include "robot/robot.h"
-#include "robot/sensor-data.h"
 #include "trajectory.h"
 #include "trapezoid.h"
+#include "vehicle/sensor-data.h"
+#include "vehicle/vehicle.h"
 #ifdef ARES
 #include <mutex>
 #define LOCK_GUARD(mtx) std::lock_guard<std::mutex> lock(mtx)
@@ -108,7 +108,7 @@ class Behaviour {
     stop();  //
   }
 
-  void setRobot(Robot& robot) {
+  void setRobot(Vehicle& robot) {
     m_robot = &robot;  //
   }
 
@@ -647,7 +647,7 @@ class Behaviour {
     return m_turn_trajectory->isFinished();
   }
 
-  Robot* m_robot = nullptr;
+  Vehicle* m_robot = nullptr;
   Direction m_heading;
   Location m_location;
   Location m_target;

@@ -6,7 +6,7 @@
 
 ### Application
 
-- Model Robot UI - display, buttons, LEDs
+- Model Vehicle UI - display, buttons, LEDs
 - Display world maze
 - Overlay robot map
 - Status text box
@@ -18,13 +18,13 @@
 
 - Load world mazes stored in code
 - Load/Save world mazes stored on disk
-- Read maze map from Robot
+- Read maze map from Behaviour
 - Edit world maze map
 - Set and change goal area for simulation
 
-### Robot Management
+### Vehicle Management
 
-- Manage Robot dimensions
+- Manage Vehicle dimensions
 - Model robot sensor behaviour in world view
 - Model robot collisions with world maze
 

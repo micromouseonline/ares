@@ -26,8 +26,8 @@
 #pragma GCC diagnostic pop
 #include "common/logmanager.h"
 #include "robot-body.h"
-#include "robot/robot.h"
-#include "robot/sensor-data.h"
+#include "vehicle/sensor-data.h"
+#include "vehicle/vehicle.h"
 #include "widgets.h"
 
 class Application : public IEventObserver {
@@ -167,7 +167,7 @@ class Application : public IEventObserver {
     int cell = m_maze_manager.getCellFromPosition(pos.x, pos.y);
     int cell_x = int(pos.x / m_maze_manager.getCellSize());
     int cell_y = int(pos.y / m_maze_manager.getCellSize());
-    ss << "Robot:  X: " << (int)pos.x << "\n"                                              //
+    ss << "Vehicle:  X: " << (int)pos.x << "\n"                                              //
        << "        y: " << (int)pos.y << "\n"                                              //
        << "    angle: " << std::fixed << std::setprecision(1) << state.angle << " deg \n"  //
        << "\n"                                                                             //
@@ -435,7 +435,7 @@ class Application : public IEventObserver {
  private:
   std::unique_ptr<Window> m_window;
   Behaviour m_mouse;
-  Robot m_robot;  // The robot instance
+  Vehicle m_robot;  // The robot instance
   RobotBody m_robot_body;
   std::vector<sf::FloatRect> m_obstacles;
   std::vector<const char*> m_maze_names;
