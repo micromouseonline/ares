@@ -116,10 +116,18 @@ FetchContent_Declare(spdlog
         GIT_TAG v1.9.2
 )
 FetchContent_MakeAvailable(spdlog)
+
 # ###############################################################
+# Add GoogleTest via FetchContent
+FetchContent_Declare(
+        GoogleTest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG release-1.12.1  # You can use the latest stable release or a specific version
+)
+FetchContent_MakeAvailable(GoogleTest)
 # ###############################################################
 
-
+# Main application executable
 set(APP mouse-simulator)
 add_definitions(-DWINDOW_TITLE=\"${APP}\")
 add_compile_definitions(ARES)
@@ -131,15 +139,6 @@ copy_windows_dlls(${APP})
 target_compile_options(${APP} PUBLIC
         ${DEFAULT_COMPILER_OPTIONS_AND_WARNINGS}
 )
-
-
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread")
-#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=thread -static-libtsan")
-
-
-# Move ThreadSanitizer and map file flags to the linker flags
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DEFAULT_COMPILER_OPTIONS_AND_WARNINGS}")
-#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=thread -static-libtsan -Wl,-Map=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/mouse-simulator.map")
 
 target_link_libraries(${APP}
         ${SANITIZER_FLAGS}
@@ -157,3 +156,26 @@ target_sources(${APP} PRIVATE
         src/application/window.cpp
         src/world/mazedata.cpp
 )
+
+# ###############################################################
+# Add a new target for tests
+enable_testing()
+
+add_executable(test_mouse_simulator
+        tests/test_main.cpp
+)
+
+# Link GoogleTest and your project to the test executable
+target_link_libraries(test_mouse_simulator
+        PUBLIC
+        GTest::gtest
+        GTest::gtest_main
+        ${SFML_LIBS}
+        ${IMGUI_LIBS}
+        fmt::fmt
+        spdlog::spdlog
+)
+
+
+# Run tests after building
+add_test(NAME test_mouse_simulator COMMAND test_mouse_simulator)
