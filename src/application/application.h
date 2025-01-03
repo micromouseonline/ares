@@ -38,7 +38,6 @@ class Application : public IEventObserver {
     m_elapsed = sf::Time::Zero;
 
     m_default_font.loadFromFile("assets/fonts/ubuntu-mono-r.ttf");
-
     m_txt_maze_name.setFont(m_default_font);
     m_txt_maze_name.setCharacterSize(16);
     m_txt_maze_name.setFillColor(sf::Color::Yellow);
@@ -307,6 +306,11 @@ class Application : public IEventObserver {
     if (ImGui::Checkbox("Show Detailed Behaviour Event Log", &detailed_event_log)) {
       m_mouse.setEventLogDetailed(detailed_event_log);
     }
+    bool continuous_search = m_mouse.getEventLogDetailed();
+    if (ImGui::Checkbox("Show Detailed Behaviour Event Log", &detailed_event_log)) {
+      m_mouse.setEventLogDetailed(detailed_event_log);
+    }
+
     static float speedup = 1.0f;
     ImGui::SliderFloat("Speedup", &speedup, 0.25, 4.0, "%4.2f");
     m_mouse.setSpeedUp(speedup);
@@ -443,7 +447,6 @@ class Application : public IEventObserver {
   sf::Time m_elapsed;
   sf::Clock m_frame_clock;
 
-  // use these for adhoc messages, overlays and the like
   sf::Font m_default_font;
   sf::Text m_txt_maze_name;
   TextBox m_textbox;

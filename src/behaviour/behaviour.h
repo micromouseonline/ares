@@ -99,7 +99,7 @@ enum Activity {
 
 class Behaviour {
  public:
-  Behaviour() : m_robot(nullptr), m_running(false), m_terminate(false), m_timeStamp(0), m_reset(false) {
+  Behaviour() : m_vehicle(nullptr), m_running(false), m_terminate(false), m_timeStamp(0), m_reset(false) {
     //
     m_maze.initialise();
   };
@@ -109,7 +109,7 @@ class Behaviour {
   }
 
   void setRobot(Vehicle& robot) {
-    m_robot = &robot;  //
+    m_vehicle = &robot;  //
   }
 
   void reset() {
@@ -136,6 +136,26 @@ class Behaviour {
         m_thread.join();
       }
     }
+  }
+
+  Direction getHeading() const {
+    LOCK_GUARD(m_behaviour_mutex);
+    return m_heading;
+  }
+
+  void setHeading(Direction heading) {
+    LOCK_GUARD(m_behaviour_mutex);
+    m_heading = heading;
+  }
+
+  Location getLocation() const {
+    LOCK_GUARD(m_behaviour_mutex);
+    return m_location;
+  }
+
+  void setLocation(Location loc) {
+    LOCK_GUARD(m_behaviour_mutex);
+    m_location = loc;
   }
 
   bool doMove(float distance, float v_max, float v_end, float accel) {
@@ -213,31 +233,39 @@ class Behaviour {
   }
 
   void updateMap(RobotState& state) {
-    LOCK_GUARD(m_behaviour_mutex);
-    m_leftWall = state.sensor_data.lds_power > 40;
-    m_frontWall = state.sensor_data.lfs_power > 20 && state.sensor_data.rfs_power > 20;
-    m_rightWall = state.sensor_data.rds_power > 40;
-    switch (m_heading) {
+    bool leftWall, frontWall, rightWall;
+    {
+      /// minimise the time we are locked
+      LOCK_GUARD(m_behaviour_mutex);
+      leftWall = state.sensor_data.lds_power > 40;
+      frontWall = state.sensor_data.lfs_power > 20 && state.sensor_data.rfs_power > 20;
+      rightWall = state.sensor_data.rds_power > 40;
+      m_frontWall = frontWall;
+      m_rightWall = rightWall;
+      m_leftWall = leftWall;
+    }
+    /// use the local values to avoid need for aditional lock
+    Location here = getLocation();
+    switch (getHeading()) {
       case DIR_N:
-
-        m_maze.update_wall_state(m_location, DIR_N, m_frontWall ? WALL : EXIT);
-        m_maze.update_wall_state(m_location, DIR_E, m_rightWall ? WALL : EXIT);
-        m_maze.update_wall_state(m_location, DIR_W, m_leftWall ? WALL : EXIT);
+        m_maze.update_wall_state(here, DIR_N, frontWall ? WALL : EXIT);
+        m_maze.update_wall_state(here, DIR_E, rightWall ? WALL : EXIT);
+        m_maze.update_wall_state(here, DIR_W, leftWall ? WALL : EXIT);
         break;
       case DIR_E:
-        m_maze.update_wall_state(m_location, DIR_E, m_frontWall ? WALL : EXIT);
-        m_maze.update_wall_state(m_location, DIR_S, m_rightWall ? WALL : EXIT);
-        m_maze.update_wall_state(m_location, DIR_N, m_leftWall ? WALL : EXIT);
+        m_maze.update_wall_state(here, DIR_E, frontWall ? WALL : EXIT);
+        m_maze.update_wall_state(here, DIR_S, rightWall ? WALL : EXIT);
+        m_maze.update_wall_state(here, DIR_N, leftWall ? WALL : EXIT);
         break;
       case DIR_S:
-        m_maze.update_wall_state(m_location, DIR_S, m_frontWall ? WALL : EXIT);
-        m_maze.update_wall_state(m_location, DIR_W, m_rightWall ? WALL : EXIT);
-        m_maze.update_wall_state(m_location, DIR_E, m_leftWall ? WALL : EXIT);
+        m_maze.update_wall_state(here, DIR_S, frontWall ? WALL : EXIT);
+        m_maze.update_wall_state(here, DIR_W, rightWall ? WALL : EXIT);
+        m_maze.update_wall_state(here, DIR_E, leftWall ? WALL : EXIT);
         break;
       case DIR_W:
-        m_maze.update_wall_state(m_location, DIR_W, m_frontWall ? WALL : EXIT);
-        m_maze.update_wall_state(m_location, DIR_N, m_rightWall ? WALL : EXIT);
-        m_maze.update_wall_state(m_location, DIR_S, m_leftWall ? WALL : EXIT);
+        m_maze.update_wall_state(here, DIR_W, frontWall ? WALL : EXIT);
+        m_maze.update_wall_state(here, DIR_N, rightWall ? WALL : EXIT);
+        m_maze.update_wall_state(here, DIR_S, leftWall ? WALL : EXIT);
         break;
       default:
         // This is an error. We should handle it.
@@ -246,51 +274,51 @@ class Behaviour {
   }
 
   void turnLeft() {
-    float speed = m_robot->getState().velocity;
+    float speed = m_vehicle->getState().velocity;
     doMove(20, speed, 700, 5000);
     doCubicTurn(114.05, 90, speed);
     doMove(20, speed, speed, 5000);
-    m_heading = left_from(m_heading);
+    setHeading(left_from(getHeading()));
   }
 
   void turnRight() {
-    float speed = m_robot->getState().velocity;
+    float speed = m_vehicle->getState().velocity;
     doMove(20, speed, 700, 5000);
     doCubicTurn(114.05, -90, speed);
     doMove(20, speed, speed, 5000);
-    m_heading = right_from(m_heading);
+    setHeading(right_from(getHeading()));
   }
 
   void turnBack() {
-    float speed = m_robot->getState().velocity;
+    float speed = m_vehicle->getState().velocity;
     doMove(90, speed, 0, 5000);
     doTurn(180, 900, 0, 5000);
     doMove(90, speed, speed, 5000);
-    m_heading = behind_from(m_heading);
+    setHeading(behind_from(getHeading()));
   }
 
   void goForward() {
-    float speed = m_robot->getState().velocity;
+    float speed = m_vehicle->getState().velocity;
     doMove(180, speed, speed, 5000);
   }
 
   void followTo(Location target) {
     ARES_INFO("Begin following to {},{}", target.x, target.y);
     /// assume we are centred in the start cell.
-    m_heading = DIR_N;
-    m_location = {0, 0};
-    m_robot->setPose(96.0f, 96.0f - 40.0f, 90.0f);
-    RobotState robot_state = m_robot->getState();
+    setHeading(DIR_N);
+    setLocation({0, 0});
+    m_vehicle->setPose(96.0f, 96.0f - 40.0f, 90.0f);
+    RobotState robot_state = m_vehicle->getState();
     delay_ms(500);
     updateMap(robot_state);
     startMove(90 + 40.0f, 700, 700, 5000);
     waitForMove();
     while (!m_terminate && !m_reset) {
-      m_location = m_location.neighbour(m_heading);
-      ARES_INFO("Entering {},{}", m_location.x, m_location.y);
-      robot_state = m_robot->getState();
+      setLocation(getLocation().neighbour(getHeading()));
+      ARES_INFO("Entering {},{}", getLocation().x, getLocation().y);
+      robot_state = m_vehicle->getState();
       updateMap(robot_state);
-      if (m_location == target) {
+      if (getLocation() == target) {
         break;
       }
 
@@ -304,7 +332,7 @@ class Behaviour {
         turnBack();
       }
     }
-    ARES_INFO("Complete at {},{}", m_location.x, m_location.y);
+    ARES_INFO("Complete at {},{}", getLocation().x, getLocation().y);
     ARES_INFO("Come to a halt");
     doMove(90, 700, 0, 3000);
     ARES_INFO("Finished following");
@@ -316,13 +344,13 @@ class Behaviour {
 
   bool testSearch() {
     Log::add("Searching the maze");
-    m_heading = DIR_N;
-    m_location = {0, 0};
+    setHeading(DIR_N);
+    setLocation({0, 0});
     m_target = Location(7, 7);
-    m_robot->setPose(96.0f, 96.0f - 40.0f, 90.0f);
-    m_robot->resetTotalDistance();
+    m_vehicle->setPose(96.0f, 96.0f - 40.0f, 90.0f);
+    m_vehicle->resetTotalDistance();
 
-    RobotState robot_state = m_robot->getState();
+    RobotState robot_state = m_vehicle->getState();
     delay_ms(500);
     updateMap(robot_state);
     startMove(90 + 40.0f, 700, 700, 5000);
@@ -339,11 +367,11 @@ class Behaviour {
       if (!m_leftWall) {
         doInPlaceTurn(90, 900, 0, 5000);
         delay_ms(200);
-        m_heading = left_from(m_heading);
+        setHeading(left_from(getHeading()));
       } else if (!m_rightWall) {
         doInPlaceTurn(-90, 900, 0, 5000);
         delay_ms(200);
-        m_heading = right_from(m_heading);
+        setHeading(right_from(getHeading()));
       } else {
         doInPlaceTurn(180, 900, 0, 5000);
         delay_ms(200);
@@ -357,9 +385,8 @@ class Behaviour {
     if (m_reset) {
       return false;
     }
-    m_heading = behind_from(m_heading);
     doInPlaceTurn(180, 900, 0, 5000);
-    m_heading = behind_from(m_heading);
+    setHeading(behind_from(getHeading()));
     Log::add("This round complete");
     return true;
   }
@@ -377,18 +404,15 @@ class Behaviour {
     switch (turnDirection) {
       case LEFT:
         doTurn(90, 900, 0, 5000);
-        ;
         break;
       case RIGHT:
         doTurn(-90, 900, 0, 5000);
-        ;
         break;
       case BEHIND:
         doTurn(-80, 900, 0, 5000);
-        ;
         break;
       default:  // anything else means we are stuck
-        // do nohting
+        // do nothing
         break;
     }
   }
@@ -432,7 +456,7 @@ class Behaviour {
    *
    */
   bool searchTo(Location target) {
-    if (m_location == target) {
+    if (getLocation() == target) {
       Log::add("Already at target");
       return true;
     }
@@ -444,24 +468,24 @@ class Behaviour {
     Log::add(msg);
     uint32_t ticks = g_ticks;
     //////////////////////////////////////////////////////////////////////////////////////TERMINATING CONDITION IS WRONG !
-    while (!(m_location == target)) {
+    while (!(getLocation() == target)) {
       if (m_terminate || m_reset) {  /// TODO: should m_terminate just set m_reset?
         ARES_ERROR("Aborted search");
         return false;
       }
-      m_location = m_location.neighbour(m_heading);
-      RobotState robot_state = m_robot->getState();
+      setLocation(getLocation().neighbour(getHeading()));
+      RobotState robot_state = m_vehicle->getState();
       updateMap(robot_state);
       msg = "";
       msg += fmt::format(" @ {:>5} ", (int)robot_state.total_distance);
-      msg += fmt::format("[{:>2},{:>2}], HDG {} ", m_location.x, m_location.y, m_heading);
-      if (m_location == target) {
+      msg += fmt::format("[{:>2},{:>2}], HDG {} ", getLocation().x, getLocation().y, getHeading());
+      if (getLocation() == target) {
         break;
       }
       m_maze.flood_manhattan(target);  /////////////////////////////////////////////////////////////////The flood can fail, leaving all cells with 65535
-      newHeading = m_maze.direction_to_smallest(m_location, m_heading);
+      newHeading = m_maze.direction_to_smallest(getLocation(), getHeading());
 
-      unsigned char hdgChange = (DIR_COUNT + newHeading - m_heading) % DIR_COUNT;
+      unsigned char hdgChange = (DIR_COUNT + newHeading - getHeading()) % DIR_COUNT;
 
       msg += fmt::format(">{} -> {} ", newHeading, hdgChange);
       switch (hdgChange) {
@@ -546,6 +570,9 @@ class Behaviour {
    * robot systick is not called it will be unresponsive.
    */
   void delay_ms(int ms) {
+    if (ms <= 0) {
+      return;
+    }
     Timer timer;
     while (ms > 0) {
       float v = m_trap_fwd.next();
@@ -553,19 +580,22 @@ class Behaviour {
       if (m_turn_trajectory != nullptr) {
         w = m_turn_trajectory->next();
       }
-      if (m_robot) {
-        m_robot->setSpeeds(v, w);
-        m_robot->systick(m_step_time);
-        RobotState state = m_robot->getState();
-        m_robot->setLed(7, state.sensor_data.lfs_power > 18);
-        m_robot->setLed(6, state.sensor_data.lds_power > 40);
-        m_robot->setLed(5, state.sensor_data.rds_power > 40);
-        m_robot->setLed(4, state.sensor_data.rfs_power > 18);
+      if (m_vehicle) {
+        m_vehicle->setSpeeds(v, w);
+        m_vehicle->systick(m_step_time);
+        RobotState state = m_vehicle->getState();
+        m_vehicle->setLed(7, state.sensor_data.lfs_power > 18);
+        m_vehicle->setLed(6, state.sensor_data.lds_power > 40);
+        m_vehicle->setLed(5, state.sensor_data.rds_power > 40);
+        m_vehicle->setLed(4, state.sensor_data.rfs_power > 18);
       }
 
-      m_timeStamp++;
+      {
+        LOCK_GUARD(m_behaviour_mutex);
+        m_timeStamp++;
+        g_ticks++;
+      }
       ms--;
-      g_ticks++;
       timer.wait_us(1000 * m_speed_up);
     }
   }
@@ -609,7 +639,7 @@ class Behaviour {
   }
 
   void startMove(float distance, float v_max, float v_end, float accel) {
-    float v_start = m_robot->getState().velocity;
+    float v_start = m_vehicle->getState().velocity;
     m_trap_fwd = Trapezoid(distance, v_start, v_max, v_end, accel);
     m_trap_fwd.init(Pose());
     m_trap_fwd.begin();
@@ -620,7 +650,7 @@ class Behaviour {
   }
 
   void startTurn(float angle, float omega_Max, float omega_end, float alpha) {
-    float w_start = m_robot->getState().omega;
+    float w_start = m_vehicle->getState().omega;
     std::unique_ptr<Trapezoid> trapezoid = std::make_unique<Trapezoid>(angle, w_start, omega_Max, omega_end, alpha);
     m_turn_trajectory = std::move(trapezoid);
     m_turn_trajectory->init(Pose());
@@ -635,9 +665,9 @@ class Behaviour {
   }
 
   void startInPlaceTurn(float angle, float omega_Max, float omega_end, float alpha) {
-    float w_start = m_robot->getState().omega;
+    float w_start = m_vehicle->getState().omega;
     std::unique_ptr<Trapezoid> trapezoid = std::make_unique<Trapezoid>(angle, w_start, omega_Max, omega_end, alpha);
-    std::unique_ptr<Cubic> cubic = std::make_unique<Cubic>(195, -90, m_robot->getState().velocity);
+    std::unique_ptr<Cubic> cubic = std::make_unique<Cubic>(195, -90, m_vehicle->getState().velocity);
     m_turn_trajectory = std::move(trapezoid);
     m_turn_trajectory->init(Pose());
     m_turn_trajectory->begin();
@@ -647,7 +677,7 @@ class Behaviour {
     return m_turn_trajectory->isFinished();
   }
 
-  Vehicle* m_robot = nullptr;
+  Vehicle* m_vehicle = nullptr;
   Direction m_heading;
   Location m_location;
   Location m_target;

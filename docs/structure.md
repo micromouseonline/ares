@@ -11,7 +11,8 @@
     - Systick adds to a list of state information on every iteration. That is effectively a black box recorder running
       at the systick frequency
 1. Behaviour: Combined with Vehicle, that is what makes this a micromouse simulation
-    - Behaviour is asynchronous in the sense that the behaviour code must wait for specific states or flags in the Vehicle
+    - Behaviour is asynchronous in the sense that the behaviour code must wait for specific states or flags in the
+      Vehicle
     - Vehicle never tells Behaviour what to do.
     - Behaviour tells the Vehicle what to do and constantly monitors its achievement.
     - Behaviour does not care about the world time, If it cares at all it is about tick count from the robot.
@@ -67,7 +68,7 @@ disadvantages of the structure.
       the maze.
     - GetSensorValues(): Returns the most recent sensor data to the robot.
 - Attributes:
-    - m_robot: A pointer to the Vehicle instance.
+    - m_vehicle: A pointer to the Vehicle instance.
     - m_maze: The maze in which the robot navigates.
     - sensor_data: Stores the calculated sensor readings.
 - Advantages:
