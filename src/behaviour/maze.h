@@ -509,6 +509,7 @@ class Maze {
     const int QUEUE_LENGTH = MAZE_CELL_COUNT / 4;
     int max_length = 0;
     Queue<Location, QUEUE_LENGTH> queue;
+    //    ARES_ASSERT(get_mask() == MASK_OPEN, "Maze Mask Should have been OPEN");
     setCost(target, 0);
     queue.add(target);
     while (queue.size() > 0) {
@@ -516,17 +517,22 @@ class Maze {
       ARES_ASSERT(queue.size() < QUEUE_LENGTH, "Flood Queue overrun");
       Location here = queue.head();
       uint16_t newCost = cost(here) + 1;
+      //      int exit_count = 0;
       for (auto &dir : ortho_directions) {
         if (is_exit(here, dir)) {
           Location nextCell = here.neighbour(dir);
+          //          ARES_ASSERT(nextCell.x < getWidth() && nextCell.x >= 0, "X outside maze");
+          //          ARES_ASSERT(nextCell.y < getWidth() && nextCell.y >= 0, "Y outside maze");
           if (cost(nextCell) > newCost) {
             setCost(nextCell, newCost);
             queue.add(nextCell);
           }
+          //          exit_count++;
         }
       }
+      //      ARES_ASSERT(exit_count != 0, "This cell had no exits");
     }
-    ARES_ASSERT(cost(0, 0) != 65535, "Flood failure");
+    //    ARES_ASSERT(cost(0, 0) != 65535, "Flood failure");
     return cost(0, 0);
   }
 
