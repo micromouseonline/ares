@@ -343,51 +343,53 @@ class Behaviour {
   }
 
   bool testSearch() {
-    Log::add("Searching the maze");
-    setHeading(DIR_N);
-    setLocation({0, 0});
-    m_target = Location(7, 7);
-    m_vehicle->setPose(96.0f, 96.0f - 40.0f, 90.0f);
-    m_vehicle->resetTotalDistance();
+    while (getContinuous()) {
+      Log::add("Searching the maze");
+      setHeading(DIR_N);
+      setLocation({0, 0});
+      m_target = Location(7, 7);
+      m_vehicle->setPose(96.0f, 96.0f - 40.0f, 90.0f);
+      m_vehicle->resetTotalDistance();
 
-    RobotState robot_state = m_vehicle->getState();
-    delay_ms(500);
-    updateMap(robot_state);
-    startMove(90 + 40.0f, 700, 700, 5000);
-    waitForMove();
-    Log::add("Searching starts");
-    searchTo(m_target);
-    Log::add("Searching stops");
-    // return true;
-    if (m_reset) {
-      return false;
-    }
-    if (m_frontWall) {
-      Log::add("Turning around");
-      if (!m_leftWall) {
-        doInPlaceTurn(90, 900, 0, 5000);
-        delay_ms(200);
-        setHeading(left_from(getHeading()));
-      } else if (!m_rightWall) {
-        doInPlaceTurn(-90, 900, 0, 5000);
-        delay_ms(200);
-        setHeading(right_from(getHeading()));
-      } else {
-        doInPlaceTurn(180, 900, 0, 5000);
-        delay_ms(200);
+      RobotState robot_state = m_vehicle->getState();
+      delay_ms(500);
+      updateMap(robot_state);
+      startMove(90 + 40.0f, 700, 700, 5000);
+      waitForMove();
+      Log::add("Searching starts");
+      searchTo(m_target);
+      Log::add("Searching stops");
+      // return true;
+      if (m_reset) {
+        return false;
       }
+      if (m_frontWall) {
+        Log::add("Turning around");
+        if (!m_leftWall) {
+          doInPlaceTurn(90, 900, 0, 5000);
+          delay_ms(200);
+          setHeading(left_from(getHeading()));
+        } else if (!m_rightWall) {
+          doInPlaceTurn(-90, 900, 0, 5000);
+          delay_ms(200);
+          setHeading(right_from(getHeading()));
+        } else {
+          doInPlaceTurn(180, 900, 0, 5000);
+          delay_ms(200);
+        }
+      }
+      Log::add("Begin return to start");
+      startMove(90.04, 700, 700, 5000);
+      waitForMove();
+      m_target = Location(0, 0);
+      searchTo(m_target);
+      if (m_reset) {
+        return false;
+      }
+      doInPlaceTurn(180, 900, 0, 5000);
+      setHeading(behind_from(getHeading()));
+      Log::add("This round complete");
     }
-    Log::add("Begin return to start");
-    startMove(90.04, 700, 700, 5000);
-    waitForMove();
-    m_target = Location(0, 0);
-    searchTo(m_target);
-    if (m_reset) {
-      return false;
-    }
-    doInPlaceTurn(180, 900, 0, 5000);
-    setHeading(behind_from(getHeading()));
-    Log::add("This round complete");
     return true;
   }
 
@@ -620,6 +622,14 @@ class Behaviour {
     return m_event_log_detailed;
   }
 
+  void setContinuous(bool state) {
+    m_continuous_search = state;
+  }
+
+  bool getContinuous() {
+    return m_continuous_search;
+  }
+
  private:
   bool waitForMove() {
     while (!moveFinished() && !m_terminate) {
@@ -687,6 +697,7 @@ class Behaviour {
   float m_step_time = 0.001;
   std::thread m_thread;
   std::atomic<bool> m_event_log_detailed = false;
+  std::atomic<bool> m_continuous_search = false;
   std::atomic<bool> m_running;
   std::atomic<bool> m_terminate;  /// shuts down the thread
   std::atomic<long> m_timeStamp = 0;

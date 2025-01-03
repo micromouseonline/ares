@@ -306,9 +306,9 @@ class Application : public IEventObserver {
     if (ImGui::Checkbox("Show Detailed Behaviour Event Log", &detailed_event_log)) {
       m_mouse.setEventLogDetailed(detailed_event_log);
     }
-    bool continuous_search = m_mouse.getEventLogDetailed();
-    if (ImGui::Checkbox("Show Detailed Behaviour Event Log", &detailed_event_log)) {
-      m_mouse.setEventLogDetailed(detailed_event_log);
+    static bool continuous_search = false;
+    if (ImGui::Checkbox("Continuous Search", &continuous_search)) {
+      m_mouse.setContinuous(continuous_search);
     }
 
     static float speedup = 1.0f;
