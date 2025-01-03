@@ -300,13 +300,16 @@ class Application : public IEventObserver {
     ImGui::SameLine();
     if (ImGui::Button("SEARCHER", ImVec2(b_wide, 0))) {
       m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
+      m_mouse.setFirstRunState(true);
       m_mouse.go(ACT_TEST_SEARCH, 0);
     }
+
     bool detailed_event_log = m_mouse.getEventLogDetailed();
     if (ImGui::Checkbox("Show Detailed Behaviour Event Log", &detailed_event_log)) {
       m_mouse.setEventLogDetailed(detailed_event_log);
     }
-    static bool continuous_search = false;
+
+    static bool continuous_search = true;
     if (ImGui::Checkbox("Continuous Search", &continuous_search)) {
       m_mouse.setContinuous(continuous_search);
     }

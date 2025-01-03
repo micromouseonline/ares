@@ -138,6 +138,10 @@ class Behaviour {
     }
   }
 
+  void setFirstRunState(bool state) {
+    m_first_run = state;
+  }
+
   Direction getHeading() const {
     LOCK_GUARD(m_behaviour_mutex);
     return m_heading;
@@ -343,7 +347,8 @@ class Behaviour {
   }
 
   bool testSearch() {
-    while (getContinuous()) {
+    while (m_first_run || getContinuous()) {
+      m_first_run = false;
       Log::add("Searching the maze");
       setHeading(DIR_N);
       setLocation({0, 0});
@@ -695,9 +700,10 @@ class Behaviour {
   bool m_frontWall;
   bool m_rightWall;
   float m_step_time = 0.001;
+  bool m_first_run = true;
   std::thread m_thread;
   std::atomic<bool> m_event_log_detailed = false;
-  std::atomic<bool> m_continuous_search = false;
+  std::atomic<bool> m_continuous_search = true;
   std::atomic<bool> m_running;
   std::atomic<bool> m_terminate;  /// shuts down the thread
   std::atomic<long> m_timeStamp = 0;
