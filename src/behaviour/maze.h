@@ -258,6 +258,7 @@ class Maze {
 
   /// @brief  return the state of the walls in a cell
   CellWalls walls(const int x, const int y) const {
+    LOCK_GUARD(m_maze_mutex);
     return m_walls[x][y];
   }
 
@@ -314,18 +315,23 @@ class Maze {
 
   bool isExit(CellWalls walls, Direction dir) const {
     bool result = false;
+    MazeMask mask;
+    {
+      LOCK_GUARD(m_maze_mutex);
+      mask = m_mask;
+    }
     switch (dir) {
       case DIR_N:
-        result = ((uint8_t)walls.north & (uint8_t)m_mask) == EXIT;
+        result = ((uint8_t)walls.north & (uint8_t)mask) == EXIT;
         break;
       case DIR_E:
-        result = ((uint8_t)walls.east & (uint8_t)m_mask) == EXIT;
+        result = ((uint8_t)walls.east & (uint8_t)mask) == EXIT;
         break;
       case DIR_S:
-        result = ((uint8_t)walls.south & (uint8_t)m_mask) == EXIT;
+        result = ((uint8_t)walls.south & (uint8_t)mask) == EXIT;
         break;
       case DIR_W:
-        result = ((uint8_t)walls.west & (uint8_t)m_mask) == EXIT;
+        result = ((uint8_t)walls.west & (uint8_t)mask) == EXIT;
         break;
       default:
         result = false;
