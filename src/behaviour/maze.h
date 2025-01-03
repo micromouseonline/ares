@@ -572,7 +572,8 @@ class Maze {
     return best_heading;
   }
 
-  int width() {
+  int getWidth() {
+    LOCK_GUARD(m_maze_mutex);
     return m_width;
   }
 
@@ -583,8 +584,9 @@ class Maze {
   void print_walls() {
     int y, x;
     printf("\n");
-    for (y = m_width - 1; y >= 0; y--) {
-      for (x = 0; x < m_width; x++) {
+    int width = getWidth();
+    for (y = width - 1; y >= 0; y--) {
+      for (x = 0; x < width; x++) {
         printf("o");
         switch (wall_state(x, y, DIR_N)) {
           case EXIT:
@@ -602,7 +604,7 @@ class Maze {
         }
       }
       printf("o\n");
-      for (x = 0; x < m_width; x++) {
+      for (x = 0; x < width; x++) {
         switch (wall_state(x, y, DIR_W)) {
           case EXIT:
             printf("    ");
@@ -621,7 +623,7 @@ class Maze {
       printf("|\n");
     }
     // all the south border
-    for (x = 0; x < m_width; x++) {
+    for (x = 0; x < width; x++) {
       printf("o---");
     }
     printf("o\n");
@@ -631,13 +633,14 @@ class Maze {
 
   void print(Maze::PrintStyle style) {
     int y, x;
+    int width = getWidth();
     // flood (GOAL, unknownsAreClear);
     printf("\n");
     if (style == PRINT_AS_CDECL) {
       printf("const uint8_t _maze[] = {\n");
-      for (x = 0; x < m_width; x++) {
+      for (x = 0; x < width; x++) {
         printf("   ");
-        for (y = 0; y < m_width; y++) {
+        for (y = 0; y < width; y++) {
           printf("0x%02X, ", walls_as_uint8(x, y));
         }
         printf("\n");
@@ -645,8 +648,8 @@ class Maze {
       printf("   };\n\n");
       return;
     }
-    for (y = m_width - 1; y >= 0; y--) {
-      for (x = 0; x < m_width; x++) {
+    for (y = width - 1; y >= 0; y--) {
+      for (x = 0; x < width; x++) {
         if (not is_exit(x, y, DIR_N)) {
           printf("o---");
         } else {
@@ -654,7 +657,7 @@ class Maze {
         }
       }
       printf("o\n");
-      for (x = 0; x < m_width; x++) {
+      for (x = 0; x < width; x++) {
         if (not is_exit(x, y, DIR_W)) {
           printf("|");
         } else {
@@ -674,14 +677,14 @@ class Maze {
             break;
         }
       }
-      if (not is_exit(m_width - 1, y, DIR_E)) {
+      if (not is_exit(width - 1, y, DIR_E)) {
         printf("|\n");
       } else {
         printf(" \n\n");
       }
     }
     // all the south walls
-    for (x = 0; x < m_width; x++) {
+    for (x = 0; x < width; x++) {
       if (is_exit(x, 0, DIR_S)) {
         printf("o   ");
       } else {
@@ -692,7 +695,6 @@ class Maze {
   }
 
  private:
-
   void set_wall_state(const Location loc, const Direction heading, const WallState state) {
     LOCK_GUARD(m_maze_mutex);
     switch (heading) {
