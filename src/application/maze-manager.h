@@ -207,8 +207,6 @@ class MazeManager {
    * @return
    */
   bool updateFromMap(Maze& maze, int mazeWidth) {
-    MazeMask mask = maze.get_mask();
-    maze.set_mask(MASK_CLOSED);
     for (int y = 0; y < mazeWidth; y++) {
       for (int x = 0; x < mazeWidth; x++) {
         if (maze.wall_state(x, y, DIR_N) == EXIT) {
@@ -237,7 +235,6 @@ class MazeManager {
         }
       }
     }
-    maze.set_mask(mask);
     return true;
   }
 
