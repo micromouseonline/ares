@@ -39,9 +39,6 @@ class Application : public IEventObserver {
 
     m_default_font.loadFromFile("assets/fonts/ubuntu-mono-r.ttf");
 
-    m_adhoc_text.setFont(m_default_font);
-    m_adhoc_text.setCharacterSize(16);
-    m_adhoc_text.setFillColor(sf::Color::Yellow);
     m_txt_maze_name.setFont(m_default_font);
     m_txt_maze_name.setCharacterSize(16);
     m_txt_maze_name.setFillColor(sf::Color::Yellow);
@@ -167,7 +164,7 @@ class Application : public IEventObserver {
     int cell = m_maze_manager.getCellFromPosition(pos.x, pos.y);
     int cell_x = int(pos.x / m_maze_manager.getCellSize());
     int cell_y = int(pos.y / m_maze_manager.getCellSize());
-    ss << "Vehicle:  X: " << (int)pos.x << "\n"                                              //
+    ss << "Vehicle:  X: " << (int)pos.x << "\n"                                            //
        << "        y: " << (int)pos.y << "\n"                                              //
        << "    angle: " << std::fixed << std::setprecision(1) << state.angle << " deg \n"  //
        << "\n"                                                                             //
@@ -379,9 +376,6 @@ class Application : public IEventObserver {
     window.setView(m_window->getUIView());
     // we can draw anything else we want here.
 
-    m_adhoc_text.setPosition(1000, 200);
-    window.draw(m_adhoc_text);
-
     window.draw(m_txt_maze_name);
 
     ImGui::SFML::Render(*m_window->getRenderWindow());
@@ -451,7 +445,6 @@ class Application : public IEventObserver {
 
   // use these for adhoc messages, overlays and the like
   sf::Font m_default_font;
-  sf::Text m_adhoc_text;
   sf::Text m_txt_maze_name;
   TextBox m_textbox;
   ImFont* m_guiFont = nullptr;
