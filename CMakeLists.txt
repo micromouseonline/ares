@@ -163,6 +163,8 @@ enable_testing()
 
 add_executable(test_mouse_simulator
         tests/test_main.cpp
+        tests/test_set_mask.cpp
+        tests/test_maze_class.cpp
 )
 
 # Link GoogleTest and your project to the test executable
@@ -174,6 +176,13 @@ target_link_libraries(test_mouse_simulator
         ${IMGUI_LIBS}
         fmt::fmt
         spdlog::spdlog
+)
+
+target_include_directories(test_mouse_simulator
+        PUBLIC
+        ${CMAKE_SOURCE_DIR}/src
+        ${GTEST_INCLUDE_DIRS}
+        #        ${CMAKE_SOURCE_DIR}/include  # If you have a separate include directory
 )
 
 
