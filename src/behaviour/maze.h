@@ -428,12 +428,12 @@ class Maze {
       m_walls[0][y].west = WALL;
       m_walls[m_width - 1][y].east = WALL;
     }
-    set_wall_state(START, DIR_N, EXIT);
+    //    set_wall_state(START, DIR_N, EXIT);
 
     // the open maze treats unknowns as exits
     set_mask(MASK_OPEN);
     set_goal(GOAL);
-    flood_manhattan(goal());
+    //    flood_manhattan(goal());
   }
 
   void set_mask(const MazeMask mask) {
