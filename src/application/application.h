@@ -157,7 +157,7 @@ class Application : public IEventObserver {
     return ss.str();
   }
 
-  std::string formatRobotState(RobotState& state) {
+  std::string formatRobotState(VehicleState& state) {
     std::stringstream ss;
     sf::Vector2f pos = {state.x, state.y};
     int cell = m_maze_manager.getCellFromPosition(pos.x, pos.y);
@@ -192,7 +192,7 @@ class Application : public IEventObserver {
     ImGui::SFML::Update(*m_window->getRenderWindow(), m_frame_clock.restart());
     displayLogMessages();
 
-    RobotState robot_state = m_robot.getState();
+    VehicleState robot_state = m_robot.getState();
     m_maze_manager.updateFromMap(m_mouse.getMaze(), 16);
 
     std::stringstream ss;

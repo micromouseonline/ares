@@ -236,7 +236,7 @@ class Behaviour {
     doInPlaceTurn(-90, 318, 0, 3000);
   }
 
-  void updateMap(RobotState& state) {
+  void updateMap(VehicleState& state) {
     bool leftWall, frontWall, rightWall;
     {
       /// minimise the time we are locked
@@ -312,7 +312,7 @@ class Behaviour {
     setHeading(DIR_N);
     setLocation({0, 0});
     m_vehicle->setPose(96.0f, 96.0f - 40.0f, 90.0f);
-    RobotState robot_state = m_vehicle->getState();
+    VehicleState robot_state = m_vehicle->getState();
     delay_ms(500);
     updateMap(robot_state);
     startMove(90 + 40.0f, 700, 700, 5000);
@@ -356,7 +356,7 @@ class Behaviour {
       m_vehicle->setPose(96.0f, 96.0f - 40.0f, 90.0f);
       m_vehicle->resetTotalDistance();
 
-      RobotState robot_state = m_vehicle->getState();
+      VehicleState robot_state = m_vehicle->getState();
       delay_ms(500);
       updateMap(robot_state);
       startMove(90 + 40.0f, 700, 700, 5000);
@@ -481,7 +481,7 @@ class Behaviour {
         return false;
       }
       setLocation(getLocation().neighbour(getHeading()));
-      RobotState robot_state = m_vehicle->getState();
+      VehicleState robot_state = m_vehicle->getState();
       updateMap(robot_state);
       msg = "";
       msg += fmt::format(" @ {:>5} ", (int)robot_state.total_distance);
@@ -590,7 +590,7 @@ class Behaviour {
       if (m_vehicle) {
         m_vehicle->setSpeeds(v, w);
         m_vehicle->systick(m_step_time);
-        RobotState state = m_vehicle->getState();
+        VehicleState state = m_vehicle->getState();
         m_vehicle->setLed(7, state.sensor_data.lfs_power > 18);
         m_vehicle->setLed(6, state.sensor_data.lds_power > 40);
         m_vehicle->setLed(5, state.sensor_data.rds_power > 40);

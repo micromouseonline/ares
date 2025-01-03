@@ -14,7 +14,7 @@
  * are anti-clockwise
  *
  */
-struct RobotState {
+struct VehicleState {
   uint32_t timestamp;
   float x;
   float y;
@@ -29,7 +29,7 @@ struct RobotState {
   uint8_t buttons;       // bitfield for button states
   SensorData sensor_data;
 
-  RobotState()
+  VehicleState()
       : x(0.0f),
         y(0.0f),
         angle(0.0f),

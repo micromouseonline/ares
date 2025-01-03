@@ -97,12 +97,12 @@ class Vehicle {
 
   ////// Accessors
 
-  [[nodiscard]] RobotState getState() const {
+  [[nodiscard]] VehicleState getState() const {
     LOCK_GUARD(m_robot_mutex);
     return m_state;
   }
 
-  void setState(RobotState state) {
+  void setState(VehicleState state) {
     LOCK_GUARD(m_robot_mutex);
     m_state = state;
   }
@@ -227,7 +227,7 @@ class Vehicle {
     }
 
     // Temporary variables for calculations outside the critical section
-    RobotState localState;
+    VehicleState localState;
     SensorData sensorData;
 
     // Critical section: read the state and increment ticks
@@ -282,7 +282,7 @@ class Vehicle {
 
   SensorDataCallback m_sensor_callback = nullptr;
 
-  RobotState m_state;
+  VehicleState m_state;
   Pose m_pose;
   float m_vMax;
   float m_omegaMax;
