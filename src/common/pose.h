@@ -10,7 +10,7 @@
 class Pose {
  public:
   // Constructor to initialize the pose
-  Pose(float x, float y, float theta) : m_x(x), m_y(y), m_omega(0), m_distance(0), m_theta(theta) {};
+  Pose(float x, float y, float theta) : m_x(x), m_y(y), m_velocity(0), m_omega(0), m_distance(0), m_theta(theta) {};
 
   // Default constructor
   Pose() : m_x(0), m_y(0), m_velocity(0), m_omega(0), m_distance(0), m_theta(0) {
