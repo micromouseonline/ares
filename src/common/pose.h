@@ -35,6 +35,11 @@ class Pose {
     return m_omega;
   }
 
+  void setSpeeds(float v, float w) {
+    m_velocity = v;
+    m_omega = w;
+  }
+
   // Setters for the pose components
   void setX(float x) {
     m_x = x;
