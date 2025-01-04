@@ -65,6 +65,7 @@ class Pose {
    *       not likely though
    * @param delta_time - time step for the update
    */
+
   void advance(float delta_time) {
     float distance_change = m_velocity * delta_time;
     float angle_change = m_omega * delta_time;

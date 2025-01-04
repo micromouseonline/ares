@@ -9,9 +9,7 @@
  *     https://opensource.org/licenses/MIT.                                   *
  ******************************************************************************/
 
-#ifndef BEHAVIOUR_TRAJECTORY_H
-#define BEHAVIOUR_TRAJECTORY_H
-
+#pragma once
 #include <cmath>
 
 /***
@@ -46,36 +44,78 @@
 
 class Trajectory {
  public:
+  Trajectory() : m_start_pose(), m_current_pose(), m_delta_time(0.001f), m_current_step(0), m_finished(true) {};
+
   virtual ~Trajectory() = default;
 
   // Initialize the motion profile
-  virtual void init(const Pose) = 0;
+  virtual void init(const Pose& pose) {
+    m_start_pose = pose;
+    m_current_pose = pose;
+  };
 
   // set the control variables to the start of the trajectory, ready for stepping through
-  virtual void begin() = 0;
+  virtual void begin() {
+    m_current_step = 0;
+    m_finished = false;
+  };
 
   // Calculate the next velocity step in the profile
-  virtual float next() = 0;
-
-  void setStartPose(Pose p) {
-    m_start_pose = p;
+  virtual float next() {
+    if (m_current_step >= 100) {
+      m_finished = true;
+      return 0.0f;
+    }
+    m_current_step++;
+    float v = 10.0f;
+    m_current_pose.setVelocity(v);
+    m_current_pose.advance(m_delta_time);
+    return v;
   }
 
-  virtual Pose getPoseAtTime(float t) {
+  int getCurrentStep() const {
+    return m_current_step;
+  }
+
+  Pose getCurrentPose() const {
+    return m_current_pose;
+  }
+
+  /***
+   * Do not call this on an active profile.
+   * @param t
+   * @return
+   */
+  virtual Pose getPoseAtTime(const float t) {
+    if (!m_finished) {
+      return m_start_pose;
+    }
     m_current_step = 0;
     while ((float)m_current_step * m_delta_time < t) {
       next();
-      m_current_step++;
     }
-    return m_current_pose;
+    Pose result = m_current_pose;
+    m_current_pose = m_start_pose;
+    return result;
   }
 
   virtual Pose getFinalPose() {
-    get_duration();
-    return m_current_pose;
+    if (!m_finished) {
+      return m_start_pose;
+    }
+    get_duration();  // steps through to the end of the traectory
+    Pose result = m_current_pose;
+    m_current_pose = m_start_pose;
+    return result;
   }
 
-  // Reset the motion profile
+  /***
+   * All trajectories start with a defined pose. They proceed
+   * by stepwise advancement and a count is kept of the current
+   * step. When a profile is no longer active it sets a flag
+   * to be true.
+   * @return - nothing
+   */
   virtual void reset() {
     m_current_pose = m_start_pose;
     m_current_step = 0;
@@ -83,11 +123,17 @@ class Trajectory {
   }
 
   /***
-   * Calculates the time needed for this profile
-   * NEVER call this while the profile is active
+   * Calculates the time needed for this profile.
+   * You should not call this while the profile is active.
+   * If you dou, it will simply return 0;
    * @return time in seconds
+   *
+   * QUERY: does this ever really need to be overridden?
    */
   virtual float get_duration() {
+    if (!m_finished) {
+      return 0;
+    }
     m_current_step = 0;
     m_finished = false;
     while (!m_finished) {
@@ -116,8 +162,4 @@ class Trajectory {
   float m_delta_time;
   float m_current_step;
   bool m_finished;  // Flag to indicate motion completion
-
-  Trajectory() : m_start_pose(), m_current_pose(), m_delta_time(0.001f), m_current_step(0), m_finished(true) {};
 };
-
-#endif /* BEHAVIOUR_TRAJECTORY_H */

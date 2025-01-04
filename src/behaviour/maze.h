@@ -514,7 +514,7 @@ class Maze {
     queue.add(target);
     while (queue.size() > 0) {
       max_length = std::max(max_length, queue.size());
-      ARES_ASSERT(queue.size() < QUEUE_LENGTH, "Flood Queue overrun");
+      //      ARES_ASSERT(queue.size() < QUEUE_LENGTH, "Flood Queue overrun");
       Location here = queue.head();
       uint16_t newCost = cost(here) + 1;
       //      int exit_count = 0;
@@ -580,7 +580,7 @@ class Maze {
     if (best_cost == UINT16_MAX) {
       best_heading = DIR_BLOCKED;
     }
-    ARES_ASSERT(best_heading != DIR_BLOCKED, "No valid exit found")
+    //    ARES_ASSERT(best_heading != DIR_BLOCKED, "No valid exit found")
     return best_heading;
   }
 

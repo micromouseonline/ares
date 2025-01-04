@@ -45,7 +45,7 @@ class Cubic : public Trajectory {
   virtual ~Cubic() = default;
 
   // Initialize the motion profile
-  void init(const Pose pose) override {
+  void init(const Pose& pose) override {
     m_start_pose = pose;
     m_cubic_dist = m_length;
     m_distance = 0;
