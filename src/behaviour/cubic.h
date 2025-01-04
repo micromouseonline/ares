@@ -64,13 +64,13 @@ class Cubic : public Trajectory {
   virtual float update() override {
     m_distance = m_current_step * m_delta_time * m_velocity;
     float remaining = m_cubic_dist - m_distance;
-    if (remaining <= 0) {
-      m_finished = true;
-      return 0.0f;
-    }
     float t = m_distance * remaining;
     float omega = m_velocity * m_cubic_constant * t * DEGREES;
-    m_current_pose.advance(0.0, omega, m_delta_time);
+    if (remaining <= 0) {
+      m_finished = true;
+      omega = 0;
+    }
+    m_current_pose.advance(m_velocity, omega, m_delta_time);
     m_current_step++;
     return omega;
   }

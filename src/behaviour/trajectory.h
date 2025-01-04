@@ -133,12 +133,12 @@ class Trajectory {
  * implementation
  *
  */
-
 class TestTrajectory : public Trajectory {
   //
  public:
   TestTrajectory(float v = 0, float w = 0) : m_v(v), m_w(w) {
   }
+
   float update() {
     if (m_current_step >= 100) {
       m_finished = true;

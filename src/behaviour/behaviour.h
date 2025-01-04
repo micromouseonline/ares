@@ -77,6 +77,7 @@
 #include "cubic.h"
 #include "cubic_parameters.h"
 #include "maze.h"
+#include "spinturn.h"
 #include "trajectory.h"
 #include "trapezoid.h"
 #include "vehicle/sensor-data.h"
@@ -585,7 +586,9 @@ class Behaviour {
       float v = m_trap_fwd.update();
       float w = 0;
       if (m_turn_trajectory != nullptr) {
-        w = m_turn_trajectory->update();
+        m_turn_trajectory->update();
+        v = m_turn_trajectory->getCurrentPose().getVelocity();
+        w = m_turn_trajectory->getCurrentPose().getOmega();
       }
       if (m_vehicle) {
         m_vehicle->setSpeeds(v, w);
@@ -681,9 +684,8 @@ class Behaviour {
 
   void startInPlaceTurn(float angle, float omega_Max, float omega_end, float alpha) {
     float w_start = m_vehicle->getState().omega;
-    std::unique_ptr<Trapezoid> trapezoid = std::make_unique<Trapezoid>(angle, w_start, omega_Max, omega_end, alpha);
-    std::unique_ptr<Cubic> cubic = std::make_unique<Cubic>(195, -90, m_vehicle->getState().velocity);
-    m_turn_trajectory = std::move(trapezoid);
+    std::unique_ptr<Spinturn> spinturn = std::make_unique<Spinturn>(angle, w_start, omega_Max, omega_end, alpha);
+    m_turn_trajectory = std::move(spinturn);
     m_turn_trajectory->init(Pose());
     m_turn_trajectory->begin();
   }
@@ -715,6 +717,8 @@ class Behaviour {
 
   Trapezoid m_trap_fwd;
   std::unique_ptr<Trajectory> m_turn_trajectory = nullptr;
+  std::unique_ptr<Trajectory> m_current_trajectory = nullptr;
+
 #ifdef ARES
   mutable std::mutex m_behaviour_mutex;  // used for thread safe access
 #endif

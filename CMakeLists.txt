@@ -167,6 +167,9 @@ add_executable(test_mouse_simulator
         tests/test_maze_class.cpp
         tests/test_pose.cpp
         tests/test_trajectory.cpp
+        tests/test_trapezoid.cpp
+        tests/text_Spinturn.cpp
+        tests/test_cubic.cpp
 )
 
 # Link GoogleTest and your project to the test executable

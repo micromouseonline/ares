@@ -83,13 +83,7 @@ class Pose {
   void advance(float velocity, float omega, float delta_time) {
     m_velocity = velocity;
     m_omega = omega;
-    float distance_change = m_velocity * delta_time;
-    float angle_change = m_omega * delta_time;
-    m_distance += distance_change;
-    m_theta += angle_change;
-    m_theta = std::fmod(m_theta + 360.0f, 360.0f);
-    m_x += distance_change * std::cos(m_theta * RADIANS);
-    m_y += distance_change * std::sin(m_theta * RADIANS);
+    advance(delta_time);
   }
 
  private:
