@@ -9,12 +9,11 @@
 
 class Pose {
  public:
-  // Constructor to initialize the pose
-  Pose(float x, float y, float theta) : m_x(x), m_y(y), m_velocity(0), m_omega(0), m_distance(0), m_theta(theta) {};
-
   // Default constructor
   Pose() : m_x(0), m_y(0), m_velocity(0), m_omega(0), m_distance(0), m_theta(0) {
   }
+
+  Pose(float x, float y, float theta) : m_x(x), m_y(y), m_velocity(0), m_omega(0), m_distance(0), m_theta(theta) {};
 
   // Getters for the pose components
   float getX() const {
@@ -65,8 +64,20 @@ class Pose {
    *       not likely though
    * @param delta_time - time step for the update
    */
-
+  /////////////////////////////////////////////////////////// change this to have v and omega as arguments as well
   void advance(float delta_time) {
+    float distance_change = m_velocity * delta_time;
+    float angle_change = m_omega * delta_time;
+    m_distance += distance_change;
+    m_theta += angle_change;
+    m_theta = std::fmod(m_theta + 360.0f, 360.0f);
+    m_x += distance_change * std::cos(m_theta * RADIANS);
+    m_y += distance_change * std::sin(m_theta * RADIANS);
+  }
+
+  void advance(float velocity, float omega, float delta_time) {
+    m_velocity = velocity;
+    m_omega = omega;
     float distance_change = m_velocity * delta_time;
     float angle_change = m_omega * delta_time;
     m_distance += distance_change;

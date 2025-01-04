@@ -69,12 +69,10 @@ class Cubic : public Trajectory {
       return 0.0f;
     }
     float t = m_distance * remaining;
-    float omega = m_velocity * m_cubic_constant * t;
-    float w = omega * DEGREES;
-    m_current_pose.setVelocity(w);
-    m_current_pose.advance(m_delta_time);
+    float omega = m_velocity * m_cubic_constant * t * DEGREES;
+    m_current_pose.advance(0.0, omega, m_delta_time);
     m_current_step++;
-    return w;
+    return omega;
   }
 
  private:
