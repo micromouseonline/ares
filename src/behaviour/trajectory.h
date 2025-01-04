@@ -44,7 +44,7 @@
 
 class Trajectory {
  public:
-  Trajectory() : m_start_pose(), m_current_pose(), m_delta_time(0.001f), m_current_step(0), m_finished(true) {};
+  Trajectory() : m_start_pose(), m_current_pose(), m_delta_time(0.001f), m_total_time(0), m_current_step(0), m_finished(true) {};
 
   virtual ~Trajectory() = default;
 
@@ -60,19 +60,6 @@ class Trajectory {
     m_finished = false;
   };
 
-  // Calculate the next velocity step in the profile
-  virtual float next() {
-    if (m_current_step >= 100) {
-      m_finished = true;
-      return 0.0f;
-    }
-    m_current_step++;
-    float v = 10.0f;
-    m_current_pose.setVelocity(v);
-    m_current_pose.advance(m_delta_time);
-    return v;
-  }
-
   int getCurrentStep() const {
     return m_current_step;
   }
@@ -81,33 +68,8 @@ class Trajectory {
     return m_current_pose;
   }
 
-  /***
-   * Do not call this on an active profile.
-   * @param t
-   * @return
-   */
-  virtual Pose getPoseAtTime(const float t) {
-    if (!m_finished) {
-      return m_start_pose;
-    }
-    m_current_step = 0;
-    while ((float)m_current_step * m_delta_time < t) {
-      next();
-    }
-    Pose result = m_current_pose;
-    m_current_pose = m_start_pose;
-    return result;
-  }
-
-  virtual Pose getFinalPose() {
-    if (!m_finished) {
-      return m_start_pose;
-    }
-    get_duration();  // steps through to the end of the traectory
-    Pose result = m_current_pose;
-    m_current_pose = m_start_pose;
-    return result;
-  }
+  // Calculate the next velocity step in the profile
+  virtual float update() = 0;
 
   /***
    * All trajectories start with a defined pose. They proceed
@@ -132,12 +94,12 @@ class Trajectory {
    */
   virtual float get_duration() {
     if (!m_finished) {
-      return 0;
+      return 0.0f;
     }
     m_current_step = 0;
     m_finished = false;
     while (!m_finished) {
-      next();
+      update();
     }
     return m_delta_time * (float)m_current_step;
   };
@@ -160,6 +122,35 @@ class Trajectory {
   Pose m_start_pose;
   Pose m_current_pose;
   float m_delta_time;
+  float m_total_time;
   float m_current_step;
   bool m_finished;  // Flag to indicate motion completion
+};
+
+/***
+ * This descendant of Trajectory is for testing. It sets a linear velocity
+ * and runs over a fixed distance. You wuld not use it in an actual
+ * implementation
+ *
+ */
+
+class TestTrajectory : public Trajectory {
+  //
+ public:
+  TestTrajectory(float v = 0, float w = 0) : m_v(v), m_w(w) {
+  }
+  float update() {
+    if (m_current_step >= 100) {
+      m_finished = true;
+      return 0.0f;
+    }
+    m_current_step++;
+    m_current_pose.advance(m_v, m_w, m_delta_time);
+    m_total_time += m_delta_time;
+    return m_v;
+  }
+
+ private:
+  float m_v;
+  float m_w;
 };

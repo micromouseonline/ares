@@ -88,7 +88,7 @@ class Trapezoid : public Trajectory {
   }
 
   // Calculate the next velocity step in the profile
-  float next() override {
+  float update() override {
     float v = 0.0f;
     if (m_current_step <= m_p1) {  // Phase 1: Acceleration
       v = m_v1 + m_a * m_delta_time * (float)m_current_step;

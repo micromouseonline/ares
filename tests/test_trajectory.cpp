@@ -5,10 +5,6 @@
 #include "behaviour/trajectory.h"
 #include "common/pose.h"
 
-class TestTrajectory : public Trajectory {
-  // A derived class to instantiate Trajectory for testing purposes
-};
-
 TEST(TrajectoryTest, 001_InitAndBegin) {
   TestTrajectory traj;
   EXPECT_TRUE(traj.isFinished());
@@ -37,39 +33,26 @@ TEST(TrajectoryTest, 002_DeltaTime) {
   EXPECT_FLOAT_EQ(traj.getDeltaTime(), 0.01f);
 }
 
+TEST(TrajectoryTest, 003_InitWithArgs) {
+  TestTrajectory traj(1.0, 2.0);
+  traj.setDeltaTime(0.01f);
+  EXPECT_FLOAT_EQ(traj.getDeltaTime(), 0.01f);
+}
+
 TEST(TrajectoryTest, 010_NextStep) {
-  TestTrajectory traj;
+  TestTrajectory traj(10.0, 20.0);
   traj.begin();
-  float initialVelocity = traj.next();
+  float initialVelocity = traj.update();
   EXPECT_FLOAT_EQ(initialVelocity, 10.0f);
   EXPECT_FALSE(traj.isFinished());
   for (int i = 0; i < 100; ++i) {
-    traj.next();
+    traj.update();
   }
   EXPECT_EQ(100, traj.getCurrentStep());
   EXPECT_TRUE(traj.isFinished());
-  traj.next();
+  traj.update();
   /// does not advance past end
   EXPECT_EQ(100, traj.getCurrentStep());
-}
-
-TEST(TrajectoryTest, 020_PoseAtTime) {
-  TestTrajectory traj;
-  Pose startPose(0.0f, 0.0f, 0.0f);
-  traj.init(startPose);
-  Pose poseAtTime = traj.getPoseAtTime(0.05f);
-  EXPECT_NEAR(poseAtTime.getX(), 0.5f, 0.005f);
-}
-
-TEST(TrajectoryTest, 030_FinalPose) {
-  TestTrajectory traj;
-  Pose startPose(0.0f, 0.0f, 0.0f);
-  traj.init(startPose);
-  float duration = traj.get_duration();
-  EXPECT_EQ(0.1f, duration);  /// 100 steps of 0.001 seconds
-  Pose finalPose = traj.getFinalPose();
-  EXPECT_TRUE(traj.isFinished());
-  EXPECT_NEAR(finalPose.getX(), 2.0f, 0.005f);
 }
 
 TEST(TrajectoryTest, 040_Reset) {
@@ -77,7 +60,7 @@ TEST(TrajectoryTest, 040_Reset) {
   Pose startPose(1.0f, 2.0f, 30.0f);
   traj.init(startPose);
   traj.begin();
-  traj.next();
+  traj.update();
   traj.reset();
   EXPECT_TRUE(traj.isFinished());
   EXPECT_EQ(0, traj.getCurrentStep());

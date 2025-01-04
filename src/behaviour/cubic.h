@@ -61,7 +61,7 @@ class Cubic : public Trajectory {
   };
 
   // Calculate the next velocity step in the profile
-  virtual float next() override {
+  virtual float update() override {
     m_distance = m_current_step * m_delta_time * m_velocity;
     float remaining = m_cubic_dist - m_distance;
     if (remaining <= 0) {

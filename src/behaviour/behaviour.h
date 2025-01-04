@@ -582,10 +582,10 @@ class Behaviour {
     }
     Timer timer;
     while (ms > 0) {
-      float v = m_trap_fwd.next();
+      float v = m_trap_fwd.update();
       float w = 0;
       if (m_turn_trajectory != nullptr) {
-        w = m_turn_trajectory->next();
+        w = m_turn_trajectory->update();
       }
       if (m_vehicle) {
         m_vehicle->setSpeeds(v, w);
