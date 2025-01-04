@@ -365,7 +365,7 @@ class Behaviour {
       searchTo(m_target);
       Log::add("Searching stops");
       // return true;
-      if (m_reset) {
+      if (m_reset || m_terminate) {
         return false;
       }
       if (m_frontWall) {
@@ -388,7 +388,7 @@ class Behaviour {
       waitForMove();
       m_target = Location(0, 0);
       searchTo(m_target);
-      if (m_reset) {
+      if (m_reset || m_terminate) {
         return false;
       }
       doInPlaceTurn(180, 900, 0, 5000);
