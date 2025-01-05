@@ -42,8 +42,8 @@ TEST(TrajectoryTest, 003_InitWithArgs) {
 TEST(TrajectoryTest, 010_NextStep) {
   TestTrajectory traj(10.0, 20.0);
   traj.begin();
-  float initialVelocity = traj.update();
-  EXPECT_FLOAT_EQ(initialVelocity, 10.0f);
+  traj.update();
+  EXPECT_FLOAT_EQ(traj.getCurrentPose().getVelocity(), 10.0f);
   EXPECT_FALSE(traj.isFinished());
   for (int i = 0; i < 100; ++i) {
     traj.update();

@@ -33,6 +33,7 @@
 class Cubic : public Trajectory {
  public:
   Cubic() : m_length(0), m_angle(0), m_velocity(0) {
+    m_type = CUBIC;
   }
 
   Cubic(float length, float angle, float velocity)
@@ -40,6 +41,7 @@ class Cubic : public Trajectory {
         m_length(length),
         m_angle(angle),
         m_velocity(velocity) {
+    m_type = CUBIC;
   }
 
   virtual ~Cubic() = default;
@@ -61,7 +63,7 @@ class Cubic : public Trajectory {
   };
 
   // Calculate the next velocity step in the profile
-  virtual float update() override {
+  virtual void update() override {
     m_distance = m_current_step * m_delta_time * m_velocity;
     float remaining = m_cubic_dist - m_distance;
     float t = m_distance * remaining;
@@ -72,7 +74,6 @@ class Cubic : public Trajectory {
     }
     m_current_pose.advance(m_velocity, omega, m_delta_time);
     m_current_step++;
-    return omega;
   }
 
  private:

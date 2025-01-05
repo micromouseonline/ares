@@ -41,6 +41,7 @@ class Spinturn : public Trajectory {
         m_a(0),        // Acceleration value
         m_dir(0)       // Direction of motion (+1 or -1)
   {
+    m_type = SPINTURN;
   }
 
   // Parameterized constructor initializes the trapezoid motion profile
@@ -94,7 +95,7 @@ class Spinturn : public Trajectory {
   }
 
   // Calculate the next velocity step in the profile
-  float update() override {
+  void update() override {
     float w = 0.0f;
     if (m_current_step <= m_p1) {  // Phase 1: Acceleration
       w = m_w1 + m_a * m_delta_time * (float)m_current_step;
@@ -115,7 +116,6 @@ class Spinturn : public Trajectory {
       w = m_w2;  // Final velocity
     }
     m_current_pose.advance(0.0f, m_dir * w, m_delta_time);
-    return m_dir * w;  // Apply direction to velocity
   }
 
  private:

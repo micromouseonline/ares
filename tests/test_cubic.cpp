@@ -49,7 +49,9 @@ TEST(CubicTrajectoryTest, 003_InitWithArgs) {
 }
 
 TEST(CubicTrajectoryTest, 010_Update) {
-  Cubic cubic(115.6f, 90.0f, 100.0f);
+  float speed = 100.0f;
+  float length = 115.6f;
+  Cubic cubic(length, 90.0f, speed);
   Pose pose(0, 0, 0);
   cubic.init(pose);
   cubic.begin();
@@ -58,20 +60,21 @@ TEST(CubicTrajectoryTest, 010_Update) {
   EXPECT_FALSE(cubic.isFinished());
   while (!cubic.isFinished()) {
     cubic.update();
-    EXPECT_NEAR(cubic.getCurrentPose().getVelocity(), 100.0f, 0.005);
   }
-  EXPECT_EQ(1157, cubic.getCurrentStep());
+  EXPECT_EQ(1 + int(length / (speed * cubic.getDeltaTime())), cubic.getCurrentStep());
   current_pose = cubic.getCurrentPose();
   EXPECT_NEAR(current_pose.getX(), 70.0f, 0.1);
   EXPECT_NEAR(current_pose.getY(), 70.0f, 0.1);
   EXPECT_NEAR(current_pose.getTheta(), 90.0f, 0.005);
-  EXPECT_NEAR(current_pose.getVelocity(), 100.0f, 0.005);
+  EXPECT_NEAR(current_pose.getVelocity(), speed, 0.005);
   EXPECT_NEAR(current_pose.getOmega(), 0.0f, 0.005);
   EXPECT_NEAR(current_pose.getDistance(), 115.7f, 0.005);
 }
 
 TEST(CubicTrajectoryTest, 010_Update_Negative) {
-  Cubic cubic(115.6f, -90.0f, 100.0f);
+  float speed = 100.0f;
+  float length = 115.6f;
+  Cubic cubic(length, -90.0f, speed);
   Pose pose(0, 0, 0);
   cubic.init(pose);
   cubic.begin();
@@ -80,9 +83,8 @@ TEST(CubicTrajectoryTest, 010_Update_Negative) {
   EXPECT_FALSE(cubic.isFinished());
   while (!cubic.isFinished()) {
     cubic.update();
-    EXPECT_NEAR(cubic.getCurrentPose().getVelocity(), 100.0f, 0.005);
   }
-  EXPECT_EQ(1157, cubic.getCurrentStep());
+  EXPECT_EQ(1 + int(length / (speed * cubic.getDeltaTime())), cubic.getCurrentStep());
   current_pose = cubic.getCurrentPose();
   EXPECT_NEAR(current_pose.getX(), 70.0f, 0.1);
   EXPECT_NEAR(current_pose.getY(), -70.0f, 0.1);

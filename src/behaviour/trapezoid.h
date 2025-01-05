@@ -34,6 +34,7 @@ class Trapezoid : public Trajectory {
         m_a(0),        // Acceleration value
         m_dir(0)       // Direction of motion (+1 or -1)
   {
+    m_type = TRAPEZOID;
   }
 
   // Parameterized constructor initializes the trapezoid motion profile
@@ -87,7 +88,7 @@ class Trapezoid : public Trajectory {
   }
 
   // Calculate the next velocity step in the profile
-  float update() override {
+  void update() override {
     float v = 0.0f;
     if (m_current_step <= m_p1) {  // Phase 1: Acceleration
       v = m_v1 + m_a * m_delta_time * (float)m_current_step;
@@ -109,7 +110,6 @@ class Trapezoid : public Trajectory {
     }
     //    m_current_pose.setVelocity(v);
     m_current_pose.advance(m_dir * v, 0.0f, m_delta_time);
-    return m_dir * v;  // Apply direction to velocity
   }
 
  private:

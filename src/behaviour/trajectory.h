@@ -44,7 +44,11 @@
 
 class Trajectory {
  public:
-  Trajectory() : m_start_pose(), m_current_pose(), m_delta_time(0.001f), m_total_time(0), m_current_step(0), m_finished(true) {};
+  enum Type { NONE, IDLE, TRAPEZOID, SPINTURN, CUBIC };
+  Trajectory()
+      : m_start_pose(), m_current_pose(), m_delta_time(0.001f), m_total_time(0), m_current_step(0), m_finished(true) {
+          //
+        };
 
   virtual ~Trajectory() = default;
 
@@ -69,7 +73,7 @@ class Trajectory {
   }
 
   // Calculate the next velocity step in the profile
-  virtual float update() = 0;
+  virtual void update() = 0;
 
   /***
    * All trajectories start with a defined pose. They proceed
@@ -117,6 +121,10 @@ class Trajectory {
     return m_delta_time;
   }
 
+  Type getType() {
+    return m_type;
+  }
+
  private:
  protected:
   Pose m_start_pose;
@@ -125,8 +133,24 @@ class Trajectory {
   float m_total_time;
   float m_current_step;
   bool m_finished;  // Flag to indicate motion completion
+  Type m_type;
 };
 
+/***
+ * The IdleTrajectory does nothing except avoid a null pointer
+ * This would be better handled if the trajectories were in a
+ * queue and we did nothing when the queue is empty.
+ */
+class IdleTrajectory : public Trajectory {
+ public:
+  IdleTrajectory() {
+    m_type = IDLE;
+  }
+  void update() {
+    m_total_time += m_delta_time;
+    m_finished = true;
+  }
+};
 /***
  * This descendant of Trajectory is for testing. It sets a linear velocity
  * and runs over a fixed distance. You wuld not use it in an actual
@@ -139,15 +163,14 @@ class TestTrajectory : public Trajectory {
   TestTrajectory(float v = 0, float w = 0) : m_v(v), m_w(w) {
   }
 
-  float update() {
+  void update() {
     if (m_current_step >= 100) {
       m_finished = true;
-      return 0.0f;
+      return;
     }
     m_current_step++;
     m_current_pose.advance(m_v, m_w, m_delta_time);
     m_total_time += m_delta_time;
-    return m_v;
   }
 
  private:
