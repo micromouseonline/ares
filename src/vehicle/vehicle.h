@@ -127,6 +127,7 @@ class Vehicle {
   /// A more physics-based model would need accelerations.
   /// Here we assume the controllers are really good and that
   /// only realistic demands are made of the robot.
+  /// Once set, speeds will not change unless comaanded
   void setSpeeds(float velocity, float omega) {
     LOCK_GUARD(m_robot_mutex);
     m_state.velocity = velocity;
