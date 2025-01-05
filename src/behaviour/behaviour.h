@@ -102,6 +102,8 @@ class Behaviour {
  public:
   Behaviour() : m_vehicle(nullptr), m_running(false), m_terminate(false), m_timeStamp(0), m_reset(false) {
     //
+    std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
+    m_current_trajectory = std::move(idle);
     m_maze.initialise();
   };
 
@@ -116,9 +118,7 @@ class Behaviour {
   void reset() {
     m_reset = true;
     m_act = ACT_NONE;
-    waitForMove();
-    // m_robot->setSpeeds(0, 0);
-    // m_reset = false;
+
     m_maze.initialise();
   }
 
@@ -165,22 +165,22 @@ class Behaviour {
 
   bool doMove(float distance, float v_max, float v_end, float accel) {
     startMove(distance, v_max, v_end, accel);
-    return waitForMove();
+    return waitForTrajectory();
   }
 
   bool doTurn(float distance, float v_max, float v_end, float accel) {
     startTurn(distance, v_max, v_end, accel);
-    return waitForTurn();
+    return waitForTrajectory();
   }
 
   bool doCubicTurn(float length, float angle, float velocity) {
     startCubicTurn(length, angle, velocity);
-    return waitForTurn();
+    return waitForTrajectory();
   }
 
   bool doInPlaceTurn(float distance, float v_max, float v_end, float accel) {
     startInPlaceTurn(distance, v_max, v_end, accel);
-    return waitForTurn();
+    return waitForTrajectory();
   }
 
   void test_SS90(int counts) {
@@ -281,7 +281,8 @@ class Behaviour {
   void turnLeft() {
     float speed = m_vehicle->getState().velocity;
     doMove(20, speed, 700, 5000);
-    doCubicTurn(114.05, 90, speed);
+    //    doCubicTurn(114.05, 90, speed);
+    doCubicTurn(115.6, 90, speed);
     doMove(20, speed, speed, 5000);
     setHeading(left_from(getHeading()));
   }
@@ -289,7 +290,8 @@ class Behaviour {
   void turnRight() {
     float speed = m_vehicle->getState().velocity;
     doMove(20, speed, 700, 5000);
-    doCubicTurn(114.05, -90, speed);
+    //    doCubicTurn(114.05, -90, speed);
+    doCubicTurn(115.6, -90, speed);
     doMove(20, speed, speed, 5000);
     setHeading(right_from(getHeading()));
   }
@@ -297,7 +299,7 @@ class Behaviour {
   void turnBack() {
     float speed = m_vehicle->getState().velocity;
     doMove(90, speed, 0, 5000);
-    doTurn(180, 900, 0, 5000);
+    doInPlaceTurn(180, 400, 0, 5000);
     doMove(90, speed, speed, 5000);
     setHeading(behind_from(getHeading()));
   }
@@ -316,8 +318,7 @@ class Behaviour {
     VehicleState robot_state = m_vehicle->getState();
     delay_ms(500);
     updateMap(robot_state);
-    startMove(90 + 40.0f, 700, 700, 5000);
-    waitForMove();
+    doMove(90 + 40.0f, 700, 700, 5000);
     while (!m_terminate && !m_reset) {
       setLocation(getLocation().neighbour(getHeading()));
       ARES_INFO("Entering {},{}", getLocation().x, getLocation().y);
@@ -360,11 +361,11 @@ class Behaviour {
       VehicleState robot_state = m_vehicle->getState();
       delay_ms(500);
       updateMap(robot_state);
-      startMove(90 + 40.0f, 700, 700, 5000);
-      waitForMove();
+      doMove(90 + 40.0f, 700, 700, 5000);
       Log::add("Searching starts");
       searchTo(m_target);
       Log::add("Searching stops");
+      delay_ms(2000);
       // return true;
       if (m_reset || m_terminate) {
         return false;
@@ -385,15 +386,14 @@ class Behaviour {
         }
       }
       Log::add("Begin return to start");
-      startMove(90.04, 700, 700, 5000);
-      waitForMove();
+      doMove(90.04, 700, 700, 5000);
       m_target = Location(0, 0);
       searchTo(m_target);
       if (m_reset || m_terminate) {
         return false;
       }
-      doInPlaceTurn(180, 900, 0, 5000);
-      setHeading(behind_from(getHeading()));
+      //      doInPlaceTurn(180, 900, 0, 5000);
+      //      setHeading(behind_from(getHeading()));
       Log::add("This round complete");
     }
     return true;
@@ -411,13 +411,13 @@ class Behaviour {
     }
     switch (turnDirection) {
       case LEFT:
-        doTurn(90, 900, 0, 5000);
+        doInPlaceTurn(90, 900, 0, 5000);
         break;
       case RIGHT:
-        doTurn(-90, 900, 0, 5000);
+        doInPlaceTurn(-90, 900, 0, 5000);
         break;
       case BEHIND:
-        doTurn(-80, 900, 0, 5000);
+        doInPlaceTurn(-180, 900, 0, 5000);
         break;
       default:  // anything else means we are stuck
         // do nothing
@@ -468,12 +468,24 @@ class Behaviour {
       Log::add("Already at target");
       return true;
     }
+    std::string msg;
+    msg = fmt::format("\n\n\nSearching from {},{} HDG = {} to {},{}", m_location.x, m_location.y, m_heading, target.x, target.y);
+    Log::add(msg);
+
     m_maze.set_mask(MASK_OPEN);
     m_maze.flood_manhattan(target);  /////////////////////////////////////////////////////////////////The flood can fail, leaving all cells with 65535
-    unsigned char newHeading = m_maze.direction_to_smallest(m_location, m_heading);
-    std::string msg;
-    msg = fmt::format("Searching from {},{} HDG = {} to {},{}", m_location.x, m_location.y, m_heading, target.x, target.y);
+    msg = fmt::format("Flooded the maze. cost = {}", m_maze.cost(m_location));
     Log::add(msg);
+    Direction newHeading = m_maze.direction_to_smallest(m_location, m_heading);
+    if (newHeading != m_heading) {
+      msg = fmt::format("Turning to face smallest neighbour at {}", newHeading);
+      //      Log::add(msg);
+      //      turnToHeading(newHeading);
+      //      m_heading = newHeading;
+    } else {
+      Log::add("good to go...");
+    }
+
     uint32_t ticks = g_ticks;
     //////////////////////////////////////////////////////////////////////////////////////TERMINATING CONDITION IS WRONG !
     while (!(getLocation() == target)) {
@@ -529,6 +541,8 @@ class Behaviour {
   }
 
   void run() {
+    std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
+    m_current_trajectory = std::move(idle);
     while (m_running) {
       switch (m_act) {
         case ACT_TEST_SS90:
@@ -583,15 +597,19 @@ class Behaviour {
     }
     Timer timer;
     while (ms > 0) {
-      float v = m_trap_fwd.update();
-      float w = 0;
-      if (m_turn_trajectory != nullptr) {
-        m_turn_trajectory->update();
-        v = m_turn_trajectory->getCurrentPose().getVelocity();
-        w = m_turn_trajectory->getCurrentPose().getOmega();
-      }
+      ARES_ASSERT(m_current_trajectory, "No trajectory!");
       if (m_vehicle) {
-        m_vehicle->setSpeeds(v, w);
+        if (m_current_trajectory && !m_current_trajectory->isFinished()) {
+          m_current_trajectory->update();
+          float v = m_current_trajectory->getCurrentPose().getVelocity();
+          float w = m_current_trajectory->getCurrentPose().getOmega();
+          m_vehicle->setSpeeds(v, w);
+        } else {
+          if (m_current_trajectory->getType() != Trajectory::IDLE) {
+            std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
+            m_current_trajectory = std::move(idle);
+          }
+        }
         m_vehicle->systick(m_step_time);
         VehicleState state = m_vehicle->getState();
         m_vehicle->setLed(7, state.sensor_data.lfs_power > 18);
@@ -639,18 +657,10 @@ class Behaviour {
   }
 
  private:
-  bool waitForMove() {
-    while (!moveFinished() && !m_terminate) {
-      delay_ms(1);
-    }
-    delay_ms(1);
-    return !m_terminate;
-  }
-
   Maze m_maze;
 
-  bool waitForTurn() {
-    while (!turnFinished() && !m_terminate) {
+  bool waitForTrajectory() {
+    while (!trajectoryFinished() && !m_terminate) {
       delay_ms(1);
     }
     return !m_terminate;
@@ -658,40 +668,45 @@ class Behaviour {
 
   void startMove(float distance, float v_max, float v_end, float accel) {
     float v_start = m_vehicle->getState().velocity;
-    m_trap_fwd = Trapezoid(distance, v_start, v_max, v_end, accel);
-    m_trap_fwd.init(Pose());
-    m_trap_fwd.begin();
+    std::unique_ptr<Trapezoid> trapezoid = std::make_unique<Trapezoid>(distance, v_start, v_max, v_end, accel);
+    m_current_trajectory = std::move(trapezoid);
+    m_current_trajectory->init(Pose());
+    m_current_trajectory->begin();
   }
 
   bool moveFinished() {
-    return m_trap_fwd.isFinished();
+    return m_current_trajectory->isFinished();
   }
 
   void startTurn(float angle, float omega_Max, float omega_end, float alpha) {
     float w_start = m_vehicle->getState().omega;
     std::unique_ptr<Trapezoid> trapezoid = std::make_unique<Trapezoid>(angle, w_start, omega_Max, omega_end, alpha);
-    m_turn_trajectory = std::move(trapezoid);
-    m_turn_trajectory->init(Pose());
-    m_turn_trajectory->begin();
+    m_current_trajectory = std::move(trapezoid);
+    m_current_trajectory->init(Pose());
+    m_current_trajectory->begin();
   }
 
   void startCubicTurn(float length, float angle, float velocity) {
     std::unique_ptr<Cubic> cubic = std::make_unique<Cubic>(length, angle, velocity);
-    m_turn_trajectory = std::move(cubic);
-    m_turn_trajectory->init(Pose());
-    m_turn_trajectory->begin();
+    m_current_trajectory = std::move(cubic);
+    m_current_trajectory->init(Pose());
+    m_current_trajectory->begin();
   }
 
   void startInPlaceTurn(float angle, float omega_Max, float omega_end, float alpha) {
     float w_start = m_vehicle->getState().omega;
     std::unique_ptr<Spinturn> spinturn = std::make_unique<Spinturn>(angle, w_start, omega_Max, omega_end, alpha);
-    m_turn_trajectory = std::move(spinturn);
-    m_turn_trajectory->init(Pose());
-    m_turn_trajectory->begin();
+    m_current_trajectory = std::move(spinturn);
+    m_current_trajectory->init(Pose());
+    m_current_trajectory->begin();
   }
 
   bool turnFinished() {
-    return m_turn_trajectory->isFinished();
+    return m_current_trajectory->isFinished();
+  }
+
+  bool trajectoryFinished() {
+    return m_current_trajectory->isFinished();
   }
 
   Vehicle* m_vehicle = nullptr;
@@ -715,9 +730,9 @@ class Behaviour {
   std::atomic<int> m_iterations = 0;
   std::atomic<float> m_speed_up = 1.0f;
 
-  Trapezoid m_trap_fwd;
-  std::unique_ptr<Trajectory> m_turn_trajectory = nullptr;
-  std::unique_ptr<Trajectory> m_current_trajectory = nullptr;
+  //  Trapezoid m_trap_fwd;
+  //  std::unique_ptr<Trajectory> m_turn_trajectory = nullptr;
+  std::unique_ptr<Trajectory> m_current_trajectory = std::unique_ptr<IdleTrajectory>();
 
 #ifdef ARES
   mutable std::mutex m_behaviour_mutex;  // used for thread safe access
