@@ -15,7 +15,7 @@ class ThreadSafeQueue {
     m_queue.push(message);
   }
 
-  bool tryPop(std::string& message) {
+  bool canPop(std::string& message) {
     std::lock_guard<std::mutex> lock(m_mutex);
     if (m_queue.empty())
       return false;
