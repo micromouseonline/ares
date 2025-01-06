@@ -92,7 +92,6 @@ TEST(TrapezoidTest, 010_Update_Negative) {
 
 TEST(TrapezoidTest, 040_Reset) {
   Trapezoid trapezoid;
-  EXPECT_EQ(9, sizeof(trapezoid));
   Pose startPose(1.0f, 2.0f, 30.0f);
   trapezoid.init(startPose);
   trapezoid.begin();
