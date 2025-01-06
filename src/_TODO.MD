@@ -2,12 +2,9 @@
 
 # TODO
 
+- [ ] Convert all output from robot to message passing model
+- [ ] Simulation only knows what is passed through messages
 - [ ] RobotControl to be the main robot thread
-- [ ] Create status dashboard
-- [ ] Add basic logging
-- [ ] Add Vehicle status LEDs - on Vehicle?
-- [ ] Add Vehicle input buttons
-- [ ] Add Vehicle status display 
 - [ ] Link UI to virtual Vehicle hardware
 - [ ] Figure out how to get maze back from RobotController and display it.
 - [ ] Add sprite to RobotDisplay
@@ -15,20 +12,24 @@
 - [ ] Decide where to put steering correction.
 - [ ] Add wall detection and mapping
 - [ ] Implement Actions/Operations
-- [ ] Generalise trajectory management
-- [ ] Add sensor fedback to steering
-- [ ] get some simple wall following behaviour into RobotControl (Mouse)
+- [ ] Add sensor feedback to steering
 - [ ] Add facility to store and mark goal area.
 - [ ] Implement load maze from file.
 - [ ] Implement save maze to file.
 - [ ] Display Maze cell status as colours
 - [ ] Display Maze wall status as colours
-- [ ] 
 
 # IN PROGRESS
+- [ ] Generalise trajectory management
 
 # DONE
 
+- [x] get some simple wall following behaviour into RobotControl (Mouse)
+- [x] Create status dashboard
+- [x] Add basic logging
+- [x] Add Vehicle status LEDs - on Vehicle?
+- [x] Add Vehicle input buttons
+- [x] Add Vehicle status display 
 - [x] Implement systick-in-yield model
 - [x] Add ImGui for GUI
 - [x] Add surrounding walls for sensor testing
