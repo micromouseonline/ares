@@ -161,15 +161,15 @@ target_sources(${APP} PRIVATE
 enable_testing()
 
 add_executable(test_mouse_simulator
-        tests/test_main.cpp
-        tests/test_set_mask.cpp
-        tests/test_maze_class.cpp
-        tests/test_pose.cpp
-        tests/test_trajectory.cpp
-        tests/test_trapezoid.cpp
-        tests/text_Spinturn.cpp
-        tests/test_cubic.cpp
-        tests/test_queue.cpp
+        google-tests/test_main.cpp
+        google-tests/test_set_mask.cpp
+        google-tests/test_maze_class.cpp
+        google-tests/test_pose.cpp
+        google-tests/test_trajectory.cpp
+        google-tests/test_trapezoid.cpp
+        google-tests/text_Spinturn.cpp
+        google-tests/test_cubic.cpp
+        google-tests/test_queue.cpp
 )
 
 # Link GoogleTest and your project to the test executable
@@ -193,3 +193,8 @@ target_include_directories(test_mouse_simulator
 
 # Run tests after building
 add_test(NAME test_mouse_simulator COMMAND test_mouse_simulator)
+
+############################################################
+# other mini-test projects
+
+add_subdirectory(tests/factory-test)
