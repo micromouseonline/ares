@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -170,6 +170,7 @@ add_executable(test_mouse_simulator
         tests/test_trapezoid.cpp
         tests/text_Spinturn.cpp
         tests/test_cubic.cpp
+        tests/test_queue.cpp
 )
 
 # Link GoogleTest and your project to the test executable
