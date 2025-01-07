@@ -281,7 +281,6 @@ class Behaviour {
   void turnLeft() {
     float speed = m_vehicle->getState().velocity;
     doMove(20, speed, 700, 5000);
-    //    doCubicTurn(114.05, 90, speed);
     doCubicTurn(115.6, 90, speed);
     doMove(20, speed, speed, 5000);
     setHeading(left_from(getHeading()));
@@ -290,7 +289,6 @@ class Behaviour {
   void turnRight() {
     float speed = m_vehicle->getState().velocity;
     doMove(20, speed, 700, 5000);
-    //    doCubicTurn(114.05, -90, speed);
     doCubicTurn(115.6, -90, speed);
     doMove(20, speed, speed, 5000);
     setHeading(right_from(getHeading()));
