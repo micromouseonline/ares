@@ -130,7 +130,6 @@ FetchContent_MakeAvailable(GoogleTest)
 # Main application executable
 set(APP mouse-simulator)
 add_definitions(-DWINDOW_TITLE=\"${APP}\")
-add_compile_definitions(XARES)
 
 add_executable(${APP} "")
 copy_resources(${APP})

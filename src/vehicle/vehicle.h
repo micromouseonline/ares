@@ -13,12 +13,6 @@
 #include "common/pose.h"
 #include "sensor-data.h"
 #include "vehicle-state.h"
-#ifdef ARES
-#include <mutex>
-#define LOCK_GUARD(mtx) std::lock_guard<std::mutex> lock(mtx)
-#else
-#define LOCK_GUARD(mtx) (void)0
-#endif
 
 /**
  * @brief The Robot class models the physical robot's behavior and movement.
@@ -98,17 +92,14 @@ class Vehicle {
   ////// Accessors
 
   [[nodiscard]] VehicleState getState() const {
-    LOCK_GUARD(m_robot_mutex);
     return m_state;
   }
 
   void setState(VehicleState state) {
-    LOCK_GUARD(m_robot_mutex);
     m_state = state;
   }
 
   void setPose(float x, float y, float angle) {
-    LOCK_GUARD(m_robot_mutex);
     m_state.x = x;
     m_state.y = y;
     m_state.angle = angle;
@@ -129,7 +120,6 @@ class Vehicle {
   /// only realistic demands are made of the robot.
   /// Once set, speeds will not change unless comaanded
   void setSpeeds(float velocity, float omega) {
-    LOCK_GUARD(m_robot_mutex);
     m_state.velocity = velocity;
     m_state.omega = omega;
     // TODO: should this be clamped here or handled elsewhere?
@@ -140,42 +130,34 @@ class Vehicle {
   }
 
   void adjustCellOffset(float delta) {
-    LOCK_GUARD(m_robot_mutex);
     m_state.cell_offset += delta;
   }
 
   void setCellOffset(float offset) {
-    LOCK_GUARD(m_robot_mutex);
     m_state.cell_offset = offset;
   }
 
   void resetMoveDistance() {
-    LOCK_GUARD(m_robot_mutex);
     m_state.move_distance = 0.0f;
   }
 
   void resetTotalDistance() {
-    LOCK_GUARD(m_robot_mutex);
     m_state.total_distance = 0.0f;
   }
 
   void resetMoveAngle() {
-    LOCK_GUARD(m_robot_mutex);
     m_state.move_angle = 0.0f;
   }
 
   [[nodiscard]] bool isRunning() const {
-    LOCK_GUARD(m_robot_mutex);
     return m_running;
   }
 
   [[nodiscard]] uint32_t millis() const {
-    LOCK_GUARD(m_robot_mutex);
     return m_ticks;
   }
 
   void setLed(const int i, const bool state) {
-    LOCK_GUARD(m_robot_mutex);
     const uint8_t mask = BIT(i);
     m_state.leds &= ~(mask);
     m_state.leds |= state ? mask : 0;
@@ -191,7 +173,6 @@ class Vehicle {
   //  }
 
   void setButton(const int i, const bool state) {
-    LOCK_GUARD(m_robot_mutex);
     const uint8_t mask = BIT(i);
     m_state.buttons &= ~(mask);
     m_state.buttons |= state ? mask : 0;
@@ -233,7 +214,6 @@ class Vehicle {
 
     // Critical section: read the state and increment ticks
     {
-      LOCK_GUARD(m_robot_mutex);
       m_ticks++;
       m_state.timestamp = m_ticks;
 
@@ -256,7 +236,6 @@ class Vehicle {
 
     // Critical section: update the state with new calculations
     {
-      LOCK_GUARD(m_robot_mutex);
       m_state.total_distance += deltaDistance;
       m_state.cell_offset += deltaDistance;    // TODO: should be a behavior thing
       m_state.move_distance += deltaDistance;  // TODO: NOT USED
@@ -287,7 +266,4 @@ class Vehicle {
   Pose m_pose;
   float m_vMax;
   float m_omegaMax;
-#ifdef ARES
-  mutable std::mutex m_robot_mutex;
-#endif
 };

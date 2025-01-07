@@ -82,12 +82,6 @@
 #include "trapezoid.h"
 #include "vehicle/sensor-data.h"
 #include "vehicle/vehicle.h"
-#ifdef ARES
-#include <mutex>
-#define LOCK_GUARD(mtx) std::lock_guard<std::mutex> lock(mtx)
-#else
-#define LOCK_GUARD(mtx) (void)0
-#endif
 
 enum Activity {
   ACT_NONE,
@@ -144,22 +138,18 @@ class Behaviour {
   }
 
   Direction getHeading() const {
-    LOCK_GUARD(m_behaviour_mutex);
     return m_heading;
   }
 
   void setHeading(Direction heading) {
-    LOCK_GUARD(m_behaviour_mutex);
     m_heading = heading;
   }
 
   Location getLocation() const {
-    LOCK_GUARD(m_behaviour_mutex);
     return m_location;
   }
 
   void setLocation(Location loc) {
-    LOCK_GUARD(m_behaviour_mutex);
     m_location = loc;
   }
 
@@ -239,16 +229,13 @@ class Behaviour {
 
   void updateMap(VehicleState& state) {
     bool leftWall, frontWall, rightWall;
-    {
-      /// minimise the time we are locked
-      LOCK_GUARD(m_behaviour_mutex);
-      leftWall = state.sensor_data.lds_power > 40;
-      frontWall = state.sensor_data.lfs_power > 20 && state.sensor_data.rfs_power > 20;
-      rightWall = state.sensor_data.rds_power > 40;
-      m_frontWall = frontWall;
-      m_rightWall = rightWall;
-      m_leftWall = leftWall;
-    }
+
+    leftWall = state.sensor_data.lds_power > 40;
+    frontWall = state.sensor_data.lfs_power > 20 && state.sensor_data.rfs_power > 20;
+    rightWall = state.sensor_data.rds_power > 40;
+    m_frontWall = frontWall;
+    m_rightWall = rightWall;
+    m_leftWall = leftWall;
     /// use the local values to avoid need for aditional lock
     Location here = getLocation();
     switch (getHeading()) {
@@ -567,7 +554,6 @@ class Behaviour {
   }
 
   void go(int action, int i = 1) {
-    LOCK_GUARD(m_behaviour_mutex);
     m_iterations = i;
     m_reset = false;
     m_act = action;  //
@@ -617,7 +603,6 @@ class Behaviour {
       }
 
       {
-        LOCK_GUARD(m_behaviour_mutex);
         m_timeStamp++;
         g_ticks++;
       }
@@ -731,10 +716,6 @@ class Behaviour {
   //  Trapezoid m_trap_fwd;
   //  std::unique_ptr<Trajectory> m_turn_trajectory = nullptr;
   std::unique_ptr<Trajectory> m_current_trajectory = std::unique_ptr<IdleTrajectory>();
-
-#ifdef ARES
-  mutable std::mutex m_behaviour_mutex;  // used for thread safe access
-#endif
 };
 
 #endif  // BEHAVIOUR_H

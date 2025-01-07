@@ -29,12 +29,6 @@
 #include <stdint.h>
 #include "config.h"
 #include "queue.h"
-#ifdef ARES
-#include <mutex>
-#define LOCK_GUARD(mtx) std::lock_guard<std::mutex> lock(mtx)
-#else
-#define LOCK_GUARD(mtx) (void)0
-#endif
 
 // #include "vt100.h"
 
@@ -258,7 +252,6 @@ class Maze {
 
   /// @brief  return the state of the walls in a cell
   CellWalls walls(const int x, const int y) const {
-    LOCK_GUARD(m_maze_mutex);
     return m_walls[x][y];
   }
 
@@ -317,7 +310,6 @@ class Maze {
     bool result = false;
     MazeMask mask;
     {
-      LOCK_GUARD(m_maze_mutex);
       mask = m_mask;
     }
     switch (dir) {
@@ -417,7 +409,6 @@ class Maze {
   void initialise() {
     for (int x = 0; x < m_width; x++) {
       for (int y = 0; y < m_width; y++) {
-        LOCK_GUARD(m_maze_mutex);
         m_walls[x][y].north = UNKNOWN;
         m_walls[x][y].east = UNKNOWN;
         m_walls[x][y].south = UNKNOWN;
@@ -425,12 +416,10 @@ class Maze {
       }
     }
     for (int x = 0; x < m_width; x++) {
-      LOCK_GUARD(m_maze_mutex);
       m_walls[x][0].south = WALL;
       m_walls[x][m_width - 1].north = WALL;
     }
     for (int y = 0; y < m_width; y++) {
-      LOCK_GUARD(m_maze_mutex);
       m_walls[0][y].west = WALL;
       m_walls[m_width - 1][y].east = WALL;
     }
@@ -443,12 +432,10 @@ class Maze {
   }
 
   void set_mask(const MazeMask mask) {
-    LOCK_GUARD(m_maze_mutex);
     m_mask = mask;
   }
 
   MazeMask get_mask() const {
-    LOCK_GUARD(m_maze_mutex);
     return m_mask;
   }
 
@@ -467,12 +454,10 @@ class Maze {
   }
 
   uint16_t cost(const int x, const int y) const {
-    LOCK_GUARD(m_maze_mutex);
     return m_cost[x][y];
   }
 
   void setCost(const int x, const int y, const uint16_t cost) {
-    LOCK_GUARD(m_maze_mutex);
     m_cost[x][y] = cost;
   }
 
@@ -585,7 +570,6 @@ class Maze {
   }
 
   int getWidth() {
-    LOCK_GUARD(m_maze_mutex);
     return m_width;
   }
 
@@ -708,7 +692,6 @@ class Maze {
 
  private:
   void set_wall_state(const Location loc, const Direction heading, const WallState state) {
-    LOCK_GUARD(m_maze_mutex);
     switch (heading) {
       case DIR_N:
         m_walls[loc.x][loc.y].north = state;
