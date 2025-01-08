@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <functional>
 #include <thread>
-#include "common/thread-safe-queue.h"  // Include your ThreadSafeQueue header file
+#include "common/queue.h"  // Include your ThreadSafeQueue header file
 
 // Helper function to simulate worker output and capture messages in the queue
 void message_capture_worker(int id, std::function<void(const std::string&)> callback) {
