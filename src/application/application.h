@@ -11,13 +11,13 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include "behaviour.h"
 #include "common/core.h"
 #include "common/vec2.h"
 #include "event_observer.h"
 #include "imgui-SFML.h"
 #include "imgui.h"
 #include "maze-manager.h"
+#include "robot-manager.h"
 #include "robot-wall-sensor.h"
 #include "window.h"
 #pragma GCC diagnostic push
@@ -37,6 +37,7 @@ class Application : public IEventObserver {
   Application()
       : m_window(std::make_unique<Window>(conf::AppName, conf::WindowSize)),  //
         m_behaviour(m_mouse, m_robot) {                                       //
+
     m_elapsed = sf::Time::Zero;
     m_logger.initialise();
     ARES_INFO("Initialising");
@@ -444,7 +445,7 @@ class Application : public IEventObserver {
 
   Mouse m_mouse;
   Vehicle m_robot;  // The robot instance
-  Behaviour m_behaviour;
+  RobotManager m_behaviour;
 
   RobotBody m_robot_body;
   std::vector<sf::FloatRect> m_obstacles;

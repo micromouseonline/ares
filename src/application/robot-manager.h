@@ -67,16 +67,16 @@
 #include "behaviour/mouse.h"
 #include "vehicle/vehicle.h"
 
-class Behaviour {
+class RobotManager {
  public:
-  Behaviour(Mouse& mouse, Vehicle& vehicle) : m_mouse(mouse), m_vehicle(vehicle) {
+  RobotManager(Mouse& mouse, Vehicle& vehicle) : m_mouse(mouse), m_vehicle(vehicle) {
     //
     /// the mouse and vehicle construcors should initialise their repective
     /// instances
     mouse.setVehicle(m_vehicle);
   }
 
-  ~Behaviour() {
+  ~RobotManager() {
     stop();
     if (m_thread.joinable()) {
       m_thread.join();
@@ -86,7 +86,7 @@ class Behaviour {
   void start() {
     m_running = true;
     m_mouse.start();
-    m_thread = std::thread(&Behaviour::run, this);
+    m_thread = std::thread(&RobotManager::run, this);
   }
 
   void stop() {
