@@ -11,10 +11,6 @@
 
 #pragma once
 
-#include "behaviour/trajectories/cubic.h"
-#include "behaviour/trajectories/cubic_parameters.h"
-#include "behaviour/trajectories/spinturn.h"
-#include "behaviour/trajectories/straight.h"
 #include "common/logger.h"
 #include "common/logmanager.h"
 #include "common/pose.h"
@@ -23,6 +19,10 @@
 #include "motion-compiler.h"
 #include "path-finder.h"
 #include "path-printer.h"
+#include "trajectories/cubic.h"
+#include "trajectories/cubic_parameters.h"
+#include "trajectories/spinturn.h"
+#include "trajectories/straight.h"
 #include "trajectory.h"
 #include "vehicle/sensor-data.h"
 #include "vehicle/vehicle.h"
