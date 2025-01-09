@@ -74,5 +74,3 @@ const CubicTurnParameters old_cubic_params[] = {
 // clang-format on
 
 //
-
-#endif  // MAZERUNNER32_TURN_PARAMETERS_H
