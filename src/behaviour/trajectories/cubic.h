@@ -26,9 +26,9 @@
  */
 
 #include <cmath>
+#include "behaviour/trajectory.h"
 #include "common/pose.h"
 #include "cubic_parameters.h"
-#include "trajectory.h"
 
 class Cubic : public Trajectory {
  public:

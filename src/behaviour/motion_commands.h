@@ -186,9 +186,9 @@ const bool is_ortho_in[]  = { true,  true,  true,  true,  true,  true,  true,  t
 const bool is_ortho_out[] = { true,  true,  true,  true,  true,  true, false, false, false, false,  true,  true,  true,  true, false, false, true, true};
 // clang-format on
 
-struct Operation {
+struct MotionCommand {
   uint8_t op_code;
-  explicit Operation(int c = OP_STOP) : op_code(c) {};
+  explicit MotionCommand(int c = OP_STOP) : op_code(c) {};
 
   uint8_t direction() const {
     return op_code & 0x01;

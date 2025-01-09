@@ -70,16 +70,16 @@
 #include <thread>
 #include <vector>
 #include "../../cmake-build-debug/_deps/fmt-src/include/fmt/format.h"
+#include "behaviour/trajectories/cubic.h"
+#include "behaviour/trajectories/cubic_parameters.h"
+#include "behaviour/trajectories/spinturn.h"
+#include "behaviour/trajectories/trapezoid.h"
 #include "common/logger.h"
 #include "common/logmanager.h"
 #include "common/pose.h"
 #include "common/timer.h"
-#include "cubic.h"
-#include "cubic_parameters.h"
 #include "maze.h"
-#include "spinturn.h"
 #include "trajectory.h"
-#include "trapezoid.h"
 #include "vehicle/sensor-data.h"
 #include "vehicle/vehicle.h"
 
@@ -581,7 +581,6 @@ class Behaviour {
     }
     Timer timer;
     while (ms > 0) {
-      ARES_ASSERT(m_current_trajectory, "No trajectory!");
       if (m_vehicle) {
         if (m_current_trajectory && !m_current_trajectory->isFinished()) {
           m_current_trajectory->update();

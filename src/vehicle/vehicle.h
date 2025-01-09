@@ -8,7 +8,7 @@
 #include <cmath>
 #include <iostream>
 #include <mutex>
-#include "behaviour/trapezoid.h"
+#include "behaviour/trajectories/trapezoid.h"
 #include "common/core.h"
 #include "common/pose.h"
 #include "sensor-data.h"

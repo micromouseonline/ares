@@ -9,8 +9,8 @@
 #include <cmath>
 #include <limits>
 #include <mutex>
+#include <queue>
 #include "SFML/Graphics.hpp"
-#include "queue.h"
 #include "types.h"
 
 constexpr float kPI = 3.14159265358979323846f;  // More precise

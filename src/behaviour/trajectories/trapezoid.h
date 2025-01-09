@@ -12,7 +12,7 @@
 #pragma once
 
 #include <cstddef>
-#include "trajectory.h"
+#include "behaviour/trajectory.h"
 
 /***
  * I found the original code for this trapezoidal profiler as part of the

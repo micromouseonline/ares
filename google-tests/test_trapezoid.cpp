@@ -2,8 +2,8 @@
 // Created by peter on 04/01/25.
 //
 #include <gtest/gtest.h>
+#include "behaviour/trajectories/trapezoid.h"
 #include "behaviour/trajectory.h"
-#include "behaviour/trapezoid.h"
 #include "common/pose.h"
 
 TEST(TrapezoidTest, 001_InitAndBegin) {
