@@ -59,6 +59,7 @@
  * on physical behavior, and the Behavior or Application layers handle interpretation
  * and control logic.
  */
+
 class Vehicle {
  public:
   const float VELOCITY_MAX = 8000.0f;
@@ -221,13 +222,12 @@ class Vehicle {
     SensorData sensorData;
 
     // Critical section: read the state and increment ticks
-    {
-      m_ticks++;
-      m_state.timestamp = m_ticks;
 
-      // Copy the current state for calculations
-      localState = m_state;
-    }
+    m_ticks++;
+    m_state.timestamp = m_ticks;
+
+    // Copy the current state for calculations
+    localState = m_state;
 
     // Perform calculations outside the critical section
     float deltaDistance = localState.velocity * deltaTime;
@@ -237,9 +237,9 @@ class Vehicle {
     float newY = localState.y + deltaDistance * std::sin(localState.angle * RADIANS);
     float newAngle = std::fmod(localState.angle + deltaAngle + 360.0f, 360.0f);
 
-    // If a sensor callback is set, get sensor data (this may involve external threads)
+    // If a sensor callback is set, send state, get data(this may involve external threads)
     if (m_sensor_callback) {
-      sensorData = m_sensor_callback(localState.x, localState.y, localState.angle);
+      sensorData = m_sensor_callback(localState);
     }
 
     // Critical section: update the state with new calculations

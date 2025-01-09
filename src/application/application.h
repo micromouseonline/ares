@@ -99,7 +99,7 @@ class Application : public IEventObserver {
     sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
     m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
     /// The Lambda expression here serves to bind the callback to the application instance
-    m_robot.setSensorCallback([this](float x, float y, float theta) -> SensorData { return callbackCalculateSensorData(x, y, theta); });
+    m_robot.setSensorCallback([this](VehicleState state) -> SensorData { return sensorDataCallback(state); });
     m_robot.start();
     m_mouse.setVehicle(m_robot);
     m_mouse.start();
@@ -188,18 +188,17 @@ class Application : public IEventObserver {
 
     m_maze_manager.updateFromMap(m_mouse.getMaze(), m_mouse.getMaze().getWidth());
 
-    VehicleState robot_state = m_robot.getState();
+    //    m_vehicle_state = m_robot.getState();
     std::stringstream state_summary;
-    SensorData sensors = robot_state.sensor_data;
+    SensorData sensors = m_vehicle_state.sensor_data;
     state_summary << "power:  " + formatSensorData((int)sensors.lfs_power, (int)sensors.lds_power, (int)sensors.rds_power, (int)sensors.rfs_power);
     state_summary << " Dist:  " + formatSensorData((int)sensors.lfs_distance, (int)sensors.lds_distance, (int)sensors.rds_distance, (int)sensors.rfs_distance);
     state_summary << "\n";
-    state_summary << formatRobotState(robot_state);
+    state_summary << formatRobotState(m_vehicle_state);
 
     /////  IMGUI ////////////////////////////////////////////////////////////////////////////
     ImGui::Begin("MouseUI", nullptr);
-    const uint8_t leds = robot_state.leds;
-    const uint8_t buttons = robot_state.buttons;
+    const uint8_t leds = m_vehicle_state.leds;
     for (int i = 7; i >= 0; i--) {
       bool bitState = leds & BIT(i);
       DrawLED(bitState, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));  // Green color for ON state
@@ -291,16 +290,16 @@ class Application : public IEventObserver {
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "    time     X      Y   Theta     Vel   Omega");
     char s[60];
     sprintf(s, "%8u %5.1f  %5.1f  %6.2f  %6.1f  %6.1f  ",  //
-            robot_state.timestamp, robot_state.x, robot_state.y, robot_state.angle, robot_state.velocity, robot_state.omega);
+            m_vehicle_state.timestamp, m_vehicle_state.x, m_vehicle_state.y, m_vehicle_state.angle, m_vehicle_state.velocity, m_vehicle_state.omega);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", s);
     const int frames = 60 * 4;
     static float speed[frames];
     static float omega[frames];
     static float rds[frames];
     static int index = 0;
-    speed[index] = robot_state.velocity;
-    omega[index] = robot_state.omega;
-    rds[index] = robot_state.sensor_data.rds_power;
+    speed[index] = m_vehicle_state.velocity;
+    omega[index] = m_vehicle_state.omega;
+    rds[index] = m_vehicle_state.sensor_data.rds_power;
     index = (index + 1) % IM_ARRAYSIZE(speed);
     ImGui::PlotLines("speed", speed, IM_ARRAYSIZE(speed), index, "", 0, 3000, ImVec2(330, 100));
     ImGui::PlotLines("omega", omega, IM_ARRAYSIZE(omega), index, "", -1000, 1000, ImVec2(330, 140));
@@ -379,10 +378,11 @@ class Application : public IEventObserver {
    *
    * @return a copy of the local sensor data
    */
-  SensorData callbackCalculateSensorData(float x, float y, float theta) {
+  SensorData sensorDataCallback(VehicleState state) {
+    m_vehicle_state = state;
     m_timer.restart();
-    m_robot_body.updateSensorGeometry(x, y, theta);
-    m_obstacles = m_maze_manager.GetObstacles(x, y);
+    m_robot_body.updateSensorGeometry(m_vehicle_state.x, m_vehicle_state.y, m_vehicle_state.angle);
+    m_obstacles = m_maze_manager.GetObstacles(m_vehicle_state.x, m_vehicle_state.y);
     m_robot_body.updateSensors(m_obstacles);
     m_sensor_data.lfs_power = m_robot_body.getSensor(conf::LFS).getPower();
     m_sensor_data.lds_power = m_robot_body.getSensor(conf::LDS).getPower();
@@ -402,6 +402,7 @@ class Application : public IEventObserver {
 
   Mouse m_mouse;
   Vehicle m_robot;  // The robot instance
+  VehicleState m_vehicle_state;
   RobotManager m_behaviour;
 
   RobotBody m_robot_body;

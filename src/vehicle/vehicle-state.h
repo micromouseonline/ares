@@ -46,4 +46,8 @@ struct VehicleState {
   }
 };
 
+#include <functional>
+/// Returns a SensorData struct
+using SensorDataCallback = std::function<SensorData(VehicleState)>;
+
 #endif  // ROBOT_STATE_H

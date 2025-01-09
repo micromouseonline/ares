@@ -18,8 +18,4 @@ struct SensorData {
   float rfs_power = 0;
 };
 
-#include <functional>
-/// Returns a SensorData struct
-using SensorDataCallback = std::function<SensorData(float, float, float)>;
-
 #endif  // SENSORDATA_H
