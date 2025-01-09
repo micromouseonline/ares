@@ -23,10 +23,10 @@
  * It has been refactored and edited to match more closely with my derivation
  * of the equations which can be found in the docs directory
  */
-class Trapezoid : public Trajectory {
+class Straight : public Trajectory {
  public:
   // Default constructor initializes the trapezoid profile to zero distance and velocities
-  Trapezoid()
+  Straight()
       : m_s(0),        // Total distance to travel
         m_v1(0),       // Starting velocity
         m_v_limit(0),  // Maximum velocity
@@ -38,7 +38,7 @@ class Trapezoid : public Trajectory {
   }
 
   // Parameterized constructor initializes the trapezoid motion profile
-  Trapezoid(float dist, float v_start, float v_max, float v_end, float accel, float dt = 0.001f)
+  Straight(float dist, float v_start, float v_max, float v_end, float accel, float dt = 0.001f)
       : m_s(std::abs(dist)),         // Absolute distance to ensure positive magnitude
         m_v1(std::abs(v_start)),     // Ensure positive velocity
         m_v_limit(std::abs(v_max)),  // Ensure positive max velocity
@@ -49,7 +49,7 @@ class Trapezoid : public Trajectory {
     setDeltaTime(dt);
   }
 
-  ~Trapezoid() override = default;
+  ~Straight() override = default;
 
   // Initialize the motion profile
   // TODO what if Vmax < V1 or V2?

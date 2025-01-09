@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
-#include <mutex>
-#include "behaviour/trajectories/trapezoid.h"
+// #include <mutex>
+#include "behaviour/trajectories/straight.h"
 #include "common/core.h"
 #include "common/pose.h"
 #include "sensor-data.h"
@@ -85,8 +85,16 @@ class Vehicle {
     }
   }
 
+  void reset() {
+    stop();
+  }
+
   void resume() {
     m_running = true;  //
+  }
+
+  bool isRunning() {
+    return m_running;
   }
 
   ////// Accessors
@@ -258,7 +266,7 @@ class Vehicle {
   Vehicle& operator=(const Vehicle&) = delete;
 
   uint32_t m_ticks;
-  std::atomic<bool> m_running;
+  bool m_running;
 
   SensorDataCallback m_sensor_callback = nullptr;
 

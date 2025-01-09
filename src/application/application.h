@@ -11,7 +11,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include "behaviour/behaviour.h"
+#include "behaviour.h"
 #include "common/core.h"
 #include "common/vec2.h"
 #include "event_observer.h"
@@ -25,14 +25,19 @@
 #include "imgui_internal.h"
 #pragma GCC diagnostic pop
 #include "common/logmanager.h"
+#include "widgets.h"
+
+#include "behaviour/mouse.h"
 #include "robot-body.h"
 #include "vehicle/sensor-data.h"
 #include "vehicle/vehicle.h"
-#include "widgets.h"
 
 class Application : public IEventObserver {
  public:
-  Application() : m_window(std::make_unique<Window>(conf::AppName, conf::WindowSize)), m_elapsed(sf::Time::Zero) {
+  Application()
+      : m_window(std::make_unique<Window>(conf::AppName, conf::WindowSize)),  //
+        m_behaviour(m_mouse, m_robot) {                                       //
+    m_elapsed = sf::Time::Zero;
     m_logger.initialise();
     ARES_INFO("Initialising");
     m_elapsed = sf::Time::Zero;
@@ -70,8 +75,9 @@ class Application : public IEventObserver {
     /// The Lambda expression here serves to bind the callback to the application instance
     m_robot.setSensorCallback([this](float x, float y, float theta) -> SensorData { return this->callbackCalculateSensorData(x, y, theta); });
     m_robot.start();
-    m_mouse.setRobot(m_robot);
+    m_mouse.setVehicle(m_robot);
     m_mouse.start();
+    m_behaviour.start();
   }
 
   ~Application() {
@@ -246,7 +252,7 @@ class Application : public IEventObserver {
     ImGui::End();
 
     /////  IMGUI ////////////////////////////////////////////////////////////////////////////
-    ImGui::Begin("Behaviour Control", nullptr);
+    ImGui::Begin("Mouse Control", nullptr);
     ImGui::Text("Select the Maze data:");
     if (ImGui::Combo("Maze", &m_maze_index, m_maze_names.data(), (int)m_maze_names.size())) {
       maze_changed = true;
@@ -305,7 +311,7 @@ class Application : public IEventObserver {
     }
 
     bool detailed_event_log = m_mouse.getEventLogDetailed();
-    if (ImGui::Checkbox("Show Detailed Behaviour Event Log", &detailed_event_log)) {
+    if (ImGui::Checkbox("Show Detailed Mouse Event Log", &detailed_event_log)) {
       m_mouse.setEventLogDetailed(detailed_event_log);
     }
 
@@ -435,8 +441,11 @@ class Application : public IEventObserver {
 
  private:
   std::unique_ptr<Window> m_window;
-  Behaviour m_mouse;
+
+  Mouse m_mouse;
   Vehicle m_robot;  // The robot instance
+  Behaviour m_behaviour;
+
   RobotBody m_robot_body;
   std::vector<sf::FloatRect> m_obstacles;
   std::vector<const char*> m_maze_names;

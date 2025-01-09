@@ -10,32 +10,32 @@
     - Systick maintains internal time - one tick per iteration
     - Systick adds to a list of state information on every iteration. That is effectively a black box recorder running
       at the systick frequency
-1. Behaviour: Combined with Vehicle, that is what makes this a micromouse simulation
-    - Behaviour is asynchronous in the sense that the behaviour code must wait for specific states or flags in the
+1. Mouse: Combined with Vehicle, that is what makes this a micromouse simulation
+    - Mouse is asynchronous in the sense that the behaviour code must wait for specific states or flags in the
       Vehicle
-    - Vehicle never tells Behaviour what to do.
-    - Behaviour tells the Vehicle what to do and constantly monitors its achievement.
-    - Behaviour does not care about the world time, If it cares at all it is about tick count from the robot.
+    - Vehicle never tells Mouse what to do.
+    - Mouse tells the Vehicle what to do and constantly monitors its achievement.
+    - Mouse does not care about the world time, If it cares at all it is about tick count from the robot.
     - This dependence means that robot can run systick at arbitrary speed but behaviour can timestamp its actions using
       the robot tick count.
-    - Behaviour also generates a log of actions. For simplicity, this can be separate to the Vehicle black box but the
+    - Mouse also generates a log of actions. For simplicity, this can be separate to the Vehicle black box but the
       common time stamp lets you sync them up later.
 1. World: is where the information about the physical environment is managed
     - Knows about the location and dimensions of the walls an posts
     - A Line follower would have the track layout
     - Can load, save and edit the environment.
 1. Application: Is really the simulator framework
-    - Coordinates interaction between the Vehicle, Behaviour and the World.
+    - Coordinates interaction between the Vehicle, Mouse and the World.
     - Handles sensor request callbacks
     - Handles User Interface.
     - Can update parameters in the Vehicle
     - Can set Behavioural goals or parameters
-    - Can read shared state from Vehicle and Behaviour
+    - Can read shared state from Vehicle and Mouse
     - Provides visualisation by displaying state held in the black box record and the behaviour log.
 
 That last item is, I think, pretty central in terms of one of the logging/black box requirements
 
-If the Behaviour and the Vehicle run as fast as the computer permits, it can spew out the black box and behaviour logs
+If the Mouse and the Vehicle run as fast as the computer permits, it can spew out the black box and behaviour logs
 very quickly. There is no need to try and make the overall operation run at 1:1 real time.
 
 Suppose the systick frequency is 1kHz. One mode in the Application would be to just run through the data, displaying a

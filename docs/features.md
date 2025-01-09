@@ -18,7 +18,7 @@
 
 - Load world mazes stored in code
 - Load/Save world mazes stored on disk
-- Read maze map from Behaviour
+- Read maze map from Mouse
 - Edit world maze map
 - Set and change goal area for simulation
 

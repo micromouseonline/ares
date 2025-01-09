@@ -9,76 +9,20 @@
  *     https://opensource.org/licenses/MIT.                                   *
  ******************************************************************************/
 
-#ifndef BEHAVIOUR_H
-#define BEHAVIOUR_H
-/**
- *
- * The behaviour class is responsible for the behavior of the physical robot.
- *
- * It runs in its own thread though not in real time. Instead, it will run as fast
- * as the PC permits and record its state at regular intervals. These are 1ms at
- * present.
- *
- * This is made possible by calling the robot's systick method once for every
- * tick in the delay_ms method. The robot is quite dumb and its systick
- * method just updates the sensors and the motion. At the most basic level
- * the robot is assumed to behave perfectly so there is not control system
- * as such. Instead, all motion updates are executed exactly. Sensor updates
- * are performed by the robot with a callback function provided by the main
- * application, where the representation of the physical world is held.
- *
- * There is no need for the Robot to run in its own thread.
- *
- * For testing, we can add a real delay between each call to the robot's systick
- * method.
- *
- *
- * For a micromouse, Behaviour includes path planning, searching, mapping,
- * and other decision-making behaviors. It can be adapted for other types of robots.
- *
- * The Behaviour class holds an instance of the Robot class and a logical
- * representation of the Maze. The physical maze is maintained and updated by
- * the main thread.
- *
- *
- * Core Features of Behaviour
- * Behavioral Logic:
- *    - Implements decision-making algorithms such as path planning, mapping, and navigation.
- *    - Reacts to sensor data (e.g., front distance, wall proximity) for obstacle avoidance or exploration.
- *
- * Robot Interaction:
- *    - Directly interacts with the Robot instance to access pose, velocity, or other state data.
- *    - the Robot should have virtual LEDs and buttons to emulate user interaction
- *
- * Environment Access:
- *    - Maintains its own map of the maze based on sensor readings obtained from the Robot
- *
- *
- */
+#pragma once
 
-#include <fmt/format.h>
-#include <SFML/Graphics.hpp>
-#include <atomic>
-#include <queue>
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <chrono>
-#endif
-
-#include <iostream>
-#include <thread>
-#include <vector>
-#include "../../cmake-build-debug/_deps/fmt-src/include/fmt/format.h"
 #include "behaviour/trajectories/cubic.h"
 #include "behaviour/trajectories/cubic_parameters.h"
 #include "behaviour/trajectories/spinturn.h"
-#include "behaviour/trajectories/trapezoid.h"
+#include "behaviour/trajectories/straight.h"
 #include "common/logger.h"
 #include "common/logmanager.h"
 #include "common/pose.h"
 #include "common/timer.h"
 #include "maze.h"
+#include "motion-compiler.h"
+#include "path-finder.h"
+#include "path-printer.h"
 #include "trajectory.h"
 #include "vehicle/sensor-data.h"
 #include "vehicle/vehicle.h"
@@ -92,21 +36,21 @@ enum Activity {
   ACT_TEST_SEARCH,
 };
 
-class Behaviour {
+class Mouse {
  public:
-  Behaviour() : m_vehicle(nullptr), m_running(false), m_terminate(false), m_timeStamp(0), m_reset(false) {
+  Mouse() : m_vehicle(nullptr), m_running(false), m_terminate(false), m_timeStamp(0), m_reset(false) {
     //
     std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
     m_current_trajectory = std::move(idle);
     m_maze.initialise();
   };
 
-  ~Behaviour() {
+  ~Mouse() {
     stop();  //
   }
 
-  void setRobot(Vehicle& robot) {
-    m_vehicle = &robot;  //
+  void setVehicle(Vehicle& vehicle) {
+    m_vehicle = &vehicle;  //
   }
 
   void reset() {
@@ -119,18 +63,17 @@ class Behaviour {
   void start() {
     if (!m_running) {
       m_running = true;
-      m_thread = std::thread(&Behaviour::run, this);
+      //      m_thread = std::thread(&Mouse::run, this);
     }
   }
 
   void stop() {
     requestTerminate();
-    if (m_running) {
-      m_running = false;
-      if (m_thread.joinable()) {
-        m_thread.join();
-      }
-    }
+    m_running = false;
+  }
+
+  bool isRunning() {
+    return m_running;
   }
 
   void setFirstRunState(bool state) {
@@ -650,7 +593,7 @@ class Behaviour {
 
   void startMove(float distance, float v_max, float v_end, float accel) {
     float v_start = m_vehicle->getState().velocity;
-    std::unique_ptr<Trapezoid> trapezoid = std::make_unique<Trapezoid>(distance, v_start, v_max, v_end, accel);
+    std::unique_ptr<Straight> trapezoid = std::make_unique<Straight>(distance, v_start, v_max, v_end, accel);
     m_current_trajectory = std::move(trapezoid);
     m_current_trajectory->init(Pose());
     m_current_trajectory->begin();
@@ -662,7 +605,7 @@ class Behaviour {
 
   void startTurn(float angle, float omega_Max, float omega_end, float alpha) {
     float w_start = m_vehicle->getState().omega;
-    std::unique_ptr<Trapezoid> trapezoid = std::make_unique<Trapezoid>(angle, w_start, omega_Max, omega_end, alpha);
+    std::unique_ptr<Straight> trapezoid = std::make_unique<Straight>(angle, w_start, omega_Max, omega_end, alpha);
     m_current_trajectory = std::move(trapezoid);
     m_current_trajectory->init(Pose());
     m_current_trajectory->begin();
@@ -712,9 +655,5 @@ class Behaviour {
   std::atomic<int> m_iterations = 0;
   std::atomic<float> m_speed_up = 1.0f;
 
-  //  Trapezoid m_trap_fwd;
-  //  std::unique_ptr<Trajectory> m_turn_trajectory = nullptr;
   std::unique_ptr<Trajectory> m_current_trajectory = std::unique_ptr<IdleTrajectory>();
 };
-
-#endif  // BEHAVIOUR_H

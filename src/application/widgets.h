@@ -26,7 +26,7 @@ class TextBox {
 
   void render() {
     //    m_sfml_textbox.initialise(10, 14, 400, sf::Vector2f(1000, 10));
-    ImGui::Begin("Behaviour Events");
+    ImGui::Begin("Mouse Events");
     for (const auto& line : lines) {
       ImGui::TextWrapped("%s", line.c_str());
     }

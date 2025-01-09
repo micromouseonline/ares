@@ -94,6 +94,47 @@
  */
 
 // clang-format off
+const char* inPlaceTurnNames[] = {
+    "IP45R ", "IP45L ",
+    "IP90R ", "IP90L ",
+    "IP135R", "IP135L",
+    "IP180R", "IP180L",
+    "IP??08", "IP??09",
+    "IP??10", "IP??11",
+    "IP??12", "IP??13",
+    "IP??14", "IP??15",
+    "IP??16", "IP??17",
+    "IP??18", "IP??19",
+    "IP??20", "IP??21",
+    "IP??22", "IP??23",
+    "IP??24", "IP??25",
+    "IP??26", "IP??27",
+    "IP??28", "IP??29",
+    "IP??30", "IP??31",
+};
+
+const char* smoothTurnNames[] = {
+    "SS90SR", "SS90SL",
+    "SS90FR", "SS90FL",
+    "SS180R", "SS180L",
+    "SD45R ", "SD45L ",
+    "SD135R", "SD135L",
+    "DS45R ", "DS45L ",
+    "DS135R", "DS135L",
+    "DD90R ", "DD90L ",
+    "SS90ER", "SS90EL",
+
+    "ST??18", "ST??19",
+    "ST??20", "ST??21",
+    "ST??22", "ST??23",
+    "ST??24", "ST??25",
+    "ST??26", "ST??27",
+    "ST??28", "ST??29",
+    "ST??30", "ST??31",
+};
+// clang-format on
+
+// clang-format off
 
 const uint8_t  OP_MASK_OP_TYPE     =  (0b11000000);
 const uint8_t  OP_MASK_SQUARES     =  (0b00111111);

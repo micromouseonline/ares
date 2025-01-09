@@ -2,12 +2,12 @@
 // Created by peter on 04/01/25.
 //
 #include <gtest/gtest.h>
-#include "behaviour/trajectories/trapezoid.h"
+#include "behaviour/trajectories/straight.h"
 #include "behaviour/trajectory.h"
 #include "common/pose.h"
 
 TEST(TrapezoidTest, 001_InitAndBegin) {
-  Trapezoid trapezoid;
+  Straight trapezoid;
   EXPECT_TRUE(trapezoid.isFinished());
   EXPECT_EQ(0.001f, trapezoid.getDeltaTime());
 
@@ -29,13 +29,13 @@ TEST(TrapezoidTest, 001_InitAndBegin) {
 }
 
 TEST(TrapezoidTest, 002_DeltaTime) {
-  Trapezoid trapezoid;
+  Straight trapezoid;
   trapezoid.setDeltaTime(0.01f);
   EXPECT_FLOAT_EQ(trapezoid.getDeltaTime(), 0.01f);
 }
 
 TEST(TrapezoidTest, 003_InitWithArgs) {
-  Trapezoid trapezoid(100.0, 0.0, 200.0, 0.0, 1000.0);
+  Straight trapezoid(100.0, 0.0, 200.0, 0.0, 1000.0);
   EXPECT_FLOAT_EQ(trapezoid.getDeltaTime(), 0.001f);
   Pose pose(0, 0, 0);
   trapezoid.init(pose);
@@ -49,7 +49,7 @@ TEST(TrapezoidTest, 003_InitWithArgs) {
 }
 
 TEST(TrapezoidTest, 010_Update) {
-  Trapezoid trapezoid(100.0, 0.0, 200.0, 0.0, 1000.0);
+  Straight trapezoid(100.0, 0.0, 200.0, 0.0, 1000.0);
   Pose pose(0, 0, 0);
   trapezoid.init(pose);
   trapezoid.begin();
@@ -70,7 +70,7 @@ TEST(TrapezoidTest, 010_Update) {
 }
 
 TEST(TrapezoidTest, 010_Update_Negative) {
-  Trapezoid trapezoid(-100.0, 0.0, 200.0, 0.0, 1000.0);
+  Straight trapezoid(-100.0, 0.0, 200.0, 0.0, 1000.0);
   Pose pose(0, 0, 0);
   trapezoid.init(pose);
   trapezoid.begin();
@@ -91,7 +91,7 @@ TEST(TrapezoidTest, 010_Update_Negative) {
 }
 
 TEST(TrapezoidTest, 040_Reset) {
-  Trapezoid trapezoid;
+  Straight trapezoid;
   Pose startPose(1.0f, 2.0f, 30.0f);
   trapezoid.init(startPose);
   trapezoid.begin();
