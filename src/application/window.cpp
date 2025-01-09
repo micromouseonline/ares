@@ -79,17 +79,20 @@ sf::Vector2u Window::getWindowSize() {
   return m_window_size;
 }
 
+void Window::processEvent(const sf::Event& event) {
+  if (event.type == sf::Event::Closed) {
+    m_is_done = true;
+  } else if (event.type == sf::Event::Resized) {
+    updateViews();
+  } else {
+    AppEvent e = {EventType::SFML_EVENT, event, {}};
+    notifyObservers(e);
+  }
+}
 void Window::update() {
   sf::Event event;
   while (m_window.pollEvent(event)) {
-    if (event.type == sf::Event::Closed) {
-      m_is_done = true;
-    } else if (event.type == sf::Event::Resized) {
-      updateViews();
-    } else {
-      AppEvent e = {EventType::SFML_EVENT, event, {}};
-      notifyObservers(e);
-    }
+    processEvent(event);
   }
 }
 
@@ -100,6 +103,10 @@ void Window::SetTitle(const std::string& title) {
 
 void Window::addObserver(IEventObserver* observer) {
   m_observers.push_back(observer);
+}
+
+void Window::removeObserver(IEventObserver* observer) {
+  m_observers.erase(std::remove(m_observers.begin(), m_observers.end(), observer), m_observers.end());
 }
 
 void Window::notifyObservers(const AppEvent& event) {

@@ -38,6 +38,7 @@ class Window {
 
   /// This seems to suck up the events. needs more work?
   /// Process any events
+  void processEvent(const sf::Event& event);
   void update();
 
   /// The normal close events merely set a flag that can be tested with this getter.
@@ -64,6 +65,7 @@ class Window {
 
   /// Any class that inherits from IEventObserver can register as an observer
   void addObserver(IEventObserver* observer);
+  void removeObserver(IEventObserver* observer);
 
  private:
   void setup(const std::string title, const sf::Vector2u& size);

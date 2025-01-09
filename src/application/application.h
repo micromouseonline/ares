@@ -38,54 +38,24 @@ class Application : public IEventObserver {
       : m_window(std::make_unique<Window>(conf::AppName, conf::WindowSize)),  //
         m_behaviour(m_mouse, m_robot) {                                       //
 
+    ARES_INFO("Initialising Application");
     m_elapsed = sf::Time::Zero;
-    m_logger.initialise();
-    ARES_INFO("Initialising");
-    m_elapsed = sf::Time::Zero;
-
-    m_default_font.loadFromFile("assets/fonts/ubuntu-mono-r.ttf");
-    m_txt_maze_name.setFont(m_default_font);
-    m_txt_maze_name.setCharacterSize(16);
-    m_txt_maze_name.setFillColor(sf::Color::Yellow);
-    m_txt_maze_name.setPosition(10, 973);
-
-    m_textbox.addText("Hello World");
-
-    m_maze_index = 48;  // Japan2007ef is 48
-    /// Have the window inform us of any events
-    m_window->addObserver(this);
-
-    if (!ImGui::SFML::Init(*m_window->getRenderWindow())) {
-      std::cerr << "ImGui failed to initialise" << std::endl;
-    }
-    ImGuiStyle& style = ImGui::GetStyle();
-    style.WindowRounding = 5.0f;
-    ImGuiIO& io = ImGui::GetIO();
-    m_guiFont = io.Fonts->AddFontFromFileTTF("assets/fonts/ubuntu-mono-r.ttf", 16);
-    (void)ImGui::SFML::UpdateFontTexture();
-    io.FontDefault = m_guiFont;
-
-    for (int i = 0; i < mazeCount; i++) {
-      m_maze_names.push_back(mazeList[i].title);
-    }
-
-    /// set up the robot
-    m_robot_body.setRobot(m_robot);
-    sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
-    m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
-    /// The Lambda expression here serves to bind the callback to the application instance
-    m_robot.setSensorCallback([this](float x, float y, float theta) -> SensorData { return this->callbackCalculateSensorData(x, y, theta); });
-    m_robot.start();
-    m_mouse.setVehicle(m_robot);
-    m_mouse.start();
-    m_behaviour.start();
+    setupWindow();
+    ARES_TRACE("  .. Window Ready");
+    setupImGui();
+    ARES_TRACE("  .. ImGui Ready");
+    setupRobot();
+    ARES_TRACE("  .. Robot Ready");
   }
 
   ~Application() {
+    ARES_TRACE("Application Shutting Down ...");
     m_mouse.stop();
+    ARES_TRACE("   Mouse Stopped");
     m_window.reset();  // destroys the window explicitly so that we can clean up
+    ARES_TRACE("  .. Window Closed");
     ImGui::SFML::Shutdown();
-    m_logger.Shutdown();
+    ARES_TRACE("  .. ImGui Shutdown");
   }
 
   void run() {
@@ -96,16 +66,49 @@ class Application : public IEventObserver {
     }
   }
 
+  void setupWindow() {
+    m_window->addObserver(this);  /// Have the window inform us of any events
+    for (int i = 0; i < mazeCount; i++) {
+      m_maze_names.push_back(mazeList[i].title);
+    }
+    m_maze_index = 48;  // Japan2007ef is 48
+
+    m_default_font.loadFromFile("assets/fonts/ubuntu-mono-r.ttf");
+    m_txt_maze_name.setCharacterSize(16);
+    m_txt_maze_name.setFillColor(sf::Color::Yellow);
+    m_txt_maze_name.setPosition(10, 973);
+    m_txt_maze_name.setFont(m_default_font);
+  }
+
+  void setupImGui() {
+    if (!ImGui::SFML::Init(*m_window->getRenderWindow())) {
+      ARES_FATAL("Failed to initialise ImGui");
+    }
+
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.WindowRounding = 5.0f;
+
+    ImGuiIO& io = ImGui::GetIO();
+    m_guiFont = io.Fonts->AddFontFromFileTTF("assets/fonts/ubuntu-mono-r.ttf", 16);
+    (void)ImGui::SFML::UpdateFontTexture();
+    io.FontDefault = m_guiFont;
+  }
+
+  void setupRobot() {
+    m_robot_body.setRobot(m_robot);
+    sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
+    m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
+    /// The Lambda expression here serves to bind the callback to the application instance
+    m_robot.setSensorCallback([this](float x, float y, float theta) -> SensorData { return callbackCalculateSensorData(x, y, theta); });
+    m_robot.start();
+    m_mouse.setVehicle(m_robot);
+    m_mouse.start();
+    m_behaviour.start();
+  }
+
   /***
    * OnEvent is used to respond to CHANGES in state such as keypress
-   *
-   * For example, you might use something like this to continuously
-   * move a character in a game
-   *    if (sf::Keyboard::IsKeyPressed(sf::Keyboard::W) {
-   *        // move forward
-   *    }
    */
-
   void onEvent(const AppEvent& event) override {
     ImGui::SFML::ProcessEvent(*m_window->getRenderWindow(), event.event);
     switch (event.type) {
@@ -128,27 +131,11 @@ class Application : public IEventObserver {
     }
   }
 
-  /***
-   * This is not about the events. We can test the state of the mouse and
-   * the keyboard or any other input devices.
-   * We are not looking for things that have happened like keypress events.
-   * Could this get tricky if we want to do something like enter text? We will see.
-   *
-   * HandleInput is used to test the STATE of an input device. It is
-   * not meant to be used to respond to input events.
-   *
-   * For example, you might use something like this to continuously
-   * move a character in a game
-   *    if (sf::Keyboard::IsKeyPressed(sf::Keyboard::W) {
-   *        // move forward
-   *    }
-   */
   void handleInput() {
-    /// This is a silly example of how HandleInput can be used
+    /// This is not events. Test keyboard or mouse button STATE here
   }
 
   void displayLogMessages() {
-    std::lock_guard<std::mutex> lock(g_log_mutex);
     while (!g_log_messages.empty()) {
       m_textbox.addText(g_log_messages.front());
       g_log_messages.pop();
@@ -199,15 +186,15 @@ class Application : public IEventObserver {
     ImGui::SFML::Update(*m_window->getRenderWindow(), m_frame_clock.restart());
     displayLogMessages();
 
-    VehicleState robot_state = m_robot.getState();
-    m_maze_manager.updateFromMap(m_mouse.getMaze(), 16);
+    m_maze_manager.updateFromMap(m_mouse.getMaze(), m_mouse.getMaze().getWidth());
 
-    std::stringstream ss;
+    VehicleState robot_state = m_robot.getState();
+    std::stringstream state_summary;
     SensorData sensors = robot_state.sensor_data;
-    ss << "power:  " + formatSensorData((int)sensors.lfs_power, (int)sensors.lds_power, (int)sensors.rds_power, (int)sensors.rfs_power);
-    ss << " Dist:  " + formatSensorData((int)sensors.lfs_distance, (int)sensors.lds_distance, (int)sensors.rds_distance, (int)sensors.rfs_distance);
-    ss << "\n";
-    ss << formatRobotState(robot_state);
+    state_summary << "power:  " + formatSensorData((int)sensors.lfs_power, (int)sensors.lds_power, (int)sensors.rds_power, (int)sensors.rfs_power);
+    state_summary << " Dist:  " + formatSensorData((int)sensors.lfs_distance, (int)sensors.lds_distance, (int)sensors.rds_distance, (int)sensors.rfs_distance);
+    state_summary << "\n";
+    state_summary << formatRobotState(robot_state);
 
     /////  IMGUI ////////////////////////////////////////////////////////////////////////////
     ImGui::Begin("MouseUI", nullptr);
@@ -219,38 +206,15 @@ class Application : public IEventObserver {
       ImGui::SameLine();
     }
     ImGui::Text("LEDS");
-    for (int i = 7; i >= 0; i--) {
-      bool bitState = buttons & BIT(i);
-      DrawLED(bitState, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));  // Green color for ON state
-      ImGui::SameLine();
-    }
-    ImGui::Text("BUTTONS");
-    m_robot.setButton(1, CustomButton("X", ImVec2(104, 24)));
-    ImGui::SameLine();
-    m_robot.setButton(0, CustomButton("Y", ImVec2(104, 24)));
-    int sensor_update_time = m_process_time.asMicroseconds();
-    static int update_time = sensor_update_time;
-    float alpha = 0.025;
 
-    update_time = alpha * (sensor_update_time) + (1 - alpha) * update_time;
-    static int peak_time = 0;
-    if (sensor_update_time > peak_time) {
-      peak_time = sensor_update_time;
-    } else {
-      peak_time = 0.98 * peak_time;
-    }
-    ImGui::Text("Sensor update %3d us", update_time);
+    bool button_x = CustomButton("X", ImVec2(104, 24));
     ImGui::SameLine();
-    ImVec2 p = ImGui::GetCursorScreenPos();
-    ImGui::GetWindowDrawList()->AddRect(p, ImVec2(p.x + 200, p.y + 20), IM_COL32(255, 200, 0, 255));
-    ImColor bar_color = IM_COL32(0, 255, 0, 128);
-    p.x += 1;
-    p.y += 1;
-    ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + std::min(198, peak_time), p.y + 18), IM_COL32(200, 0, 0, 128));
-    ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + update_time, p.y + 18), bar_color);
-    ImGui::NewLine();
-    ImGui::Text("%s", ss.str().c_str());
+    bool button_y = CustomButton("Y", ImVec2(104, 24));
+    drawSensorUpdateTime(m_process_time.asMicroseconds());
+    ImGui::Text("%s", state_summary.str().c_str());
     ImGui::End();
+    m_robot.setButton(1, button_x);
+    m_robot.setButton(0, button_y);
 
     /////  IMGUI ////////////////////////////////////////////////////////////////////////////
     ImGui::Begin("Mouse Control", nullptr);
@@ -333,7 +297,6 @@ class Application : public IEventObserver {
     static float speed[frames];
     static float omega[frames];
     static float rds[frames];
-
     static int index = 0;
     speed[index] = robot_state.velocity;
     omega[index] = robot_state.omega;
@@ -414,12 +377,6 @@ class Application : public IEventObserver {
    * the Robot actually works with. Effectively simulate the ADC with
    * ambient light cancellation.
    *
-   * NOTE: is there any need to retain the locally calculated values?
-   *       We should probably only ask the Robot what is has.
-   *
-   * NOTE: Do not call any robot functions in here or there may be
-   *       a deadlock
-   *
    * @return a copy of the local sensor data
    */
   SensorData callbackCalculateSensorData(float x, float y, float theta) {
@@ -464,7 +421,6 @@ class Application : public IEventObserver {
   sf::Text m_txt_maze_name;
   TextBox m_textbox;
   ImFont* m_guiFont = nullptr;
-  LogManager m_logger;
 };
 
 #endif  // APPLICATION_H

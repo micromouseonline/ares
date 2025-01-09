@@ -63,3 +63,26 @@ inline void DrawLED(bool state, const ImVec4& color) {
   ImGui::Button("##LED", ImVec2(20, 20));
   ImGui::PopStyleColor();
 }
+
+inline void drawSensorUpdateTime(int sensor_update_time) {
+  static int update_time = sensor_update_time;
+  float alpha = 0.025;
+  update_time = alpha * (sensor_update_time) + (1 - alpha) * update_time;
+  static int peak_time = 0;
+  if (sensor_update_time > peak_time) {
+    peak_time = sensor_update_time;
+  } else {
+    peak_time = 0.98 * peak_time;
+  }
+  ImGui::NewLine();
+  ImGui::Text("Sensor update %3d us", update_time);
+  ImGui::SameLine();
+  ImVec2 p = ImGui::GetCursorScreenPos();
+  ImGui::GetWindowDrawList()->AddRect(p, ImVec2(p.x + 200, p.y + 20), IM_COL32(255, 200, 0, 255));
+  ImColor bar_color = IM_COL32(0, 255, 0, 128);
+  p.x += 1;
+  p.y += 1;
+  ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + std::min(198, peak_time), p.y + 18), IM_COL32(200, 0, 0, 128));
+  ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + update_time, p.y + 18), bar_color);
+  ImGui::NewLine();
+}
