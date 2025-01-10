@@ -186,15 +186,6 @@ class Vehicle {
     m_state.buttons &= ~(mask);
     m_state.buttons |= state ? mask : 0;
   }
-  //
-  //  [[nodiscard]] bool isButton(const int i) const {
-  //    const uint8_t mask = BIT(i);
-  //    return (m_buttons & mask) != 0;
-  //  }
-  //
-  //  [[nodiscard]] uint8_t getButtons() const {
-  //    return m_buttons;
-  //  }
 
   /**
    * @brief Simulates a hardware timer interrupt for the robot.
@@ -217,48 +208,41 @@ class Vehicle {
       return;
     }
 
-    // Temporary variables for calculations outside the critical section
-    VehicleState localState;
-    SensorData sensorData;
-
     // Critical section: read the state and increment ticks
 
     m_ticks++;
     m_state.timestamp = m_ticks;
 
-    // Copy the current state for calculations
-    localState = m_state;
-
     // Perform calculations outside the critical section
-    float deltaDistance = localState.velocity * deltaTime;
-    float deltaAngle = localState.omega * deltaTime;
+    float deltaDistance = m_state.velocity * deltaTime;
+    float deltaAngle = m_state.omega * deltaTime;
 
-    float newX = localState.x + deltaDistance * std::cos(localState.angle * RADIANS);
-    float newY = localState.y + deltaDistance * std::sin(localState.angle * RADIANS);
-    float newAngle = std::fmod(localState.angle + deltaAngle + 360.0f, 360.0f);
+    float newX = m_state.x + deltaDistance * std::cos(m_state.angle * RADIANS);
+    float newY = m_state.y + deltaDistance * std::sin(m_state.angle * RADIANS);
+    float newAngle = std::fmod(m_state.angle + deltaAngle + 360.0f, 360.0f);
 
-    // If a sensor callback is set, send state, get data(this may involve external threads)
+    /// If a sensor callback is set, send state, get data.
+    /// There is no need for thread locking since we get back a copy
+    /// of the data from the other thread and we are sending a local copy.
+    /// In the actual hardware, the updates to state also happen in the systick
+    /// event so there should never be a conflict. It should be safe to send
+    /// m_state without a local copy
+    /// We could write a local method with the same name that just fills the
+    /// appropriate structure.
+    m_state.total_distance += deltaDistance;
+    m_state.cell_offset += deltaDistance;    // TODO: should be a behavior thing
+    m_state.move_distance += deltaDistance;  // TODO: NOT USED
+
+    m_state.x = newX;
+    m_state.y = newY;
+    m_state.angle = newAngle;
+
     if (m_sensor_callback) {
-      sensorData = m_sensor_callback(localState);
+      m_state.vehicle_inputs = m_sensor_callback(m_state);
+      ;
     }
-
-    // Critical section: update the state with new calculations
-    {
-      m_state.total_distance += deltaDistance;
-      m_state.cell_offset += deltaDistance;    // TODO: should be a behavior thing
-      m_state.move_distance += deltaDistance;  // TODO: NOT USED
-
-      m_state.x = newX;
-      m_state.y = newY;
-      m_state.angle = newAngle;
-
-      if (m_sensor_callback) {
-        m_state.sensor_data = sensorData;
-      }
-
-      // Advance the pose with the new delta time
-      m_pose.advance(deltaTime);
-    }
+    // Advance the pose with the new delta time
+    m_pose.advance(deltaTime);
   }
 
  private:

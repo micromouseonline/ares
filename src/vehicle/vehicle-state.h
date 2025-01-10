@@ -27,7 +27,7 @@ struct VehicleState {
   float cell_offset;     // distance through cell from border
   uint8_t leds;          // bitfield for led states
   uint8_t buttons;       // bitfield for button states
-  SensorData sensor_data;
+  VehicleInputs vehicle_inputs;
 
   VehicleState()
       : x(0.0f),
@@ -41,13 +41,13 @@ struct VehicleState {
         cell_offset(0.0f),
         leds(0),
         buttons(0),
-        sensor_data() {
+        vehicle_inputs() {
     //
   }
 };
 
 #include <functional>
 /// Returns a SensorData struct
-using SensorDataCallback = std::function<SensorData(VehicleState)>;
+using SensorDataCallback = std::function<VehicleInputs(VehicleState)>;
 
 #endif  // ROBOT_STATE_H

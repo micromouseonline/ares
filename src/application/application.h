@@ -7,9 +7,9 @@
 
 #include <SFML/Graphics.hpp>
 #include <cstdlib>
-
 #include <iomanip>
 #include <iostream>
+#include <mutex>
 #include <sstream>
 #include "common/core.h"
 #include "common/vec2.h"
@@ -99,7 +99,7 @@ class Application : public IEventObserver {
     sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
     m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
     /// The Lambda expression here serves to bind the callback to the application instance
-    m_robot.setSensorCallback([this](VehicleState state) -> SensorData { return sensorDataCallback(state); });
+    m_robot.setSensorCallback([this](VehicleState state) -> VehicleInputs { return sensorDataCallback(state); });
     m_robot.start();
     m_mouse.setVehicle(m_robot);
     m_mouse.start();
@@ -186,11 +186,13 @@ class Application : public IEventObserver {
     ImGui::SFML::Update(*m_window->getRenderWindow(), m_frame_clock.restart());
     displayLogMessages();
 
+    /// TODO: this needs sorting out. It may not be thread-safe
+    ///       Is it better to just listen for mapping messages from the mouse?
     m_maze_manager.updateFromMap(m_mouse.getMaze(), m_mouse.getMaze().getWidth());
 
     //    m_vehicle_state = m_robot.getState();
     std::stringstream state_summary;
-    SensorData sensors = m_vehicle_state.sensor_data;
+    VehicleInputs sensors = m_vehicle_state.vehicle_inputs;
     state_summary << "power:  " + formatSensorData((int)sensors.lfs_power, (int)sensors.lds_power, (int)sensors.rds_power, (int)sensors.rfs_power);
     state_summary << " Dist:  " + formatSensorData((int)sensors.lfs_distance, (int)sensors.lds_distance, (int)sensors.rds_distance, (int)sensors.rfs_distance);
     state_summary << "\n";
@@ -299,7 +301,7 @@ class Application : public IEventObserver {
     static int index = 0;
     speed[index] = m_vehicle_state.velocity;
     omega[index] = m_vehicle_state.omega;
-    rds[index] = m_vehicle_state.sensor_data.rds_power;
+    rds[index] = m_vehicle_state.vehicle_inputs.rds_power;
     index = (index + 1) % IM_ARRAYSIZE(speed);
     ImGui::PlotLines("speed", speed, IM_ARRAYSIZE(speed), index, "", 0, 3000, ImVec2(330, 100));
     ImGui::PlotLines("omega", omega, IM_ARRAYSIZE(omega), index, "", -1000, 1000, ImVec2(330, 140));
@@ -376,25 +378,36 @@ class Application : public IEventObserver {
    * the Robot actually works with. Effectively simulate the ADC with
    * ambient light cancellation.
    *
-   * @return a copy of the local sensor data
+   * We also take the opportunity to return other inputs and state
+   * information. Things like current action, button presses...
+   * For a better physics simulation, that might include things like
+   * mocked IMU readings, battery voltages, downforce...
+   *
+   * @return a copy of the local input data
    */
-  SensorData sensorDataCallback(VehicleState state) {
-    m_vehicle_state = state;
+  VehicleInputs sensorDataCallback(VehicleState state) {
     m_timer.restart();
+    {
+      /// ensure we get a clean, complete copy of the state
+      std::lock_guard<std::mutex> lock(m_application_mutex);
+      m_vehicle_state = state;
+    }
     m_robot_body.updateSensorGeometry(m_vehicle_state.x, m_vehicle_state.y, m_vehicle_state.angle);
     m_obstacles = m_maze_manager.GetObstacles(m_vehicle_state.x, m_vehicle_state.y);
     m_robot_body.updateSensors(m_obstacles);
-    m_sensor_data.lfs_power = m_robot_body.getSensor(conf::LFS).getPower();
-    m_sensor_data.lds_power = m_robot_body.getSensor(conf::LDS).getPower();
-    m_sensor_data.rds_power = m_robot_body.getSensor(conf::RDS).getPower();
-    m_sensor_data.rfs_power = m_robot_body.getSensor(conf::RFS).getPower();
+    m_vehicle_inputs.lfs_power = m_robot_body.getSensor(conf::LFS).getPower();
+    m_vehicle_inputs.lds_power = m_robot_body.getSensor(conf::LDS).getPower();
+    m_vehicle_inputs.rds_power = m_robot_body.getSensor(conf::RDS).getPower();
+    m_vehicle_inputs.rfs_power = m_robot_body.getSensor(conf::RFS).getPower();
 
-    m_sensor_data.lfs_distance = m_robot_body.getSensor(conf::LFS).getDistance();
-    m_sensor_data.lds_distance = m_robot_body.getSensor(conf::LDS).getDistance();
-    m_sensor_data.rds_distance = m_robot_body.getSensor(conf::RDS).getDistance();
-    m_sensor_data.rfs_distance = m_robot_body.getSensor(conf::RFS).getDistance();
+    m_vehicle_inputs.lfs_distance = m_robot_body.getSensor(conf::LFS).getDistance();
+    m_vehicle_inputs.lds_distance = m_robot_body.getSensor(conf::LDS).getDistance();
+    m_vehicle_inputs.rds_distance = m_robot_body.getSensor(conf::RDS).getDistance();
+    m_vehicle_inputs.rfs_distance = m_robot_body.getSensor(conf::RFS).getDistance();
+
     m_process_time = m_timer.getElapsedTime();
-    return m_sensor_data;
+    /// the returned data is copied so there is no need for a lock
+    return m_vehicle_inputs;
   }
 
  private:
@@ -409,7 +422,7 @@ class Application : public IEventObserver {
   std::vector<sf::FloatRect> m_obstacles;
   std::vector<const char*> m_maze_names;
   int m_maze_index = 0;
-  SensorData m_sensor_data;  // sensor readings we pass back to the robot
+  VehicleInputs m_vehicle_inputs;  // data we pass back to the robot
   MazeManager m_maze_manager;
 
   // used for timing code fragments
@@ -422,6 +435,7 @@ class Application : public IEventObserver {
   sf::Text m_txt_maze_name;
   TextBox m_textbox;
   ImFont* m_guiFont = nullptr;
+  std::mutex m_application_mutex;
 };
 
 #endif  // APPLICATION_H

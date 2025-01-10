@@ -5,9 +5,9 @@
 #ifndef SENSORDATA_H
 #define SENSORDATA_H
 
-#include <mutex>
+#include <cstdint>
 
-struct SensorData {
+struct VehicleInputs {
   float lfs_distance = 0;
   float lds_distance = 0;
   float rds_distance = 0;
@@ -16,6 +16,10 @@ struct SensorData {
   float lds_power = 0;
   float rds_power = 0;
   float rfs_power = 0;
+
+  int action = 0;
+  uint8_t buttons = 0;
+  uint8_t leds = 0;
 };
 
 #endif  // SENSORDATA_H

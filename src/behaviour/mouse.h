@@ -173,9 +173,9 @@ class Mouse {
   void updateMap(VehicleState& state) {
     bool leftWall, frontWall, rightWall;
 
-    leftWall = state.sensor_data.lds_power > 40;
-    frontWall = state.sensor_data.lfs_power > 20 && state.sensor_data.rfs_power > 20;
-    rightWall = state.sensor_data.rds_power > 40;
+    leftWall = state.vehicle_inputs.lds_power > 40;
+    frontWall = state.vehicle_inputs.lfs_power > 20 && state.vehicle_inputs.rfs_power > 20;
+    rightWall = state.vehicle_inputs.rds_power > 40;
     m_frontWall = frontWall;
     m_rightWall = rightWall;
     m_leftWall = leftWall;
@@ -538,10 +538,10 @@ class Mouse {
         }
         m_vehicle->systick(m_step_time);
         VehicleState state = m_vehicle->getState();
-        m_vehicle->setLed(7, state.sensor_data.lfs_power > 18);
-        m_vehicle->setLed(6, state.sensor_data.lds_power > 40);
-        m_vehicle->setLed(5, state.sensor_data.rds_power > 40);
-        m_vehicle->setLed(4, state.sensor_data.rfs_power > 18);
+        m_vehicle->setLed(7, state.vehicle_inputs.lfs_power > 18);
+        m_vehicle->setLed(6, state.vehicle_inputs.lds_power > 40);
+        m_vehicle->setLed(5, state.vehicle_inputs.rds_power > 40);
+        m_vehicle->setLed(4, state.vehicle_inputs.rfs_power > 18);
       }
 
       {
