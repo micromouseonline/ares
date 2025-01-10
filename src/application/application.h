@@ -36,7 +36,7 @@ class Application : public IEventObserver {
  public:
   Application()
       : m_window(std::make_unique<Window>(conf::AppName, conf::WindowSize)),  //
-        m_behaviour(m_mouse, m_robot) {                                       //
+        m_robot_manager(m_mouse, m_vehicle) {                                 //
 
     ARES_INFO("Initialising Application");
     m_elapsed = sf::Time::Zero;
@@ -95,15 +95,14 @@ class Application : public IEventObserver {
   }
 
   void setupRobot() {
-    m_robot_body.setRobot(m_robot);
+    m_robot_body.setRobot(m_vehicle);
     sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
-    m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
+    m_vehicle.setPose(start_pos.x, start_pos.y, 90.0f);
     /// The Lambda expression here serves to bind the callback to the application instance
-    m_robot.setSensorCallback([this](VehicleState state) -> VehicleInputs { return sensorDataCallback(state); });
-    m_robot.start();
-    m_mouse.setVehicle(m_robot);
+    m_vehicle.setSensorCallback([this](VehicleState state) -> VehicleInputs { return sensorDataCallback(state); });
+    m_vehicle.start();
+    m_mouse.setVehicle(m_vehicle);
     m_mouse.start();
-    m_behaviour.start();
   }
 
   /***
@@ -238,7 +237,7 @@ class Application : public IEventObserver {
     counts = std::clamp(counts, 1, 20);
     ImGui::SameLine();
     ImGui::Text("%d", counts);
-    float b_wide = ImGui::CalcTextSize("TEST SS180R").x;
+    float b_wide = ImGui::CalcTextSize("       ").x;
     b_wide += ImGui::GetStyle().FramePadding.x * 2.0;
     sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
     if (ImGui::Button("SS90", ImVec2(b_wide, 0))) {
@@ -262,6 +261,30 @@ class Application : public IEventObserver {
       //      m_mouse.setFirstRunState(true);
       m_vehicle_state.activity = ACT_SEARCH;
     }
+
+    if (ImGui::Button("START", ImVec2(b_wide, 0))) {
+      m_robot_manager.start();
+    }
+    //    ImGui::SameLine();
+    //    if (ImGui::Button("STOP", ImVec2(b_wide, 0))) {
+    //      m_robot_manager.stop();
+    //    }
+    //    ImGui::SameLine();
+    //    if (ImGui::Button("PAUSE", ImVec2(b_wide, 0))) {
+    //      m_robot_manager.pause();
+    //    }
+    //    ImGui::SameLine();
+    //    if (ImGui::Button("RESUME", ImVec2(b_wide, 0))) {
+    //      m_robot_manager.resume();
+    //    }
+    ImGui::SameLine();
+    if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
+      m_vehicle_state.buttons |= (Button::BTN_RESET);
+      m_robot_manager.reset();
+      maze_changed = true;
+      g_ticks = 0;
+    }
+    ImGui::Text("Robot Manager State: %s", m_robot_manager.getState().c_str());
 
     bool detailed_event_log = m_mouse.getEventLogDetailed();
     if (ImGui::Checkbox("Show Detailed Mouse Event Log", &detailed_event_log)) {
@@ -400,9 +423,9 @@ class Application : public IEventObserver {
   std::unique_ptr<Window> m_window;
 
   Mouse m_mouse;
-  Vehicle m_robot;  // The robot instance
+  Vehicle m_vehicle;  // The robot instance
   VehicleState m_vehicle_state;
-  RobotManager m_behaviour;
+  RobotManager m_robot_manager;
 
   RobotBody m_robot_body;
   std::vector<sf::FloatRect> m_obstacles;
