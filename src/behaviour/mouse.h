@@ -489,12 +489,6 @@ class Mouse {
     }
   }
 
-  void go(int action, int i = 1) {
-    m_iterations = i;
-    m_reset = false;
-    m_act = action;  //
-  }
-
   uint32_t getTimeStamp() {
     return m_timeStamp.load();  //
   }

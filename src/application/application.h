@@ -241,37 +241,26 @@ class Application : public IEventObserver {
     float b_wide = ImGui::CalcTextSize("TEST SS180R").x;
     b_wide += ImGui::GetStyle().FramePadding.x * 2.0;
     sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
-    if (ImGui::Button("TEST SS90", ImVec2(b_wide, 0))) {
-      m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
-      m_mouse.go(ACT_TEST_SS90, counts);
+    if (ImGui::Button("SS90", ImVec2(b_wide, 0))) {
+      m_vehicle.setPose(start_pos.x, start_pos.y, 90.0f);
     }
     ImGui::SameLine();
-    if (ImGui::Button("TEST SS180", ImVec2(b_wide, 0))) {
-      m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
-      m_mouse.go(ACT_TEST_SS180, counts);
+    if (ImGui::Button("SS180", ImVec2(b_wide, 0))) {
+      m_vehicle.setPose(start_pos.x, start_pos.y, 90.0f);
     }
     ImGui::SameLine();
-    if (ImGui::Button("CIRCUIT RUN", ImVec2(b_wide, 0))) {
-      m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
-      m_mouse.go(ACT_TEST_CIRCUIT, counts);
-    }
-    if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
-      //      m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
-      //      m_robot.setSpeeds(0.0f, 0.0f);
-      m_mouse.reset();
-      maze_changed = true;
-      g_ticks = 0;
+    if (ImGui::Button("CIRCUIT", ImVec2(b_wide, 0))) {
+      m_vehicle.setPose(start_pos.x, start_pos.y, 90.0f);
     }
     ImGui::SameLine();
-    if (ImGui::Button("FOLLOWER", ImVec2(b_wide, 0))) {
-      m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
-      m_mouse.go(ACT_TEST_FOLLOW_TO, 0);
+    if (ImGui::Button("FOLLOW", ImVec2(b_wide, 0))) {
+      m_vehicle.setPose(start_pos.x, start_pos.y, 90.0f);
     }
     ImGui::SameLine();
-    if (ImGui::Button("SEARCHER", ImVec2(b_wide, 0))) {
-      m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
-      m_mouse.setFirstRunState(true);
-      m_mouse.go(ACT_TEST_SEARCH, 0);
+    if (ImGui::Button("SEARCH", ImVec2(b_wide, 0))) {
+      //      m_vehicle.setPose(start_pos.x, start_pos.y, 90.0f);
+      //      m_mouse.setFirstRunState(true);
+      m_vehicle_state.activity = ACT_SEARCH;
     }
 
     bool detailed_event_log = m_mouse.getEventLogDetailed();
@@ -325,7 +314,6 @@ class Application : public IEventObserver {
       m_txt_maze_name.setString(maze_name);
       m_mouse.reset();
 
-      m_robot.setPose(start_pos.x, start_pos.y, 90.0f);
       maze_changed = false;
     }
   }
