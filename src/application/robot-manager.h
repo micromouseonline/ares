@@ -62,8 +62,6 @@
 #include <iostream>
 #include <thread>
 #include <vector>
-#include "../../cmake-build-debug/_deps/fmt-src/include/fmt/format.h"
-
 #include "behaviour/mouse.h"
 #include "vehicle/vehicle.h"
 
@@ -76,7 +74,9 @@ class RobotManager {
     //
     /// the mouse and vehicle construcors should initialise their repective
     /// instances
-    mouse.setVehicle(m_vehicle);
+    m_mouse.setVehicle(m_vehicle);
+    m_vehicle.start();
+    m_mouse.start();
   }
 
   ~RobotManager() {
@@ -130,6 +130,10 @@ class RobotManager {
     m_vehicle.reset();
     m_mouse.reset();
     m_run_state = RobotState::Stopped;
+  }
+
+  void setVehiclePose(float x, float y, float angle) {
+    m_vehicle.setPose(x, y, angle);
   }
 
   std::string getState() {

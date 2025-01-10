@@ -94,15 +94,17 @@ class Application : public IEventObserver {
     io.FontDefault = m_guiFont;
   }
 
+  /***
+   * The application needs to configure some aspects of the vehicle.
+   * Although the vehicle code normally runs in a separate thread, it is
+   * safe to do this here because the thread wil not have started.
+   */
   void setupRobot() {
     m_robot_body.setRobot(m_vehicle);
     sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
-    m_vehicle.setPose(start_pos.x, start_pos.y, 90.0f);
+    m_robot_manager.setVehiclePose(start_pos.x, start_pos.y, 90.0f);
     /// The Lambda expression here serves to bind the callback to the application instance
     m_vehicle.setSensorCallback([this](VehicleState state) -> VehicleInputs { return sensorDataCallback(state); });
-    m_vehicle.start();
-    m_mouse.setVehicle(m_vehicle);
-    m_mouse.start();
   }
 
   /***

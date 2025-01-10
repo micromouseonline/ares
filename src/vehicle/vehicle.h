@@ -171,21 +171,6 @@ class Vehicle {
     m_state.leds &= ~(mask);
     m_state.leds |= state ? mask : 0;
   }
-  //
-  //  [[nodiscard]] bool getLed(const int i) const {
-  //    const uint8_t mask = BIT(i);
-  //    return (m_leds & mask) == mask;
-  //  }
-  //
-  //  [[nodiscard]] uint8_t getLeds() const {
-  //    return m_leds;
-  //  }
-
-  void setButton(const int i, const bool state) {
-    const uint8_t mask = BIT(i);
-    m_state.buttons &= ~(mask);
-    m_state.buttons |= state ? mask : 0;
-  }
 
   /**
    * @brief Simulates a hardware timer interrupt for the robot.
