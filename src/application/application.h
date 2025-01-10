@@ -191,7 +191,6 @@ class Application : public IEventObserver {
     ///       Is it better to just listen for mapping messages from the mouse?
     m_maze_manager.updateFromMap(m_mouse.getMaze(), m_mouse.getMaze().getWidth());
 
-    //    m_vehicle_state = m_robot.getState();
     std::stringstream state_summary;
     VehicleInputs sensors = m_vehicle_state.vehicle_inputs;
     state_summary << "power:  " + formatSensorData((int)sensors.lfs_power, (int)sensors.lds_power, (int)sensors.rds_power, (int)sensors.rfs_power);
@@ -288,6 +287,7 @@ class Application : public IEventObserver {
     }
     ImGui::Text("Robot Manager State: %s", m_robot_manager.getState().c_str());
 
+    /// TOSO: the log level should be passed in through the vehicle state - like a button push or toggle
     bool detailed_event_log = m_mouse.getEventLogDetailed();
     if (ImGui::Checkbox("Show Detailed Mouse Event Log", &detailed_event_log)) {
       m_mouse.setEventLogDetailed(detailed_event_log);
