@@ -6,9 +6,9 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#include "application/applog-manager.h"
 #include "behaviour/maze.h"  // Include the Maze class header
 #include "common/core.h"
-#include "common/logmanager.h"
 
 // A helper function to run concurrent set_mask operations
 void setMaskConcurrently(Maze& maze, MazeMask mask, std::atomic<bool>& success_flag) {

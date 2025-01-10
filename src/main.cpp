@@ -2,7 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 #include "application/application.h"
-#include "application/robot-body.h"
+// #include "application/robot-body.h"
 
 /***
  * This app starts to take the 015 example and convert it to a more generic application structure.
@@ -32,6 +32,7 @@ int main() {
   if (image.loadFromFile("assets/images/mouse-a.png")) {
     app.getWindow()->getRenderWindow()->setIcon(image.getSize().x, image.getSize().y, image.getPixelsPtr());
   }
+  ARES_TRACE("Ready to rock");
 
   app.run();
   return 0;

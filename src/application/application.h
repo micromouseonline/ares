@@ -24,7 +24,7 @@
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #include "imgui_internal.h"
 #pragma GCC diagnostic pop
-#include "common/logmanager.h"
+#include "applog-manager.h"
 #include "widgets.h"
 
 #include "behaviour/mouse.h"
@@ -37,8 +37,8 @@ class Application : public IEventObserver {
   Application()
       : m_window(std::make_unique<Window>(conf::AppName, conf::WindowSize)),  //
         m_robot_manager(m_mouse, m_vehicle) {                                 //
-
-    ARES_INFO("Initialising Application");
+    m_applog.initialise();
+    ARES_INFO("Initialising Application ...");
     m_elapsed = sf::Time::Zero;
     setupWindow();
     ARES_TRACE("  .. Window Ready");
@@ -50,8 +50,8 @@ class Application : public IEventObserver {
 
   ~Application() {
     ARES_TRACE("Application Shutting Down ...");
-    m_mouse.stop();
-    ARES_TRACE("   Mouse Stopped");
+    m_robot_manager.stop();
+    ARES_TRACE("  .. Robot Manager Stopped");
     m_window.reset();  // destroys the window explicitly so that we can clean up
     ARES_TRACE("  .. Window Closed");
     ImGui::SFML::Shutdown();
@@ -207,9 +207,9 @@ class Application : public IEventObserver {
     }
     ImGui::Text("LEDS");
 
-    bool button_x = CustomButton("X", ImVec2(104, 24));
+    bool button_rst = CustomButton("RESET", ImVec2(104, 24));
     ImGui::SameLine();
-    bool button_y = CustomButton("Y", ImVec2(104, 24));
+    bool button_go = CustomButton("GO", ImVec2(104, 24));
     drawSensorUpdateTime(m_process_time.asMicroseconds());
     ImGui::Text("%s", state_summary.str().c_str());
     ImGui::End();
@@ -335,8 +335,7 @@ class Application : public IEventObserver {
       maze_name += std::to_string(m_maze_index);
       maze_name += ")";
       m_txt_maze_name.setString(maze_name);
-      m_mouse.reset();
-
+      m_robot_manager.reset();
       maze_changed = false;
     }
   }
@@ -445,6 +444,7 @@ class Application : public IEventObserver {
   TextBox m_textbox;
   ImFont* m_guiFont = nullptr;
   std::mutex m_application_mutex;
+  AppLogManager m_applog;
 };
 
 #endif  // APPLICATION_H

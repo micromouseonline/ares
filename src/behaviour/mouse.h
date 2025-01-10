@@ -11,8 +11,8 @@
 
 #pragma once
 
+#include "application/applog-manager.h"
 #include "common/logger.h"
-#include "common/logmanager.h"
 #include "common/pose.h"
 #include "common/timer.h"
 #include "maze.h"

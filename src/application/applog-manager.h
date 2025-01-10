@@ -62,10 +62,10 @@
 #endif
 
 #include <memory>
-class LogManager {
+class AppLogManager {
  public:
-  LogManager() = default;
-  ~LogManager() = default;
+  AppLogManager() = default;
+  ~AppLogManager() = default;
 
   void initialise() {
     auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
