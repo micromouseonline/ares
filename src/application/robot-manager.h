@@ -75,6 +75,7 @@ class RobotManager {
     /// the mouse and vehicle construcors should initialise their repective
     /// instances
     m_mouse.setVehicle(m_vehicle);
+    m_vehicle.setPose(96.0f, 96.0f, 90.0f);
     m_vehicle.startRunning();
     m_mouse.start();
   }
@@ -126,6 +127,7 @@ class RobotManager {
     stop();
     m_run_state = RobotState::Resetting;
     m_vehicle.reset();
+    m_vehicle.setPose(96.0f, 96.0f, 90.0f);
     m_mouse.reset();
     m_run_state = RobotState::Stopped;
   }

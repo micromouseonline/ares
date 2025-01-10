@@ -276,8 +276,8 @@ class Mouse {
       setHeading(DIR_N);
       setLocation({0, 0});
       m_target = Location(7, 7);
+      m_vehicle->reset();
       m_vehicle->setPose(96.0f, 96.0f - 40.0f, 90.0f);
-      m_vehicle->resetTotalDistance();
 
       VehicleState robot_state = m_vehicle->getState();
       delay_ms(500);
