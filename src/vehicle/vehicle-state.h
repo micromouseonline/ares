@@ -37,7 +37,7 @@ enum Led {
  *
  */
 struct VehicleState {
-  uint32_t timestamp;
+  uint32_t ticks;
   float x;
   float y;
   float angle;

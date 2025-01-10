@@ -105,6 +105,7 @@ class Application : public IEventObserver {
     m_robot_manager.setVehiclePose(start_pos.x, start_pos.y, 90.0f);
     /// The Lambda expression here serves to bind the callback to the application instance
     m_vehicle.setSensorCallback([this](VehicleState state) -> VehicleInputs { return sensorDataCallback(state); });
+    m_vehicle.startRunning();
   }
 
   /***
@@ -304,7 +305,7 @@ class Application : public IEventObserver {
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "    time     X      Y   Theta     Vel   Omega");
     char s[60];
     sprintf(s, "%8u %5.1f  %5.1f  %6.2f  %6.1f  %6.1f  ",  //
-            m_vehicle_state.timestamp, m_vehicle_state.x, m_vehicle_state.y, m_vehicle_state.angle, m_vehicle_state.velocity, m_vehicle_state.omega);
+            m_vehicle_state.ticks, m_vehicle_state.x, m_vehicle_state.y, m_vehicle_state.angle, m_vehicle_state.velocity, m_vehicle_state.omega);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", s);
     const int frames = 60 * 4;
     static float speed[frames];

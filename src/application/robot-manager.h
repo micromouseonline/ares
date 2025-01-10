@@ -75,7 +75,7 @@ class RobotManager {
     /// the mouse and vehicle construcors should initialise their repective
     /// instances
     m_mouse.setVehicle(m_vehicle);
-    m_vehicle.start();
+    m_vehicle.startRunning();
     m_mouse.start();
   }
 
@@ -90,9 +90,7 @@ class RobotManager {
     if (m_run_state == RobotState::Stopped || m_run_state == RobotState::Paused) {
       m_run_state = RobotState::Running;
       m_running = true;
-      if (m_run_state == RobotState::Stopped) {
-      }
-      m_vehicle.start();
+      m_vehicle.startRunning();
       m_mouse.start();
       if (!m_thread.joinable()) {
         m_thread = std::thread(&RobotManager::run, this);
@@ -104,7 +102,7 @@ class RobotManager {
     m_run_state = RobotState::Stopped;
     m_running = false;
     m_mouse.stop();
-    m_vehicle.stop();
+    m_vehicle.stopRunning();
     if (m_thread.joinable()) {
       m_thread.join();
     }
@@ -165,7 +163,7 @@ class RobotManager {
       }
     }
     m_mouse.stop();
-    m_vehicle.stop();
+    m_vehicle.stopRunning();
     m_mouse.reset();
     m_vehicle.reset();
   }

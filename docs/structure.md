@@ -16,7 +16,7 @@
     - Vehicle never tells Mouse what to do.
     - Mouse tells the Vehicle what to do and constantly monitors its achievement.
     - Mouse does not care about the world time, If it cares at all it is about tick count from the robot.
-    - This dependence means that robot can run systick at arbitrary speed but behaviour can timestamp its actions using
+    - This dependence means that robot can run systick at arbitrary speed but behaviour can ticks its actions using
       the robot tick count.
     - Mouse also generates a log of actions. For simplicity, this can be separate to the Vehicle black box but the
       common time stamp lets you sync them up later.

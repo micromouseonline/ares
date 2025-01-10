@@ -15,9 +15,9 @@
 #include "vehicle-state.h"
 
 /**
- * @brief The Robot class models the physical robot's behavior and movement.
+ * @brief The Vehicle class models the physical robot's behavior and movement.
  *
- * The Robot class acts as a simulated vehicle that moves and turns on the screen,
+ * The Vehicle class acts as a simulated vehicle that moves and turns on the screen,
  * mimicking the dynamic behavior of a real-world robot. It is designed to be
  * generic and independent of any specific behavior or control logic, except for
  * non-holonomic constraints and sensor data collection.
@@ -35,6 +35,17 @@
  *   real-world sensor operation where the robot queries the environment but
  *   delegates interpretation to higher-level logic.
  *
+ * - **Virtual inputs and monitoring:**
+ *   When the Vehicle requests sensor data it sends a copy of its current state
+ *   to the application. That way the application can monitor the vehicle without
+ *   having to call any of its methods. For example, the state of the indicator
+ *   LEDS is read to updatethe application UI.
+ *
+ *   The application sends back the sensor data as part of another complete copy
+ *   of the vehicle state. The main reason is to allow the application to perform
+ *   tasks like simulate the pressing of buttons on the vehicle or update the
+ *   settings switches or their equivalent
+ *
  * - **Simulation of Hardware Interrupts:**
  *   The `systick()` method simulates a hardware timer interrupt, typically running
  *   at 1kHz on real robots. It updates low-level controllers, monitors encoders
@@ -42,12 +53,8 @@
  *   synchronization and hardware-like behavior.
  *
  * - **Time Management:**
- *   The Robot maintains a millisecond-accurate counter (`m_ticks`), which serves
+ *   The Robot maintains a millisecond-accurate counter (`m_state.ticks`), which serves
  *   as a timestamp for logging and timing purposes.
- *
- * - **Data Logging:**
- *   The systick method can also perform black-box style data logging, recording
- *   low-level behavior for debugging or analysis.
  *
  * ### Relationship with Application and Behavior:
  * - The **Application** holds the physical world data and provides the sensor
@@ -55,115 +62,74 @@
  * - The **Behavior** layer interacts with the Robot to control its movement,
  *   interpret sensor data, and define higher-level actions.
  *
- * This separation of concerns ensures modularity, where the Robot focuses solely
+ * ### Multi-threaded running
+ *   The behaviour and the vehicle code run in a shared thread
+ *   Thus the behaviour code (the muse) is able to call any vehicle method
+ *   without having to worry about shared data and mutexes
+ *   The Robot manager and the application both run in a different thread
+ *   and so should not call any vehicle methods while the vehicle is running
+ *
+ * This separation of concerns ensures modularity, where the Vehicle focuses solely
  * on physical behavior, and the Behavior or Application layers handle interpretation
  * and control logic.
  */
 
 class Vehicle {
  public:
-  const float VELOCITY_MAX = 8000.0f;
-  const float OMEGA_MAX = 4000.0f;
-
-  Vehicle() : m_ticks(0), m_running(false), m_state(), m_vMax(VELOCITY_MAX), m_omegaMax(OMEGA_MAX) {
-    //
+  Vehicle() : m_running(false), m_state() {
+    reset();
   }
 
   ~Vehicle() {
-    stop();
+    stopRunning();
   }
 
-  void start() {
+  void startRunning() {
     if (!m_running) {
-      m_ticks = 0;
       m_running = true;
     }
   }
 
-  void stop() {
-    if (m_running) {
-      m_running = false;
-    }
+  void stopRunning() {
+    m_running = false;
   }
 
   void reset() {
-    stop();
+    stopRunning();
+    m_state.ticks = 0;
+    m_state.total_distance = 0;
+    setSpeeds(0, 0);
   }
 
-  void resume() {
+  void resumeRunning() {
     m_running = true;  //
   }
-
-  bool isRunning() {
-    return m_running;
-  }
-
-  ////// Accessors
 
   [[nodiscard]] VehicleState getState() const {
     return m_state;
   }
 
-  void setState(VehicleState state) {
-    m_state = state;
-  }
-
   void setPose(float x, float y, float angle) {
+    if (isRunning()) {
+      return;
+    }
     m_state.x = x;
     m_state.y = y;
     m_state.angle = angle;
-
-    m_pose.setX(x);
-    m_pose.setY(y);
-    m_pose.setTheta(angle);
   }
 
-  ///////////// Sensors
   void setSensorCallback(SensorDataCallback callback) {
     m_sensor_callback = callback;  //
   }
 
-  /// This is the primary way to get the robot to move.
-  /// A more physics-based model would need accelerations.
-  /// Here we assume the controllers are really good and that
-  /// only realistic demands are made of the robot.
   /// Once set, speeds will not change unless comaanded
   void setSpeeds(float velocity, float omega) {
     m_state.velocity = velocity;
     m_state.omega = omega;
-    // TODO: should this be clamped here or handled elsewhere?
-    m_state.velocity = std::clamp(m_state.velocity, -m_vMax, m_vMax);
-    m_state.omega = std::clamp(m_state.omega, -m_omegaMax, +m_omegaMax);
-    m_pose.setVelocity(velocity);
-    m_pose.setOmega(omega);
-  }
-
-  void adjustCellOffset(float delta) {
-    m_state.cell_offset += delta;
-  }
-
-  void setCellOffset(float offset) {
-    m_state.cell_offset = offset;
-  }
-
-  void resetMoveDistance() {
-    m_state.move_distance = 0.0f;
-  }
-
-  void resetTotalDistance() {
-    m_state.total_distance = 0.0f;
-  }
-
-  void resetMoveAngle() {
-    m_state.move_angle = 0.0f;
   }
 
   [[nodiscard]] bool isRunning() const {
     return m_running;
-  }
-
-  [[nodiscard]] uint32_t millis() const {
-    return m_ticks;
   }
 
   void setLed(const int i, const bool state) {
@@ -182,21 +148,18 @@ class Vehicle {
    *
    * In this simulation, the systick() method is invoked from the Behaviour class
    * to advance the Robot's state by one tick. Since Behaviour runs in a separate
-   * thread from the main application, the Robot code also executes in its own thread.
+   * thread from the main application, the Vehicle code executes in its same thread.
    * This design allows Behaviour to interact with the Robot freely, but any calls
    * from the Application to Robot or Behaviour must be thread-safe, using mutexes
    * or atomic variables.
    */
 
   void systick(float deltaTime) {
-    if (!isRunning()) {
-      return;
+    m_state.ticks++;
+
+    if (m_sensor_callback) {
+      m_state.vehicle_inputs = m_sensor_callback(m_state);
     }
-
-    // Critical section: read the state and increment ticks
-
-    m_ticks++;
-    m_state.timestamp = m_ticks;
 
     // Perform calculations outside the critical section
     float deltaDistance = m_state.velocity * deltaTime;
@@ -206,41 +169,16 @@ class Vehicle {
     float newY = m_state.y + deltaDistance * std::sin(m_state.angle * RADIANS);
     float newAngle = std::fmod(m_state.angle + deltaAngle + 360.0f, 360.0f);
 
-    /// If a sensor callback is set, send state, get data.
-    /// There is no need for thread locking since we get back a copy
-    /// of the data from the other thread and we are sending a local copy.
-    /// In the actual hardware, the updates to state also happen in the systick
-    /// event so there should never be a conflict. It should be safe to send
-    /// m_state without a local copy
-    /// We could write a local method with the same name that just fills the
-    /// appropriate structure.
     m_state.total_distance += deltaDistance;
-    m_state.cell_offset += deltaDistance;    // TODO: should be a behavior thing
-    m_state.move_distance += deltaDistance;  // TODO: NOT USED
-
     m_state.x = newX;
     m_state.y = newY;
     m_state.angle = newAngle;
-
-    if (m_sensor_callback) {
-      m_state.vehicle_inputs = m_sensor_callback(m_state);
-      ;
-    }
-    // Advance the pose with the new delta time
-    m_pose.advance(deltaTime);
   }
 
  private:
   Vehicle(const Vehicle&) = delete;
   Vehicle& operator=(const Vehicle&) = delete;
-
-  uint32_t m_ticks;
   bool m_running;
-
   SensorDataCallback m_sensor_callback = nullptr;
-
   VehicleState m_state;
-  Pose m_pose;
-  float m_vMax;
-  float m_omegaMax;
 };
