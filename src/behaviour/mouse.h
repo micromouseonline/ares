@@ -57,7 +57,6 @@ class Mouse {
   void start() {
     if (!m_running) {
       m_running = true;
-      //      m_thread = std::thread(&Mouse::run, this);
     }
   }
 
@@ -537,6 +536,9 @@ class Mouse {
         m_vehicle->setLed(5, state.vehicle_inputs.rds_power > 40);
         m_vehicle->setLed(4, state.vehicle_inputs.rfs_power > 18);
         m_activity = state.activity;
+        if (state.buttons & Button::BTN_RESET) {
+          m_running = false;
+        }
       }
 
       {

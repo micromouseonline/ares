@@ -17,6 +17,18 @@ enum Activity {
   ACT_SEARCH,
 };
 
+enum Button {
+  BTN_GO = (1 << 0),
+  BTN_RESET = (1 << 1),
+};
+
+enum Led {
+  LED_1 = (1 << 0),
+  LED_2 = (1 << 1),
+  LED_3 = (1 << 2),
+  LED_4 = (1 << 3),
+};
+
 /**
  * Positions here are in world coordinates with
  * the origin in the bottom left, x-axis to the right

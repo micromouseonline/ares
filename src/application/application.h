@@ -214,8 +214,6 @@ class Application : public IEventObserver {
     drawSensorUpdateTime(m_process_time.asMicroseconds());
     ImGui::Text("%s", state_summary.str().c_str());
     ImGui::End();
-    m_robot.setButton(1, button_x);
-    m_robot.setButton(0, button_y);
 
     /////  IMGUI ////////////////////////////////////////////////////////////////////////////
     ImGui::Begin("Mouse Control", nullptr);
