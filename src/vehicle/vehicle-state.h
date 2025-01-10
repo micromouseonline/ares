@@ -7,6 +7,16 @@
 
 #include <SFML/Graphics.hpp>
 #include "sensor-data.h"
+
+enum Activity {
+  ACT_NONE,
+  ACT_TEST_SS90,
+  ACT_TEST_SS180,
+  ACT_TEST_CIRCUIT,
+  ACT_TEST_FOLLOW_TO,
+  ACT_SEARCH,
+};
+
 /**
  * Positions here are in world coordinates with
  * the origin in the bottom left, x-axis to the right
@@ -27,6 +37,8 @@ struct VehicleState {
   float cell_offset;     // distance through cell from border
   uint8_t leds;          // bitfield for led states
   uint8_t buttons;       // bitfield for button states
+  uint8_t activity;      // selected from menu
+  int activity_arg;      // argument for activity
   VehicleInputs vehicle_inputs;
 
   VehicleState()
@@ -41,6 +53,8 @@ struct VehicleState {
         cell_offset(0.0f),
         leds(0),
         buttons(0),
+        activity(0),
+        activity_arg(0),
         vehicle_inputs() {
     //
   }

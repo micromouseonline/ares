@@ -27,15 +27,6 @@
 #include "vehicle/sensor-data.h"
 #include "vehicle/vehicle.h"
 
-enum Activity {
-  ACT_NONE,
-  ACT_TEST_SS90,
-  ACT_TEST_SS180,
-  ACT_TEST_CIRCUIT,
-  ACT_TEST_FOLLOW_TO,
-  ACT_TEST_SEARCH,
-};
-
 class Mouse {
  public:
   // TODO: Never instantiate the mouse without a vehicle
@@ -58,8 +49,8 @@ class Mouse {
 
   void reset() {
     m_reset = true;
-    m_act = ACT_NONE;
-
+    m_activity = ACT_NONE;
+    stop();
     m_maze.initialise();
   }
 
@@ -475,7 +466,7 @@ class Mouse {
     std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
     m_current_trajectory = std::move(idle);
     while (m_running) {
-      switch (m_act) {
+      switch (m_activity) {
         case ACT_TEST_SS90:
           test_SS90(m_iterations);
           break;
@@ -488,13 +479,13 @@ class Mouse {
         case ACT_TEST_FOLLOW_TO:
           followTo(Location(0, 0));
           break;
-        case ACT_TEST_SEARCH: {
+        case ACT_SEARCH: {
           testSearch();
         } break;
         default:  // do nothing
           break;
       }
-      m_act = ACT_NONE;
+      m_activity = ACT_NONE;
       delay_ms(10);  /// make sure the regular tasks get updated
     }
   }
@@ -545,6 +536,7 @@ class Mouse {
         m_vehicle->setLed(6, state.vehicle_inputs.lds_power > 40);
         m_vehicle->setLed(5, state.vehicle_inputs.rds_power > 40);
         m_vehicle->setLed(4, state.vehicle_inputs.rfs_power > 18);
+        m_activity = state.activity;
       }
 
       {
@@ -654,7 +646,7 @@ class Mouse {
   std::atomic<long> m_timeStamp = 0;
   volatile std::atomic<bool> m_reset = false;
 
-  std::atomic<int> m_act = ACT_NONE;
+  std::atomic<int> m_activity = ACT_NONE;
   std::atomic<int> m_iterations = 0;
   std::atomic<float> m_speed_up = 1.0f;
 
