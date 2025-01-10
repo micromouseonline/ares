@@ -14,7 +14,7 @@ TEST(TrapezoidTest, 001_InitAndBegin) {
   Pose p = trapezoid.getCurrentPose();
   EXPECT_EQ(0, p.getX());
   EXPECT_EQ(0, p.getY());
-  EXPECT_EQ(0, p.getTheta());
+  EXPECT_EQ(0, p.getAngle());
   EXPECT_EQ(0, trapezoid.getCurrentStep());
 
   Pose startPose(1.0f, 2.0f, 30.0f);
@@ -22,7 +22,7 @@ TEST(TrapezoidTest, 001_InitAndBegin) {
   p = trapezoid.getCurrentPose();
   EXPECT_EQ(p.getX(), startPose.getX());
   EXPECT_EQ(p.getY(), startPose.getY());
-  EXPECT_EQ(p.getTheta(), startPose.getTheta());
+  EXPECT_EQ(p.getAngle(), startPose.getAngle());
 
   trapezoid.begin();
   EXPECT_FALSE(trapezoid.isFinished());
@@ -42,7 +42,7 @@ TEST(TrapezoidTest, 003_InitWithArgs) {
   Pose trajectory_pose = trapezoid.getCurrentPose();
   EXPECT_FLOAT_EQ(trajectory_pose.getX(), 0.0f);
   EXPECT_FLOAT_EQ(trajectory_pose.getY(), 0.0f);
-  EXPECT_FLOAT_EQ(trajectory_pose.getTheta(), 0.0f);
+  EXPECT_FLOAT_EQ(trajectory_pose.getAngle(), 0.0f);
   EXPECT_FLOAT_EQ(trajectory_pose.getVelocity(), 0.0f);
   EXPECT_FLOAT_EQ(trajectory_pose.getOmega(), 0.0f);
   EXPECT_FLOAT_EQ(trajectory_pose.getDistance(), 0.0f);
@@ -63,7 +63,7 @@ TEST(TrapezoidTest, 010_Update) {
   current_pose = trapezoid.getCurrentPose();
   EXPECT_NEAR(current_pose.getX(), 100.0f, 0.005);
   EXPECT_NEAR(current_pose.getY(), 0.0f, 0.005);
-  EXPECT_NEAR(current_pose.getTheta(), 0.0f, 0.005);
+  EXPECT_NEAR(current_pose.getAngle(), 0.0f, 0.005);
   EXPECT_NEAR(current_pose.getVelocity(), 0.0f, 0.005);
   EXPECT_NEAR(current_pose.getOmega(), 0.0f, 0.005);
   EXPECT_NEAR(current_pose.getDistance(), 100.0f, 0.005);
@@ -84,7 +84,7 @@ TEST(TrapezoidTest, 010_Update_Negative) {
   current_pose = trapezoid.getCurrentPose();
   EXPECT_NEAR(current_pose.getX(), -100.0f, 0.005);
   EXPECT_NEAR(current_pose.getY(), 0.0f, 0.005);
-  EXPECT_NEAR(current_pose.getTheta(), 0.0f, 0.005);
+  EXPECT_NEAR(current_pose.getAngle(), 0.0f, 0.005);
   EXPECT_NEAR(current_pose.getVelocity(), 0.0f, 0.005);
   EXPECT_NEAR(current_pose.getOmega(), 0.0f, 0.005);
   EXPECT_NEAR(current_pose.getDistance(), -100.0f, 0.005);
@@ -102,5 +102,5 @@ TEST(TrapezoidTest, 040_Reset) {
   Pose pose = trapezoid.getCurrentPose();
   EXPECT_FLOAT_EQ(pose.getX(), 1.0f);
   EXPECT_FLOAT_EQ(pose.getY(), 2.0f);
-  EXPECT_FLOAT_EQ(pose.getTheta(), 30.0f);
+  EXPECT_FLOAT_EQ(pose.getAngle(), 30.0f);
 }

@@ -74,42 +74,51 @@ class RobotManager {
     //
     /// the mouse and vehicle construcors should initialise their repective
     /// instances
+    ARES_INFO(" RM: Assign Vehicle to Mouse");
     m_mouse.setVehicle(m_vehicle);
-    m_vehicle.setPose(96.0f, 96.0f, 90.0f);
-    m_vehicle.startRunning();
+    ARES_INFO(" RM: Start Mouse");
     m_mouse.start();
+    //    m_vehicle.setPose(96.0f, 96.0f, 90.0f);
+    //    m_vehicle.startRunning();
+    ARES_INFO(" RM: Initialised");
   }
 
   ~RobotManager() {
     stop();
     if (m_thread.joinable()) {
+      ARES_INFO(" RM: Stopping Robot Thread")
       m_thread.join();
+      ARES_INFO(" RM: Joined Robot Thread")
     }
   }
 
   void start() {
-    if (m_run_state == RobotState::Stopped || m_run_state == RobotState::Paused) {
-      m_run_state = RobotState::Running;
-      m_running = true;
-      m_vehicle.startRunning();
-      m_mouse.start();
-      if (!m_thread.joinable()) {
-        m_thread = std::thread(&RobotManager::run, this);
-      }
+    ARES_INFO(" RM: Starting Robot")
+    //    if (m_run_state == RobotState::Stopped || m_run_state == RobotState::Paused) {
+    m_run_state = RobotState::Running;
+    m_running = true;
+    m_vehicle.startRunning();
+    m_mouse.start();
+    if (!m_thread.joinable()) {
+      ARES_INFO(" RM: Starting Robot Thread")
+      m_thread = std::thread(&RobotManager::run, this);
     }
+    //    }
   }
 
   void stop() {
+    ARES_INFO(" RM: Stopping Robot")
     m_run_state = RobotState::Stopped;
     m_running = false;
     m_mouse.stop();
     m_vehicle.stopRunning();
-    if (m_thread.joinable()) {
-      m_thread.join();
-    }
+    //    if (m_thread.joinable()) {
+    //      m_thread.join();
+    //    }
   }
 
   void pause() {
+    ARES_INFO(" RM: Pausing Robot")
     if (m_run_state == RobotState::Running) {
       m_run_state = RobotState::Paused;
       m_running = false;
@@ -117,6 +126,7 @@ class RobotManager {
   }
 
   void resume() {
+    ARES_INFO(" RM: Resuming Robot")
     if (m_run_state == RobotState::Paused) {
       m_run_state = RobotState::Running;
       m_running = true;
@@ -124,6 +134,7 @@ class RobotManager {
   }
 
   void reset() {
+    ARES_INFO(" RM: Resetting Robot")
     stop();
     m_run_state = RobotState::Resetting;
     m_vehicle.reset();
@@ -133,6 +144,7 @@ class RobotManager {
   }
 
   void setVehiclePose(float x, float y, float angle) {
+    ARES_INFO(" RM: Set Robot Pose {},{} {}", x, y, angle);
     m_vehicle.setPose(x, y, angle);
   }
 
@@ -158,16 +170,18 @@ class RobotManager {
 
  private:
   void run() {
+    ARES_INFO(" RM: Entering thread");
     while (m_running) {
-      /// do what we need to do with the mouse and vehicle
       if (m_vehicle.isRunning() && m_mouse.isRunning()) {
         m_mouse.run();  // only returns when reset
       }
     }
+    ARES_INFO(" RM: Leaving thread");
     m_mouse.stop();
     m_vehicle.stopRunning();
     m_mouse.reset();
     m_vehicle.reset();
+    ARES_INFO(" RM: Exited thread");
   }
   Mouse& m_mouse;
   Vehicle& m_vehicle;

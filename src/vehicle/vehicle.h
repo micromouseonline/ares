@@ -11,7 +11,6 @@
 #include "behaviour/trajectories/straight.h"
 #include "common/core.h"
 #include "common/pose.h"
-#include "sensor-data.h"
 #include "vehicle-state.h"
 
 /**
@@ -85,9 +84,7 @@ class Vehicle {
   }
 
   void startRunning() {
-    if (!m_running) {
-      m_running = true;
-    }
+    m_running = true;
   }
 
   void stopRunning() {
@@ -101,21 +98,22 @@ class Vehicle {
     setSpeeds(0, 0);
   }
 
-  void resumeRunning() {
-    m_running = true;  //
-  }
-
   [[nodiscard]] VehicleState getState() const {
     return m_state;
   }
 
   void setPose(float x, float y, float angle) {
-    if (isRunning()) {
-      return;
-    }
     m_state.x = x;
     m_state.y = y;
     m_state.angle = angle;
+  }
+
+  Pose getPose() {
+    Pose pose;
+    pose.setX(m_state.x);
+    pose.setY(m_state.y);
+    pose.setAngle(m_state.angle);
+    return pose;
   }
 
   void setSensorCallback(SensorDataCallback callback) {
@@ -156,12 +154,13 @@ class Vehicle {
 
   void systick(float deltaTime) {
     m_state.ticks++;
-
     if (m_sensor_callback) {
       m_state.vehicle_inputs = m_sensor_callback(m_state);
     }
+    if (!m_running) {
+      return;
+    }
 
-    // Perform calculations outside the critical section
     float deltaDistance = m_state.velocity * deltaTime;
     float deltaAngle = m_state.omega * deltaTime;
 

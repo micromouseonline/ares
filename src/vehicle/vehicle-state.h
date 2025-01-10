@@ -5,9 +5,6 @@
 #ifndef ROBOT_STATE_H
 #define ROBOT_STATE_H
 
-#include <SFML/Graphics.hpp>
-#include "sensor-data.h"
-
 enum Activity {
   ACT_NONE,
   ACT_TEST_SS90,
@@ -29,6 +26,20 @@ enum Led {
   LED_4 = (1 << 3),
 };
 
+struct VehicleInputs {
+  float lfs_distance = 0;
+  float lds_distance = 0;
+  float rds_distance = 0;
+  float rfs_distance = 0;
+  float lfs_power = 0;
+  float lds_power = 0;
+  float rds_power = 0;
+  float rfs_power = 0;
+
+  int action = 0;
+  uint8_t buttons = 0;
+  uint8_t leds = 0;
+};
 /**
  * Positions here are in world coordinates with
  * the origin in the bottom left, x-axis to the right

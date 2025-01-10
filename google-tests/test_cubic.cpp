@@ -14,7 +14,7 @@ TEST(CubicTrajectoryTest, 001_InitAndBegin) {
   Pose p = cubic.getCurrentPose();
   EXPECT_EQ(0, p.getX());
   EXPECT_EQ(0, p.getY());
-  EXPECT_EQ(0, p.getTheta());
+  EXPECT_EQ(0, p.getAngle());
   EXPECT_EQ(0, cubic.getCurrentStep());
 
   Pose startPose(1.0f, 2.0f, 30.0f);
@@ -22,7 +22,7 @@ TEST(CubicTrajectoryTest, 001_InitAndBegin) {
   p = cubic.getCurrentPose();
   EXPECT_EQ(p.getX(), startPose.getX());
   EXPECT_EQ(p.getY(), startPose.getY());
-  EXPECT_EQ(p.getTheta(), startPose.getTheta());
+  EXPECT_EQ(p.getAngle(), startPose.getAngle());
 
   cubic.begin();
   EXPECT_FALSE(cubic.isFinished());
@@ -42,7 +42,7 @@ TEST(CubicTrajectoryTest, 003_InitWithArgs) {
   Pose trajectory_pose = cubic.getCurrentPose();
   EXPECT_FLOAT_EQ(trajectory_pose.getX(), 0.0f);
   EXPECT_FLOAT_EQ(trajectory_pose.getY(), 0.0f);
-  EXPECT_FLOAT_EQ(trajectory_pose.getTheta(), 0.0f);
+  EXPECT_FLOAT_EQ(trajectory_pose.getAngle(), 0.0f);
   EXPECT_FLOAT_EQ(trajectory_pose.getVelocity(), 0.0f);
   EXPECT_FLOAT_EQ(trajectory_pose.getOmega(), 0.0f);
   EXPECT_FLOAT_EQ(trajectory_pose.getDistance(), 0.0f);
@@ -65,7 +65,7 @@ TEST(CubicTrajectoryTest, 010_Update) {
   current_pose = cubic.getCurrentPose();
   EXPECT_NEAR(current_pose.getX(), 70.0f, 0.1);
   EXPECT_NEAR(current_pose.getY(), 70.0f, 0.1);
-  EXPECT_NEAR(current_pose.getTheta(), 90.0f, 0.005);
+  EXPECT_NEAR(current_pose.getAngle(), 90.0f, 0.005);
   EXPECT_NEAR(current_pose.getVelocity(), speed, 0.005);
   EXPECT_NEAR(current_pose.getOmega(), 0.0f, 0.005);
   EXPECT_NEAR(current_pose.getDistance(), 115.7f, 0.005);
@@ -88,7 +88,7 @@ TEST(CubicTrajectoryTest, 010_Update_Negative) {
   current_pose = cubic.getCurrentPose();
   EXPECT_NEAR(current_pose.getX(), 70.0f, 0.1);
   EXPECT_NEAR(current_pose.getY(), -70.0f, 0.1);
-  EXPECT_NEAR(current_pose.getTheta(), 270.0f, 0.005);
+  EXPECT_NEAR(current_pose.getAngle(), 270.0f, 0.005);
   EXPECT_NEAR(current_pose.getVelocity(), 100.0f, 0.005);
   EXPECT_NEAR(current_pose.getOmega(), 0.0f, 0.005);
   EXPECT_NEAR(current_pose.getDistance(), 115.7f, 0.005);
@@ -106,5 +106,5 @@ TEST(CubicTrajectoryTest, 040_Reset) {
   Pose pose = cubic.getCurrentPose();
   EXPECT_FLOAT_EQ(pose.getX(), 1.0f);
   EXPECT_FLOAT_EQ(pose.getY(), 2.0f);
-  EXPECT_FLOAT_EQ(pose.getTheta(), 30.0f);
+  EXPECT_FLOAT_EQ(pose.getAngle(), 30.0f);
 }

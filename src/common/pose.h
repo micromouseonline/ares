@@ -25,7 +25,7 @@ class Pose {
   float getDistance() const {
     return m_distance;
   }
-  float getTheta() const {
+  float getAngle() const {
     return m_theta;
   };
   float getVelocity() const {
@@ -56,7 +56,7 @@ class Pose {
   void setDistance(float dist) {
     m_distance = dist;
   }
-  void setTheta(float theta) {
+  void setAngle(float theta) {
     m_theta = theta;
   }
 

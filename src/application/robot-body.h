@@ -60,10 +60,6 @@ class RobotBody {
     addShape(std::move(dot), sf::Vector2f(0, 0));
   }
 
-  void setRobot(Vehicle& robot) {
-    m_robot = &robot;
-  }
-
   void addShape(std::unique_ptr<sf::Shape> shape, const sf::Vector2f& offset) {
     shape->setPosition(m_position + offset);
     m_body_shapes.push_back({std::move(shape), offset, offset});
@@ -117,17 +113,13 @@ class RobotBody {
     }
   }
 
-  void draw(sf::RenderWindow& window) {
-    float angle = 0;
-    sf::Vector2f worldPos{90, 90};
-    if (m_robot) {
-      worldPos = {m_robot->getState().x, m_robot->getState().y};
-      angle = (m_robot->getState().angle);
-    }
+  void draw(sf::RenderWindow& window, Pose pose) {
+    draw(window, pose.getX(), pose.getY(), pose.getAngle());
+  }
 
-    setPosition(worldPos);
+  void draw(sf::RenderWindow& window, float x, float y, float angle) {
+    setPosition(x, y);
     setRotation(angle);
-
     for (const auto& item : m_body_shapes) {
       sf::Shape& s = *item.shape;
       s.setPosition(s.getPosition());
@@ -176,7 +168,6 @@ class RobotBody {
   float m_angle = 0;
   sf::Color m_colour = sf::Color::White;
   std::vector<ShapeData> m_body_shapes;  // List of shapes and their offsets
-  Vehicle* m_robot = nullptr;
 };
 
 #endif  // OBJECT_H

@@ -13,7 +13,7 @@ TEST(TrajectoryTest, 001_InitAndBegin) {
   Pose p = traj.getCurrentPose();
   EXPECT_EQ(0, p.getX());
   EXPECT_EQ(0, p.getY());
-  EXPECT_EQ(0, p.getTheta());
+  EXPECT_EQ(0, p.getAngle());
   EXPECT_EQ(0, traj.getCurrentStep());
 
   Pose startPose(1.0f, 2.0f, 30.0f);
@@ -21,7 +21,7 @@ TEST(TrajectoryTest, 001_InitAndBegin) {
   p = traj.getCurrentPose();
   EXPECT_EQ(p.getX(), startPose.getX());
   EXPECT_EQ(p.getY(), startPose.getY());
-  EXPECT_EQ(p.getTheta(), startPose.getTheta());
+  EXPECT_EQ(p.getAngle(), startPose.getAngle());
 
   traj.begin();
   EXPECT_FALSE(traj.isFinished());
@@ -67,5 +67,5 @@ TEST(TrajectoryTest, 040_Reset) {
   Pose pose = traj.getCurrentPose();
   EXPECT_FLOAT_EQ(pose.getX(), 1.0f);
   EXPECT_FLOAT_EQ(pose.getY(), 2.0f);
-  EXPECT_FLOAT_EQ(pose.getTheta(), 30.0f);
+  EXPECT_FLOAT_EQ(pose.getAngle(), 30.0f);
 }

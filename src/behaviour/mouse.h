@@ -24,7 +24,6 @@
 #include "trajectories/spinturn.h"
 #include "trajectories/straight.h"
 #include "trajectory.h"
-#include "vehicle/sensor-data.h"
 #include "vehicle/vehicle.h"
 
 class Mouse {

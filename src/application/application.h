@@ -29,33 +29,35 @@
 
 #include "behaviour/mouse.h"
 #include "robot-body.h"
-#include "vehicle/sensor-data.h"
 #include "vehicle/vehicle.h"
 
 class Application : public IEventObserver {
  public:
   Application()
-      : m_window(std::make_unique<Window>(conf::AppName, conf::WindowSize)),  //
-        m_robot_manager(m_mouse, m_vehicle) {                                 //
+      : m_window(std::make_unique<Window>(conf::AppName, conf::WindowSize)),
+        m_vehicle_state(),
+        m_vehicle(),
+        m_mouse(),
+        m_robot_manager(m_mouse, m_vehicle) {  //
     m_applog.initialise();
-    ARES_INFO("Initialising Application ...");
+    ARES_INFO("APP: Initialising Application ...");
     m_elapsed = sf::Time::Zero;
     setupWindow();
-    ARES_TRACE("  .. Window Ready");
+    ARES_TRACE("APP:   .. Window Ready");
     setupImGui();
-    ARES_TRACE("  .. ImGui Ready");
+    ARES_TRACE("APP:   .. ImGui Ready");
     setupRobot();
-    ARES_TRACE("  .. Robot Ready");
+    ARES_TRACE("APP:   .. Robot Ready");
   }
 
   ~Application() {
-    ARES_TRACE("Application Shutting Down ...");
+    ARES_TRACE("APP: Application Shutting Down ...");
     m_robot_manager.stop();
-    ARES_TRACE("  .. Robot Manager Stopped");
+    ARES_TRACE("APP:   .. Robot Manager Stopped");
     m_window.reset();  // destroys the window explicitly so that we can clean up
-    ARES_TRACE("  .. Window Closed");
+    ARES_TRACE("APP:   .. Window Closed");
     ImGui::SFML::Shutdown();
-    ARES_TRACE("  .. ImGui Shutdown");
+    ARES_TRACE("APP:   .. ImGui Shutdown");
   }
 
   void run() {
@@ -82,7 +84,7 @@ class Application : public IEventObserver {
 
   void setupImGui() {
     if (!ImGui::SFML::Init(*m_window->getRenderWindow())) {
-      ARES_FATAL("Failed to initialise ImGui");
+      ARES_FATAL("APP: Failed to initialise ImGui");
     }
 
     ImGuiStyle& style = ImGui::GetStyle();
@@ -100,12 +102,14 @@ class Application : public IEventObserver {
    * safe to do this here because the thread wil not have started.
    */
   void setupRobot() {
-    m_robot_body.setRobot(m_vehicle);
+    ARES_INFO("APP: Set Vehicle pose");
     sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
     m_robot_manager.setVehiclePose(start_pos.x, start_pos.y, 90.0f);
+    ARES_INFO("APP: Set Vehicle sensor callback");
     /// The Lambda expression here serves to bind the callback to the application instance
     m_vehicle.setSensorCallback([this](VehicleState state) -> VehicleInputs { return sensorDataCallback(state); });
     m_vehicle.startRunning();
+    ARES_INFO("APP: Vehicle running");
   }
 
   /***
@@ -359,8 +363,7 @@ class Application : public IEventObserver {
     // TODO this is sketchy for the highlight. We can do better.
     //      by telling the maze manager what to do
     m_maze_manager.render(window);
-
-    m_robot_body.draw(window);
+    m_robot_body.draw(window, m_vehicle_state.x, m_vehicle_state.y, m_vehicle_state.angle);
 
     window.setView(m_window->getUIView());
     // we can draw anything else we want here.
@@ -424,9 +427,10 @@ class Application : public IEventObserver {
  private:
   std::unique_ptr<Window> m_window;
 
-  Mouse m_mouse;
-  Vehicle m_vehicle;  // The robot instance
   VehicleState m_vehicle_state;
+  Vehicle m_vehicle;  // The robot instance
+  Mouse m_mouse;
+
   RobotManager m_robot_manager;
 
   RobotBody m_robot_body;
