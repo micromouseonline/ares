@@ -69,7 +69,10 @@
 
 class RobotManager {
  public:
-  RobotManager(Mouse& mouse, Vehicle& vehicle) : m_mouse(mouse), m_vehicle(vehicle) {
+  enum class RobotState { Stopped, Running, Paused, Resetting };
+
+  RobotManager(Mouse& mouse, Vehicle& vehicle)  //
+      : m_mouse(mouse), m_vehicle(vehicle), m_run_state(RobotState::Stopped) {
     //
     /// the mouse and vehicle construcors should initialise their repective
     /// instances
@@ -84,40 +87,87 @@ class RobotManager {
   }
 
   void start() {
-    m_running = true;
-    m_mouse.start();
-    m_thread = std::thread(&RobotManager::run, this);
+    if (m_run_state == RobotState::Stopped || m_run_state == RobotState::Paused) {
+      m_run_state = RobotState::Running;
+      m_running = true;
+      if (m_run_state == RobotState::Stopped) {
+      }
+      m_vehicle.start();
+      m_mouse.start();
+      if (!m_thread.joinable()) {
+        m_thread = std::thread(&RobotManager::run, this);
+      }
+    }
   }
 
   void stop() {
+    m_run_state = RobotState::Stopped;
+    m_running = false;
     m_mouse.stop();
     m_vehicle.stop();
-    m_running = false;
     if (m_thread.joinable()) {
       m_thread.join();
     }
   }
 
+  void pause() {
+    if (m_run_state == RobotState::Running) {
+      m_run_state = RobotState::Paused;
+      m_running = false;
+    }
+  }
+
+  void resume() {
+    if (m_run_state == RobotState::Paused) {
+      m_run_state = RobotState::Running;
+      m_running = true;
+    }
+  }
+
   void reset() {
+    stop();
+    m_run_state = RobotState::Resetting;
     m_vehicle.reset();
     m_mouse.reset();
+    m_run_state = RobotState::Stopped;
+  }
+
+  std::string getState() {
+    switch (m_run_state) {
+      case RobotState::Stopped:
+        return "Stopped";
+        break;
+      case RobotState::Paused:
+        return "Paused";
+        break;
+      case RobotState::Resetting:
+        return "Resetting";
+        break;
+      case RobotState::Running:
+        return "Running";
+        break;
+      default:
+        return "UNKNOWN";
+        break;
+    }
   }
 
  private:
   void run() {
-    m_vehicle.start();
-    m_mouse.start();
     while (m_running) {
       /// do what we need to do with the mouse and vehicle
       if (m_vehicle.isRunning() && m_mouse.isRunning()) {
-        m_mouse.run();
+        m_mouse.run();  // only returns when reset
       }
     }
     m_mouse.stop();
     m_vehicle.stop();
+    m_mouse.reset();
+    m_vehicle.reset();
   }
   Mouse& m_mouse;
   Vehicle& m_vehicle;
   std::thread m_thread;
   std::atomic<bool> m_running;
+  RobotState m_run_state;
 };
