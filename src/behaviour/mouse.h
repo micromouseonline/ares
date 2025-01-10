@@ -38,6 +38,7 @@ enum Activity {
 
 class Mouse {
  public:
+  // TODO: Never instantiate the mouse without a vehicle
   Mouse() : m_vehicle(nullptr), m_running(false), m_terminate(false), m_timeStamp(0), m_reset(false) {
     //
     std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
@@ -50,7 +51,9 @@ class Mouse {
   }
 
   void setVehicle(Vehicle& vehicle) {
-    m_vehicle = &vehicle;  //
+    // NOTE that the mouse is free to call any code on the
+    //      vehicle - they are in the same thread
+    m_vehicle = &vehicle;
   }
 
   void reset() {
