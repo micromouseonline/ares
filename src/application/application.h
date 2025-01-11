@@ -39,7 +39,7 @@ class Application : public IEventObserver {
         m_vehicle(),
         m_mouse(),
         m_robot_manager(m_mouse, m_vehicle) {  //
-    m_applog.initialise();
+
     ARES_INFO("APP: Initialising Application ...");
     m_elapsed = sf::Time::Zero;
     setupWindow();
@@ -452,7 +452,6 @@ class Application : public IEventObserver {
   TextBox m_textbox;
   ImFont* m_guiFont = nullptr;
   std::mutex m_application_mutex;
-  AppLogManager m_applog;
 };
 
 #endif  // APPLICATION_H

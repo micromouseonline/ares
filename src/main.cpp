@@ -1,6 +1,7 @@
 #include <imgui-SFML.h>
 #include <SFML/Graphics.hpp>
 #include <string>
+#include "application//applog-manager.h"
 #include "application/application.h"
 // #include "application/robot-body.h"
 
@@ -24,9 +25,10 @@
 ///
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-
+AppLogManager g_applog;
 int main() {
   // Program entry point.
+  g_applog.initialise();
   Application app;
   auto image = sf::Image{};
   if (image.loadFromFile("assets/images/mouse-a.png")) {
