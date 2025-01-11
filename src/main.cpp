@@ -1,9 +1,6 @@
-#include <imgui-SFML.h>
 #include <SFML/Graphics.hpp>
-#include <string>
 #include "application//applog-manager.h"
 #include "application/application.h"
-// #include "application/robot-body.h"
 
 /***
  * This app starts to take the 015 example and convert it to a more generic application structure.
