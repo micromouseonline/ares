@@ -46,7 +46,7 @@ class Application : public IEventObserver {
     ARES_TRACE("APP:   .. Window Ready");
     setupImGui();
     ARES_TRACE("APP:   .. ImGui Ready");
-    setupRobot();
+    setupVehicle();
     ARES_TRACE("APP:   .. Robot Ready");
   }
 
@@ -61,11 +61,14 @@ class Application : public IEventObserver {
   }
 
   void run() {
+    ARES_TRACE("APP: Application running");
+    m_robot_manager.start();
     while (!getWindow()->isDone()) {
       handleInput();
       update();
       render();
     }
+    ARES_TRACE("APP: Application Finished");
   }
 
   void setupWindow() {
@@ -99,15 +102,19 @@ class Application : public IEventObserver {
   /***
    * The application needs to configure some aspects of the vehicle.
    * Although the vehicle code normally runs in a separate thread, it is
-   * safe to do this here because the thread wil not have started.
+   * safe to do this here because the thread will not have started.
+   * Also, we need to do it here because the sensor callback is local.
    */
-  void setupRobot() {
+  void setupVehicle() {
     ARES_INFO("APP: Set Vehicle pose");
     sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
     m_robot_manager.setVehiclePose(start_pos.x, start_pos.y, 90.0f);
+
     ARES_INFO("APP: Set Vehicle sensor callback");
     /// The Lambda expression here serves to bind the callback to the application instance
     m_vehicle.setSensorCallback([this](VehicleState state) -> VehicleInputs { return sensorDataCallback(state); });
+
+    ARES_INFO("APP: Set Vehicle running");
     m_vehicle.startRunning();
     ARES_INFO("APP: Vehicle running");
   }
@@ -246,6 +253,7 @@ class Application : public IEventObserver {
     float b_wide = ImGui::CalcTextSize("       ").x;
     b_wide += ImGui::GetStyle().FramePadding.x * 2.0;
     sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
+
     if (ImGui::Button("SS90", ImVec2(b_wide, 0))) {
       m_vehicle.setPose(start_pos.x, start_pos.y, 90.0f);
     }
@@ -259,30 +267,22 @@ class Application : public IEventObserver {
     }
     ImGui::SameLine();
     if (ImGui::Button("FOLLOW", ImVec2(b_wide, 0))) {
+      ARES_INFO("APP: Set Follow Mode");
       m_vehicle.setPose(start_pos.x, start_pos.y, 90.0f);
     }
     ImGui::SameLine();
     if (ImGui::Button("SEARCH", ImVec2(b_wide, 0))) {
-      //      m_vehicle.setPose(start_pos.x, start_pos.y, 90.0f);
-      //      m_mouse.setFirstRunState(true);
-      m_vehicle_state.activity = ACT_SEARCH;
+      ARES_INFO("APP: Set Search Mode");
+      if (m_vehicle_inputs.activity == ACT_NONE) {
+        m_robot_manager.setVehiclePose(96, 96, 90);
+        m_robot_manager.setActivity(ACT_SEARCH, 1);
+      }
     }
 
     if (ImGui::Button("START", ImVec2(b_wide, 0))) {
       m_robot_manager.start();
     }
-    //    ImGui::SameLine();
-    //    if (ImGui::Button("STOP", ImVec2(b_wide, 0))) {
-    //      m_robot_manager.stop();
-    //    }
-    //    ImGui::SameLine();
-    //    if (ImGui::Button("PAUSE", ImVec2(b_wide, 0))) {
-    //      m_robot_manager.pause();
-    //    }
-    //    ImGui::SameLine();
-    //    if (ImGui::Button("RESUME", ImVec2(b_wide, 0))) {
-    //      m_robot_manager.resume();
-    //    }
+
     ImGui::SameLine();
     if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
       m_vehicle_state.buttons |= (Button::BTN_RESET);
@@ -290,6 +290,7 @@ class Application : public IEventObserver {
       maze_changed = true;
       g_ticks = 0;
     }
+
     ImGui::Text("Robot Manager State: %s", m_robot_manager.getState().c_str());
 
     /// TOSO: the log level should be passed in through the vehicle state - like a button push or toggle
@@ -342,7 +343,7 @@ class Application : public IEventObserver {
       maze_name += std::to_string(m_maze_index);
       maze_name += ")";
       m_txt_maze_name.setString(maze_name);
-      m_robot_manager.reset();
+      //      m_robot_manager.reset();
       maze_changed = false;
     }
   }

@@ -136,6 +136,23 @@ class Vehicle {
     m_state.leds |= state ? mask : 0;
   }
 
+  int getActivity() {
+    return vehicle_inputs.activity;
+  }
+
+  void clearActivity() {
+    vehicle_inputs.activity = ACT_NONE;
+    m_state.activity_complete = true;
+  }
+
+  int getActivityArgs() {
+    return vehicle_inputs.activity_args;
+  }
+
+  bool readButton(int btn) {
+    return (vehicle_inputs.buttons & (1 << btn) != 0);
+  }
+
   /**
    * @brief Simulates a hardware timer interrupt for the robot.
    *
@@ -155,12 +172,8 @@ class Vehicle {
   void systick(float deltaTime) {
     m_state.ticks++;
     if (m_sensor_callback) {
-      m_state.vehicle_inputs = m_sensor_callback(m_state);
+      vehicle_inputs = m_sensor_callback(m_state);
     }
-    if (!m_running) {
-      return;
-    }
-
     float deltaDistance = m_state.velocity * deltaTime;
     float deltaAngle = m_state.omega * deltaTime;
 
@@ -180,4 +193,5 @@ class Vehicle {
   bool m_running;
   SensorDataCallback m_sensor_callback = nullptr;
   VehicleState m_state;
+  VehicleInputs vehicle_inputs;
 };

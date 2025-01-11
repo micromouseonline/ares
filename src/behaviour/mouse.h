@@ -53,10 +53,8 @@ class Mouse {
     m_maze.initialise();
   }
 
-  void start() {
-    if (!m_running) {
-      m_running = true;
-    }
+  void startRunning() {
+    m_running = true;
   }
 
   void stop() {
@@ -165,9 +163,9 @@ class Mouse {
   void updateMap(VehicleState& state) {
     bool leftWall, frontWall, rightWall;
 
-    leftWall = state.vehicle_inputs.lds_power > 40;
-    frontWall = state.vehicle_inputs.lfs_power > 20 && state.vehicle_inputs.rfs_power > 20;
-    rightWall = state.vehicle_inputs.rds_power > 40;
+    leftWall = state.lds_power > 40;
+    frontWall = state.lfs_power > 20 && state.rfs_power > 20;
+    rightWall = state.rds_power > 40;
     m_frontWall = frontWall;
     m_rightWall = rightWall;
     m_leftWall = leftWall;
@@ -269,7 +267,7 @@ class Mouse {
   }
 
   bool testSearch() {
-    while (m_first_run || getContinuous()) {
+    while (m_first_run) {
       m_first_run = false;
       Log::add("Searching the maze");
       setHeading(DIR_N);
@@ -464,6 +462,8 @@ class Mouse {
     std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
     m_current_trajectory = std::move(idle);
     while (m_running) {
+      //      m_activity = m_vehicle->getActivity();
+      //      m_vehicle->clearActivity();
       switch (m_activity) {
         case ACT_TEST_SS90:
           test_SS90(m_iterations);
@@ -479,10 +479,12 @@ class Mouse {
           break;
         case ACT_SEARCH: {
           testSearch();
+          delay_ms(1);
         } break;
         default:  // do nothing
           break;
       }
+
       m_activity = ACT_NONE;
       delay_ms(10);  /// make sure the regular tasks get updated
     }
@@ -524,14 +526,10 @@ class Mouse {
         }
         m_vehicle->systick(m_step_time);
         VehicleState state = m_vehicle->getState();
-        m_vehicle->setLed(7, state.vehicle_inputs.lfs_power > 18);
-        m_vehicle->setLed(6, state.vehicle_inputs.lds_power > 40);
-        m_vehicle->setLed(5, state.vehicle_inputs.rds_power > 40);
-        m_vehicle->setLed(4, state.vehicle_inputs.rfs_power > 18);
-        m_activity = state.activity;
-        if (state.buttons & Button::BTN_RESET) {
-          m_running = false;
-        }
+        m_vehicle->setLed(7, state.lfs_power > 18);
+        m_vehicle->setLed(6, state.lds_power > 40);
+        m_vehicle->setLed(5, state.rds_power > 40);
+        m_vehicle->setLed(4, state.rfs_power > 18);
       }
 
       {
@@ -569,6 +567,14 @@ class Mouse {
 
   bool getContinuous() {
     return m_continuous_search;
+  }
+
+  int getActivity() {
+    return m_activity;
+  }
+
+  void setActivity(int activity) {
+    m_activity = activity;
   }
 
  private:

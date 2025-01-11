@@ -113,10 +113,6 @@ class RobotBody {
     }
   }
 
-  void draw(sf::RenderWindow& window, Pose pose) {
-    draw(window, pose.getX(), pose.getY(), pose.getAngle());
-  }
-
   void draw(sf::RenderWindow& window, float x, float y, float angle) {
     setPosition(x, y);
     setRotation(angle);

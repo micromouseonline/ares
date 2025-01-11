@@ -36,7 +36,8 @@ struct VehicleInputs {
   float rds_power = 0;
   float rfs_power = 0;
 
-  int action = 0;
+  int activity = ACT_NONE;
+  int activity_args = 0;
   uint8_t buttons = 0;
   uint8_t leds = 0;
 };
@@ -60,9 +61,8 @@ struct VehicleState {
   float cell_offset;     // distance through cell from border
   uint8_t leds;          // bitfield for led states
   uint8_t buttons;       // bitfield for button states
-  uint8_t activity;      // selected from menu
-  int activity_arg;      // argument for activity
-  VehicleInputs vehicle_inputs;
+  bool activity_complete;
+  //  VehicleInputs vehicle_inputs;
 
   VehicleState()
       : x(0.0f),
@@ -76,9 +76,9 @@ struct VehicleState {
         cell_offset(0.0f),
         leds(0),
         buttons(0),
-        activity(0),
-        activity_arg(0),
-        vehicle_inputs() {
+        activity_complete(true)
+  //        vehicle_inputs()
+  {
     //
   }
 };

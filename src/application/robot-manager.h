@@ -77,9 +77,13 @@ class RobotManager {
     ARES_INFO(" RM: Assign Vehicle to Mouse");
     m_mouse.setVehicle(m_vehicle);
     ARES_INFO(" RM: Start Mouse");
-    m_mouse.start();
+    m_mouse.startRunning();
     //    m_vehicle.setPose(96.0f, 96.0f, 90.0f);
     //    m_vehicle.startRunning();
+    if (!m_thread.joinable()) {
+      ARES_INFO(" RM: Starting Robot Thread")
+      m_thread = std::thread(&RobotManager::run, this);
+    }
     ARES_INFO(" RM: Initialised");
   }
 
@@ -93,17 +97,13 @@ class RobotManager {
   }
 
   void start() {
-    ARES_INFO(" RM: Starting Robot")
-    //    if (m_run_state == RobotState::Stopped || m_run_state == RobotState::Paused) {
-    m_run_state = RobotState::Running;
-    m_running = true;
-    m_vehicle.startRunning();
-    m_mouse.start();
-    if (!m_thread.joinable()) {
-      ARES_INFO(" RM: Starting Robot Thread")
-      m_thread = std::thread(&RobotManager::run, this);
+    if (m_run_state == RobotState::Stopped || m_run_state == RobotState::Paused) {
+      ARES_INFO(" RM: Starting Robot")
+      m_run_state = RobotState::Running;
+      m_running = true;
+      m_vehicle.startRunning();
+      m_mouse.startRunning();
     }
-    //    }
   }
 
   void stop() {
@@ -112,9 +112,6 @@ class RobotManager {
     m_running = false;
     m_mouse.stop();
     m_vehicle.stopRunning();
-    //    if (m_thread.joinable()) {
-    //      m_thread.join();
-    //    }
   }
 
   void pause() {
@@ -135,7 +132,6 @@ class RobotManager {
 
   void reset() {
     ARES_INFO(" RM: Resetting Robot")
-    stop();
     m_run_state = RobotState::Resetting;
     m_vehicle.reset();
     m_vehicle.setPose(96.0f, 96.0f, 90.0f);
@@ -146,6 +142,12 @@ class RobotManager {
   void setVehiclePose(float x, float y, float angle) {
     ARES_INFO(" RM: Set Robot Pose {},{} {}", x, y, angle);
     m_vehicle.setPose(x, y, angle);
+  }
+
+  void setActivity(int activity, int count) {
+    if (m_mouse.getActivity() == ACT_NONE) {
+      m_mouse.setActivity(activity);
+    }
   }
 
   std::string getState() {
@@ -173,6 +175,7 @@ class RobotManager {
     ARES_INFO(" RM: Entering thread");
     while (m_running) {
       if (m_vehicle.isRunning() && m_mouse.isRunning()) {
+        ARES_INFO(" RM: Mouse.run");
         m_mouse.run();  // only returns when reset
       }
     }
