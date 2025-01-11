@@ -462,7 +462,7 @@ class Mouse {
     std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
     m_current_trajectory = std::move(idle);
     while (m_running) {
-      //      m_activity = m_vehicle->getActivity();
+      m_activity = m_vehicle->getActivity();
       //      m_vehicle->clearActivity();
       switch (m_activity) {
         case ACT_TEST_SS90:
@@ -600,7 +600,7 @@ class Mouse {
   }
 
   void startTurn(float angle, float omega_Max, float omega_end, float alpha) {
-    float w_start = m_vehicle->getState().omega;
+    float w_start = m_vehicle->getState().angular_velocity;
     std::unique_ptr<Straight> trapezoid = std::make_unique<Straight>(angle, w_start, omega_Max, omega_end, alpha);
     m_current_trajectory = std::move(trapezoid);
     m_current_trajectory->init(Pose());
@@ -615,7 +615,7 @@ class Mouse {
   }
 
   void startInPlaceTurn(float angle, float omega_Max, float omega_end, float alpha) {
-    float w_start = m_vehicle->getState().omega;
+    float w_start = m_vehicle->getState().angular_velocity;
     std::unique_ptr<Spinturn> spinturn = std::make_unique<Spinturn>(angle, w_start, omega_Max, omega_end, alpha);
     m_current_trajectory = std::move(spinturn);
     m_current_trajectory->init(Pose());

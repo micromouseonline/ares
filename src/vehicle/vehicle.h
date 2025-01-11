@@ -123,7 +123,7 @@ class Vehicle {
   /// Once set, speeds will not change unless comaanded
   void setSpeeds(float velocity, float omega) {
     m_state.velocity = velocity;
-    m_state.omega = omega;
+    m_state.angular_velocity = omega;
   }
 
   [[nodiscard]] bool isRunning() const {
@@ -146,7 +146,7 @@ class Vehicle {
   }
 
   int getActivityArgs() {
-    return vehicle_inputs.activity_args;
+    return vehicle_inputs.activity_arg;
   }
 
   bool readButton(int btn) {
@@ -168,19 +168,26 @@ class Vehicle {
    * from the Application to Robot or Behaviour must be thread-safe, using mutexes
    * or atomic variables.
    */
-
   void systick(float deltaTime) {
     m_state.ticks++;
+    /// this should be a single method that updates the state of the vehicle
+    /// inputs like buttons, sensors, IMU, activity setting...
+    /// the LEDS are included because of the simulation. They are beter set
+    /// directly on the target hardware.
+    /// Conditional compilation can distinguish the source of this data
     if (m_sensor_callback) {
       vehicle_inputs = m_sensor_callback(m_state);
+      m_state.sensors = vehicle_inputs.sensors;
+      m_state.buttons = vehicle_inputs.buttons;
+      m_state.leds = vehicle_inputs.leds;
+      m_activity = vehicle_inputs.activity;
+      m_activity_arg = vehicle_inputs.activity_arg;
     }
-    m_state.sensors = vehicle_inputs.sensors;
-    m_state.buttons = vehicle_inputs.buttons;
-    m_state.leds = vehicle_inputs.leds;
-    m_activity = vehicle_inputs.activity;
-    m_activity_arg = vehicle_inputs.activity_args;
+
+    /// The speeds are set directly from the behaviour code and now are
+    /// used to update the vehicle pose.
     float deltaDistance = m_state.velocity * deltaTime;
-    float deltaAngle = m_state.omega * deltaTime;
+    float deltaAngle = m_state.angular_velocity * deltaTime;
 
     float newX = m_state.x + deltaDistance * std::cos(m_state.angle * RADIANS);
     float newY = m_state.y + deltaDistance * std::sin(m_state.angle * RADIANS);
@@ -193,8 +200,8 @@ class Vehicle {
   }
 
  private:
-  Vehicle(const Vehicle&) = delete;
-  Vehicle& operator=(const Vehicle&) = delete;
+  Vehicle(const Vehicle&) = delete;             /// no copying
+  Vehicle& operator=(const Vehicle&) = delete;  /// no copying by assignment
   bool m_running;
   SensorDataCallback m_sensor_callback = nullptr;
   VehicleState m_state;

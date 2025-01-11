@@ -310,7 +310,7 @@ class Application : public IEventObserver {
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "    time     X      Y   Theta     Vel   Omega");
     char s[60];
     sprintf(s, "%8u %5.1f  %5.1f  %6.2f  %6.1f  %6.1f  ",  //
-            m_vehicle_state.ticks, m_vehicle_state.x, m_vehicle_state.y, m_vehicle_state.angle, m_vehicle_state.velocity, m_vehicle_state.omega);
+            m_vehicle_state.ticks, m_vehicle_state.x, m_vehicle_state.y, m_vehicle_state.angle, m_vehicle_state.velocity, m_vehicle_state.angular_velocity);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", s);
     const int frames = 60 * 4;
     static float speed[frames];
@@ -318,11 +318,11 @@ class Application : public IEventObserver {
     static float rds[frames];
     static int index = 0;
     speed[index] = m_vehicle_state.velocity;
-    omega[index] = m_vehicle_state.omega;
+    omega[index] = m_vehicle_state.angular_velocity;
     rds[index] = m_vehicle_state.sensors.rds_power;
     index = (index + 1) % IM_ARRAYSIZE(speed);
     ImGui::PlotLines("speed", speed, IM_ARRAYSIZE(speed), index, "", 0, 3000, ImVec2(330, 100));
-    ImGui::PlotLines("omega", omega, IM_ARRAYSIZE(omega), index, "", -1000, 1000, ImVec2(330, 140));
+    ImGui::PlotLines("angular_velocity", omega, IM_ARRAYSIZE(omega), index, "", -1000, 1000, ImVec2(330, 140));
     ImGui::PlotLines("RDS", rds, IM_ARRAYSIZE(rds), index, "", -1000, 1000, ImVec2(330, 140));
 
     //    ImGui::PopFont();

@@ -40,7 +40,7 @@ struct SensorData {
 struct VehicleInputs {
   SensorData sensors;
   int activity = ACT_NONE;
-  int activity_args = 0;
+  int activity_arg = 0;
   uint8_t buttons = 0;
   uint8_t leds = 0;
 };
@@ -57,11 +57,8 @@ struct VehicleState {
   float y;
   float angle;
   float velocity;
-  float omega;
+  float angular_velocity;
   float total_distance;  // accumulated from last reset
-  float move_distance;   // accumulated from last movement start
-  float move_angle;      // accumulated from last movement start
-  float cell_offset;     // distance through cell from border
   uint8_t leds;          // bitfield for led states
   uint8_t buttons;       // bitfield for button states
   SensorData sensors;
@@ -72,17 +69,12 @@ struct VehicleState {
       : x(0.0f),
         y(0.0f),
         angle(0.0f),
-        velocity(0.0f),  //
-        omega(0.0f),     //
+        velocity(0.0f),          //
+        angular_velocity(0.0f),  //
         total_distance(0.0f),
-        move_distance(0.0f),
-        move_angle(0.0f),
-        cell_offset(0.0f),
         leds(0),
         buttons(0),
-        activity_complete(true)
-  //        vehicle_inputs()
-  {
+        activity_complete(true) {
     //
   }
 };
