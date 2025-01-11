@@ -135,6 +135,7 @@ class RobotManager {
     m_vehicle.setPose(96.0f, 96.0f, 90.0f);
     m_mouse.reset();
     m_run_state = RobotState::Stopped;
+    start();
   }
 
   void setVehiclePose(float x, float y, float angle) {
