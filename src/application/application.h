@@ -114,8 +114,6 @@ class Application : public IEventObserver {
     /// The Lambda expression here serves to bind the callback to the application instance
     m_vehicle.setSensorCallback([this](VehicleState state) -> VehicleInputs { return sensorDataCallback(state); });
 
-    ARES_INFO("APP: Set Vehicle running");
-    m_vehicle.startRunning();
     ARES_INFO("APP: Vehicle running");
   }
 
@@ -309,6 +307,7 @@ class Application : public IEventObserver {
     m_mouse.setSpeedUp(speedup);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "    time     X      Y   Theta     Vel   Omega");
     char s[60];
+    /// NOTE: if the tick count is increasing, systick is running and the thread is active
     sprintf(s, "%8u %5.1f  %5.1f  %6.2f  %6.1f  %6.1f  ",  //
             m_vehicle_state.ticks, m_vehicle_state.x, m_vehicle_state.y, m_vehicle_state.angle, m_vehicle_state.velocity, m_vehicle_state.angular_velocity);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", s);
@@ -431,7 +430,6 @@ class Application : public IEventObserver {
   VehicleState m_vehicle_state;
   Vehicle m_vehicle;  // The robot instance
   Mouse m_mouse;
-
   RobotManager m_robot_manager;
 
   RobotBody m_robot_body;

@@ -101,7 +101,6 @@ class RobotManager {
       ARES_INFO(" RM: Starting Robot")
       m_run_state = RobotState::Running;
       m_running = true;
-      m_vehicle.startRunning();
       m_mouse.startRunning();
     }
   }
@@ -111,7 +110,6 @@ class RobotManager {
     m_run_state = RobotState::Stopped;
     m_running = false;
     m_mouse.stop();
-    m_vehicle.stopRunning();
   }
 
   void pause() {
@@ -174,14 +172,13 @@ class RobotManager {
   void run() {
     ARES_INFO(" RM: Entering thread");
     while (m_running) {
-      if (m_vehicle.isRunning() && m_mouse.isRunning()) {
+      if (m_mouse.isRunning()) {
         ARES_INFO(" RM: Mouse.run");
         m_mouse.run();  // only returns when reset
       }
     }
     ARES_INFO(" RM: Leaving thread");
     m_mouse.stop();
-    m_vehicle.stopRunning();
     m_mouse.reset();
     m_vehicle.reset();
     ARES_INFO(" RM: Exited thread");

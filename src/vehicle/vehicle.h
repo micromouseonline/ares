@@ -75,39 +75,32 @@
 
 class Vehicle {
  public:
-  Vehicle() : m_running(false), m_state() {
+  Vehicle() : m_state() {
     reset();
   }
 
   ~Vehicle() {
-    stopRunning();
-  }
-
-  void startRunning() {
-    m_running = true;
-  }
-
-  void stopRunning() {
-    m_running = false;
   }
 
   void reset() {
-    stopRunning();
     m_state.ticks = 0;
     m_state.total_distance = 0;
     setSpeeds(0, 0);
   }
 
+  /// This is safe to call only from the behaviour (mouse) code
   [[nodiscard]] VehicleState getState() const {
     return m_state;
   }
 
+  /// This is safe to call only from the behaviour (mouse) code
   void setPose(float x, float y, float angle) {
     m_state.x = x;
     m_state.y = y;
     m_state.angle = angle;
   }
 
+  /// This is safe to call only from the behaviour (mouse) code
   Pose getPose() {
     Pose pose;
     pose.setX(m_state.x);
@@ -116,41 +109,48 @@ class Vehicle {
     return pose;
   }
 
+  /// gets called from the application before the robot thread starts
   void setSensorCallback(SensorDataCallback callback) {
     m_sensor_callback = callback;  //
   }
 
-  /// Once set, speeds will not change unless comaanded
+  /// Once set, speeds will not change unless commanded
+  /// This is safe to call only from the behaviour (mouse) code
   void setSpeeds(float velocity, float omega) {
     m_state.velocity = velocity;
     m_state.angular_velocity = omega;
   }
 
-  [[nodiscard]] bool isRunning() const {
-    return m_running;
-  }
+  //  [[nodiscard]] bool isRunning() const {
+  //    return m_running;
+  //  }
 
+  /// This is safe to call only from the behaviour (mouse) code
   void setLed(const int i, const bool state) {
     const uint8_t mask = BIT(i);
     m_state.leds &= ~(mask);
     m_state.leds |= state ? mask : 0;
   }
 
+  /// This is safe to call only from the behaviour (mouse) code
   int getActivity() {
     return vehicle_inputs.activity;
   }
 
+  /// This is safe to call only from the behaviour (mouse) code
   void clearActivity() {
     vehicle_inputs.activity = ACT_NONE;
     m_state.activity_complete = true;
   }
 
+  /// This is safe to call only from the behaviour (mouse) code
   int getActivityArgs() {
     return vehicle_inputs.activity_arg;
   }
 
+  /// This is safe to call only from the behaviour (mouse) code
   bool readButton(int btn) {
-    return (vehicle_inputs.buttons & (1 << btn) != 0);
+    return ((vehicle_inputs.buttons & (1 << btn)) != 0);
   }
 
   /**
@@ -183,6 +183,7 @@ class Vehicle {
       m_activity = vehicle_inputs.activity;
       m_activity_arg = vehicle_inputs.activity_arg;
     }
+    m_state.leds |= 1 << 2;  /// 'alive' LED
 
     /// The speeds are set directly from the behaviour code and now are
     /// used to update the vehicle pose.
@@ -202,7 +203,7 @@ class Vehicle {
  private:
   Vehicle(const Vehicle&) = delete;             /// no copying
   Vehicle& operator=(const Vehicle&) = delete;  /// no copying by assignment
-  bool m_running;
+                                                //  bool m_running;
   SensorDataCallback m_sensor_callback = nullptr;
   VehicleState m_state;
   VehicleInputs vehicle_inputs;
