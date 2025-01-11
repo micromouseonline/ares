@@ -134,25 +134,44 @@ class Vehicle {
 
   /// This is safe to call only from the behaviour (mouse) code
   int getActivity() {
-    return vehicle_inputs.activity;
+    return m_vehicle_inputs.activity;
   }
 
   /// This is safe to call only from the behaviour (mouse) code
   void clearActivity() {
-    vehicle_inputs.activity = ACT_NONE;
+    m_vehicle_inputs.activity = ACT_NONE;
     m_state.activity_complete = true;
   }
 
   /// This is safe to call only from the behaviour (mouse) code
   int getActivityArgs() {
-    return vehicle_inputs.activity_arg;
+    return m_vehicle_inputs.activity_arg;
   }
 
   /// This is safe to call only from the behaviour (mouse) code
   bool readButton(int btn) {
-    return ((vehicle_inputs.buttons & (1 << btn)) != 0);
+    return ((m_vehicle_inputs.buttons & (1 << btn)) != 0);
   }
 
+  /// this should be a single method that updates the state of the vehicle
+  /// inputs like buttons, sensors, IMU, activity setting...
+  /// the LEDS are included because of the simulation. They are better set
+  /// directly on the target hardware.
+  /// Conditional compilation can distinguish the source of this data
+  void updateSensors() {
+    if (m_sensor_callback) {
+      m_vehicle_inputs = m_sensor_callback(m_state);
+      m_state.sensors = m_vehicle_inputs.sensors;
+    }
+  }
+
+  /// always call after sensors
+  void updateInputs() {
+    m_state.buttons = m_vehicle_inputs.buttons;
+    m_state.leds = m_vehicle_inputs.leds;
+    m_activity = m_vehicle_inputs.activity;
+    m_activity_arg = m_vehicle_inputs.activity_arg;
+  }
   /**
    * @brief Simulates a hardware timer interrupt for the robot.
    *
@@ -170,19 +189,8 @@ class Vehicle {
    */
   void systick(float deltaTime) {
     m_state.ticks++;
-    /// this should be a single method that updates the state of the vehicle
-    /// inputs like buttons, sensors, IMU, activity setting...
-    /// the LEDS are included because of the simulation. They are beter set
-    /// directly on the target hardware.
-    /// Conditional compilation can distinguish the source of this data
-    if (m_sensor_callback) {
-      vehicle_inputs = m_sensor_callback(m_state);
-      m_state.sensors = vehicle_inputs.sensors;
-      m_state.buttons = vehicle_inputs.buttons;
-      m_state.leds = vehicle_inputs.leds;
-      m_activity = vehicle_inputs.activity;
-      m_activity_arg = vehicle_inputs.activity_arg;
-    }
+    updateSensors();
+    updateInputs();
     m_state.leds |= 1 << 2;  /// 'alive' LED
 
     /// The speeds are set directly from the behaviour code and now are
@@ -206,7 +214,7 @@ class Vehicle {
                                                 //  bool m_running;
   SensorDataCallback m_sensor_callback = nullptr;
   VehicleState m_state;
-  VehicleInputs vehicle_inputs;
+  VehicleInputs m_vehicle_inputs;
   int m_activity;
   int m_activity_arg;
 };
