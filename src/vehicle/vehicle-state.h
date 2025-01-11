@@ -26,7 +26,7 @@ enum Led {
   LED_4 = (1 << 3),
 };
 
-struct VehicleInputs {
+struct SensorData {
   float lfs_distance = 0;
   float lds_distance = 0;
   float rds_distance = 0;
@@ -35,7 +35,10 @@ struct VehicleInputs {
   float lds_power = 0;
   float rds_power = 0;
   float rfs_power = 0;
+};
 
+struct VehicleInputs {
+  SensorData sensors;
   int activity = ACT_NONE;
   int activity_args = 0;
   uint8_t buttons = 0;
@@ -61,6 +64,7 @@ struct VehicleState {
   float cell_offset;     // distance through cell from border
   uint8_t leds;          // bitfield for led states
   uint8_t buttons;       // bitfield for button states
+  SensorData sensors;
   bool activity_complete;
   //  VehicleInputs vehicle_inputs;
 

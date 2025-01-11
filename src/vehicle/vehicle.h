@@ -174,6 +174,11 @@ class Vehicle {
     if (m_sensor_callback) {
       vehicle_inputs = m_sensor_callback(m_state);
     }
+    m_state.sensors = vehicle_inputs.sensors;
+    m_state.buttons = vehicle_inputs.buttons;
+    m_state.leds = vehicle_inputs.leds;
+    m_activity = vehicle_inputs.activity;
+    m_activity_arg = vehicle_inputs.activity_args;
     float deltaDistance = m_state.velocity * deltaTime;
     float deltaAngle = m_state.omega * deltaTime;
 
@@ -194,4 +199,6 @@ class Vehicle {
   SensorDataCallback m_sensor_callback = nullptr;
   VehicleState m_state;
   VehicleInputs vehicle_inputs;
+  int m_activity;
+  int m_activity_arg;
 };

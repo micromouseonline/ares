@@ -204,7 +204,7 @@ class Application : public IEventObserver {
     m_maze_manager.updateFromMap(m_mouse.getMaze(), m_mouse.getMaze().getWidth());
 
     std::stringstream state_summary;
-    VehicleInputs sensors = m_vehicle_state.vehicle_inputs;
+    SensorData sensors = m_vehicle_state.sensors;
     state_summary << "power:  " + formatSensorData((int)sensors.lfs_power, (int)sensors.lds_power, (int)sensors.rds_power, (int)sensors.rfs_power);
     state_summary << " Dist:  " + formatSensorData((int)sensors.lfs_distance, (int)sensors.lds_distance, (int)sensors.rds_distance, (int)sensors.rfs_distance);
     state_summary << "\n";
@@ -319,7 +319,7 @@ class Application : public IEventObserver {
     static int index = 0;
     speed[index] = m_vehicle_state.velocity;
     omega[index] = m_vehicle_state.omega;
-    rds[index] = m_vehicle_state.vehicle_inputs.rds_power;
+    rds[index] = m_vehicle_state.sensors.rds_power;
     index = (index + 1) % IM_ARRAYSIZE(speed);
     ImGui::PlotLines("speed", speed, IM_ARRAYSIZE(speed), index, "", 0, 3000, ImVec2(330, 100));
     ImGui::PlotLines("omega", omega, IM_ARRAYSIZE(omega), index, "", -1000, 1000, ImVec2(330, 140));
@@ -410,15 +410,15 @@ class Application : public IEventObserver {
     m_robot_body.updateSensorGeometry(m_vehicle_state.x, m_vehicle_state.y, m_vehicle_state.angle);
     m_obstacles = m_maze_manager.GetObstacles(m_vehicle_state.x, m_vehicle_state.y);
     m_robot_body.updateSensors(m_obstacles);
-    m_vehicle_inputs.lfs_power = m_robot_body.getSensor(conf::LFS).getPower();
-    m_vehicle_inputs.lds_power = m_robot_body.getSensor(conf::LDS).getPower();
-    m_vehicle_inputs.rds_power = m_robot_body.getSensor(conf::RDS).getPower();
-    m_vehicle_inputs.rfs_power = m_robot_body.getSensor(conf::RFS).getPower();
+    m_vehicle_inputs.sensors.lfs_power = m_robot_body.getSensor(conf::LFS).getPower();
+    m_vehicle_inputs.sensors.lds_power = m_robot_body.getSensor(conf::LDS).getPower();
+    m_vehicle_inputs.sensors.rds_power = m_robot_body.getSensor(conf::RDS).getPower();
+    m_vehicle_inputs.sensors.rfs_power = m_robot_body.getSensor(conf::RFS).getPower();
 
-    m_vehicle_inputs.lfs_distance = m_robot_body.getSensor(conf::LFS).getDistance();
-    m_vehicle_inputs.lds_distance = m_robot_body.getSensor(conf::LDS).getDistance();
-    m_vehicle_inputs.rds_distance = m_robot_body.getSensor(conf::RDS).getDistance();
-    m_vehicle_inputs.rfs_distance = m_robot_body.getSensor(conf::RFS).getDistance();
+    m_vehicle_inputs.sensors.lfs_distance = m_robot_body.getSensor(conf::LFS).getDistance();
+    m_vehicle_inputs.sensors.lds_distance = m_robot_body.getSensor(conf::LDS).getDistance();
+    m_vehicle_inputs.sensors.rds_distance = m_robot_body.getSensor(conf::RDS).getDistance();
+    m_vehicle_inputs.sensors.rfs_distance = m_robot_body.getSensor(conf::RFS).getDistance();
 
     m_process_time = m_timer.getElapsedTime();
     /// the returned data is copied so there is no need for a lock
