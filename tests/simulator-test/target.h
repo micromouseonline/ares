@@ -5,12 +5,15 @@
 #pragma once
 
 #include <cstdio>
+#include "common/expfilter.h"
 
 struct SensorData {
   int lfs;
   int lds;
   int rds;
   int rfs;
+  float battery;
+  SensorData() : lfs(0), lds(0), rds(0), rfs(0), battery(78) {};
 };
 
 typedef std::function<SensorData(int)> SensorCallbackFunction;
@@ -28,8 +31,9 @@ class Target {
   volatile uint32_t ticks;
   SensorData sensors;
   SensorCallbackFunction sensorCallback;
+  ExpFilter<float> battery;
 
-  Target() : sensorCallback(nullptr) {
+  Target() : sensorCallback(nullptr), battery(0.95) {
     setup();
     printf("Target setup\n");
   }
@@ -42,8 +46,10 @@ class Target {
   void timerISR() {
     ticks += 2;
     if (sensorCallback) {
-      sensors = sensorCallback(10);
+      sensors = sensorCallback(12);
     }
+
+    sensors.battery = battery.update(50 + random() % 30);
     std::this_thread::sleep_for(std::chrono::milliseconds(2));  // Simulate 500Hz timer
   }
 
@@ -61,12 +67,16 @@ class Target {
   }
 
   void mainLoop() {
+    uint32_t interval = 500;
+    uint32_t next_update = ticks + interval;
     while (true) {
-      if (digitalRead(10) == LOW) {
-        printf("Gotcha\n");
-        while (digitalRead(10) == LOW) {
-          delay_ms(2);
-        }
+      if (digitalRead(11) == LOW) {
+        digitalWrite(12, !digitalRead(12));
+        digitalWrite(11, 1);
+      }
+      if (ticks >= next_update) {
+        next_update += interval;
+        pins[0] = !pins[0];
       }
       delay_ms(2);  // get at least one tick in every cycle
     }
@@ -76,16 +86,16 @@ class Target {
     sensorCallback = callback;
   }
 
-  std::map<int, bool> getPinState() {
-    return {
-        {4, pins[4]},  //
-        {5, pins[5]}   //
-    };
+  SensorData getSensors() {
+    return sensors;
   }
 
-  void simulateButtonPress(int pin) {
-    pins[pin] = !pins[pin];
-    //    printf("Button press %d\n", pin);
+  std::array<bool, 16> getPinState() const {
+    std::array<bool, 16> pin_states;
+    for (int i = 0; i < 16; i++) {
+      pin_states[i] = pins[i];
+    }
+    return pin_states;
   }
 
   bool digitalRead(int pin) {
@@ -94,7 +104,5 @@ class Target {
 
   void digitalWrite(int pin, bool state) {
     pins[pin] = state;
-    /// the message will be laggy
-    printf("pin %d set to %s\n", pin, state ? "HIGH" : "LOW");
   }
 };

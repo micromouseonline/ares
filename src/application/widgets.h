@@ -57,6 +57,24 @@ inline void DrawLED(bool state, const ImVec4& color) {
   ImGui::PopStyleColor();
 }
 
+ImU32 dimColour(ImU32 color) {
+  ImVec4 col = ImGui::ColorConvertU32ToFloat4(color);
+  //  col.x *= 0.25;
+  //  col.y *= 0.25;
+  //  col.z *= 0.25;
+  col.w *= 0.25;
+  return ImGui::ColorConvertFloat4ToU32(col);
+}
+void DrawLEDx(bool value, float radius, ImU32 col = IM_COL32(255, 0, 0, 255)) {
+  float lineHeight = ImGui::GetTextLineHeight();
+  ImVec2 pos = ImGui::GetCursorScreenPos();
+  pos.x = pos.x + radius;
+  pos.y = pos.y + lineHeight / 2 + 1;
+  ImU32 color = value ? col : dimColour(col);
+  ImGui::GetWindowDrawList()->AddCircleFilled(pos, radius, color);
+  ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 2 * radius + 5);
+}
+
 inline void drawSensorUpdateTime(int sensor_update_time) {
   static int update_time = sensor_update_time;
   float alpha = 0.025;
