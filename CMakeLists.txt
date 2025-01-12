@@ -199,3 +199,4 @@ add_test(NAME test_mouse_simulator COMMAND test_mouse_simulator)
 
 add_subdirectory(tests/factory-test)
 add_subdirectory(tests/simulator-test)
+add_subdirectory(tests/callback-test)
