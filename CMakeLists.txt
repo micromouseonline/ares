@@ -198,3 +198,4 @@ add_test(NAME test_mouse_simulator COMMAND test_mouse_simulator)
 # other mini-test projects
 
 add_subdirectory(tests/factory-test)
+add_subdirectory(tests/simulator-test)
