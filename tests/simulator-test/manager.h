@@ -17,19 +17,19 @@
 class Manager {
   Target target;
   std::thread targetThread;
-  std::atomic<bool> running;
+  std::atomic<bool> target_running;
   std::mutex commandMutex;
   std::queue<Command> commandQueue;
   std::condition_variable commandCV;
 
  public:
-  Manager() : running(true) {
+  Manager() : target_running(true) {
     targetThread = std::thread(&Manager::RunTarget, this);
     printf("Manager created\n");
   }
 
   ~Manager() {
-    running = false;
+    target_running = false;
     commandCV.notify_all();
     if (targetThread.joinable()) {
       targetThread.join();
@@ -39,33 +39,34 @@ class Manager {
 
   void RunTarget() {
     target.setup();
-    std::thread loopThread([this]() { target.loop(); });
-    while (running) {
+    std::thread loopThread([this]() { target.mainLoop(); });
+    while (target_running) {
       std::unique_lock<std::mutex> lock(commandMutex);
-      commandCV.wait(lock, [this]() { return !commandQueue.empty() || !running; });
+      commandCV.wait(lock, [this]() {  //
+        return !commandQueue.empty() || !target_running;
+      });
       while (!commandQueue.empty()) {
         auto command = commandQueue.front();
         commandQueue.pop();
         if (command.type == ButtonPress) {
-          target.simulateButtonPress(command.buttonID);
+          target.digitalWrite(command.buttonID, command.state);
         } else if (command.type == UpdateLEDs) {
-          // Handle LED state updates
-          auto ledStates = target.getLEDStates();
+          auto ledStates = target.getPinState();
         }
       }
     }
     loopThread.detach();
   }
 
-  void simulateButtonPress(int buttonID) {
+  void setPinState(int buttonID, bool state) {
     std::lock_guard<std::mutex> lock(commandMutex);
-    commandQueue.push({ButtonPress, buttonID, {}});
+    commandQueue.push({ButtonPress, buttonID, state, {}});
     commandCV.notify_all();
   }
 
   void updateLEDStates() {
     std::lock_guard<std::mutex> lock(commandMutex);
-    commandQueue.push({UpdateLEDs, 0, {}});
+    commandQueue.push({UpdateLEDs, 0, false, {}});
     commandCV.notify_all();
   }
 

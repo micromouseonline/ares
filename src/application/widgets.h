@@ -43,18 +43,11 @@ class TextBox {
 };
 
 // Custom widget function
-inline bool CustomButton(const char* label, const ImVec2& size = ImVec2(0, 0)) {
+inline bool PushButton(const char* label, const ImVec2& size = ImVec2(0, 0)) {
   ImGui::Button(label, size);  // Draw the button
-  ImGuiIO& io = ImGui::GetIO();
-  ImVec2 mouse_pos = io.MousePos;
-  ImVec2 button_min = ImGui::GetItemRectMin();
-  ImVec2 button_max = ImGui::GetItemRectMax();
-
-  // Check if mouse is inside the button and button is down
-  bool is_inside = (mouse_pos.x >= button_min.x && mouse_pos.x <= button_max.x && mouse_pos.y >= button_min.y && mouse_pos.y <= button_max.y);
-  bool is_down = ImGui::IsMouseDown(ImGuiMouseButton_Left);
-
-  return is_inside && is_down;
+  bool mouseDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
+  bool hovered = ImGui::IsItemHovered();
+  return hovered && mouseDown;
 }
 
 // Function to draw an LED indicator

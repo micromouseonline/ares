@@ -11,5 +11,6 @@ enum CommandType { ButtonPress, UpdateLEDs };
 struct Command {
   CommandType type;
   int buttonID;
+  bool state;
   std::map<int, bool> ledStates;
 };

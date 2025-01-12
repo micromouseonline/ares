@@ -11,9 +11,5 @@
 int main() {
   Application app;
   app.run();
-
-  // Run for a limited time for demonstration
-  // std::this_thread::sleep_for(std::chrono::seconds(3));
-
   return 0;
 }

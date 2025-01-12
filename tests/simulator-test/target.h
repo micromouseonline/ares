@@ -24,12 +24,12 @@ const bool LOW = false;
 // Simulated Arduino Nano Target class
 class Target {
  public:
-  volatile bool led10;
-  volatile bool led11;
+  volatile bool pins[16];
+  volatile uint32_t ticks;
   SensorData sensors;
   SensorCallbackFunction sensorCallback;
 
-  Target() : led10(false), led11(false), sensorCallback(nullptr) {
+  Target() : sensorCallback(nullptr) {
     setup();
     printf("Target setup\n");
   }
@@ -40,32 +40,35 @@ class Target {
 
   // Timer setup for 500Hz simulated using a member function
   void timerISR() {
+    ticks += 2;
     if (sensorCallback) {
       sensors = sensorCallback(10);
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(2));  // Simulate 500Hz timer
+  }
+
+  void delay_ms(uint32_t ms) {
+    uint32_t end = ticks + ms;
+    while (ticks < end) {
+      timerISR();
     }
   }
 
   void setup() {
-    pinMode(10, INPUT);
-    pinMode(11, INPUT);
-    pinMode(4, OUTPUT);
-    pinMode(5, OUTPUT);
-
-    // Timer setup - use a different mechanism to simulate the timer interrupts in the simulation environment
-    std::thread timerThread([this]() {
-      while (true) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(2));  // Simulate 500Hz timer
-        timerISR();
-      }
-    });
-    timerThread.detach();
+    for (auto& pin : pins) {
+      pin = HIGH;
+    }
   }
 
-  void loop() {
+  void mainLoop() {
     while (true) {
-      digitalWrite(4, led10 ? HIGH : LOW);
-      digitalWrite(5, led11 ? HIGH : LOW);
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));  // Add some delay for stability
+      if (digitalRead(10) == LOW) {
+        printf("Gotcha\n");
+        while (digitalRead(10) == LOW) {
+          delay_ms(2);
+        }
+      }
+      delay_ms(2);  // get at least one tick in every cycle
     }
   }
 
@@ -73,32 +76,25 @@ class Target {
     sensorCallback = callback;
   }
 
-  std::map<int, bool> getLEDStates() {
-    return {{4, led10}, {5, led11}};
+  std::map<int, bool> getPinState() {
+    return {
+        {4, pins[4]},  //
+        {5, pins[5]}   //
+    };
   }
 
-  void simulateButtonPress(int buttonID) {
-    if (buttonID == 10) {
-      led10 = !led10;
-    } else if (buttonID == 11) {
-      led11 = !led11;
-    }
+  void simulateButtonPress(int pin) {
+    pins[pin] = !pins[pin];
+    //    printf("Button press %d\n", pin);
   }
 
-  int digitalRead(int pin) {
-    return (pin == 10) ? led10 : led11;
+  bool digitalRead(int pin) {
+    return pins[pin];
   }
 
   void digitalWrite(int pin, bool state) {
-    printf("pin %d set to %s\n", pin, state ? "LOW" : "HIGH");
-  }
-
-  void pinMode(int pin, int mode) {
-    printf("pin %d set to mode %s\n", pin, mode ? "OUTPUT" : "INPUT");
-  }
-
-  void noInterrupts() {
-  }
-  void interrupts() {
+    pins[pin] = state;
+    /// the message will be laggy
+    printf("pin %d set to %s\n", pin, state ? "HIGH" : "LOW");
   }
 };

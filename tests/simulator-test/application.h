@@ -5,6 +5,7 @@
 #include <functional>
 #include <thread>
 
+#include "application//widgets.h"
 #include "manager.h"
 #include "target.h"
 
@@ -12,16 +13,15 @@ class Application {
  public:
   Application()
       : window(sf::VideoMode(800, 600), "SFML + ImGui"),  //
-        manager(),
-        uiThread(&Application::uiThreadFunction, this) {
-    ImGui::SFML::Init(window);
+        manager() {
+    window.setVerticalSyncEnabled(true);
+    if (!ImGui::SFML::Init(window)) {
+      exit(1);
+    };
     setup();
   }
 
   ~Application() {
-    if (uiThread.joinable()) {
-      uiThread.join();
-    }
     ImGui::SFML::Shutdown();
   }
 
@@ -29,22 +29,10 @@ class Application {
     manager.setSensorCallback([this](int pin) { return this->sensorCallback(pin); });
   }
 
-  void uiThreadFunction() {
-    while (running) {
-      onButtonPress(10, manager);
-      refreshUI(manager);
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-  }
-
   SensorData sensorCallback(int pin) {
     SensorData data;
     data.lfs = pin;
     return data;
-  }
-
-  void onButtonPress(int buttonID, Manager &mgr) {
-    mgr.simulateButtonPress(buttonID);
   }
 
   void refreshUI(Manager &mgr) {
@@ -65,8 +53,29 @@ class Application {
 
       ImGui::SFML::Update(window, deltaClock.restart());
 
-      ImGui::Begin("Hello, ImGui!");
-      ImGui::Text("This is an ImGui window.");
+      ImGui::Begin("Simulation model");
+      ImGui::Text("Target LEDs");
+
+      if (ImGui::Button("RESET")) {
+        manager.setPinState(11, LOW);
+      }
+      static bool goButton = HIGH;
+      if (PushButton("GO")) {
+        if (goButton == HIGH) {
+          ImGui::SameLine();
+          ImGui::Text("Setting pin low\n");
+          goButton = LOW;
+          manager.setPinState(10, LOW);
+        }
+      } else {
+        if (goButton == LOW) {
+          ImGui::SameLine();
+          ImGui::Text("Setting pin high\n");
+          goButton = HIGH;
+          manager.setPinState(10, HIGH);
+        }
+      }
+
       ImGui::End();
 
       window.clear();
@@ -78,6 +87,6 @@ class Application {
  private:
   sf::RenderWindow window;
   Manager manager;
-  std::thread uiThread;
+  //  std::thread uiThread;
   bool running = true;
 };
