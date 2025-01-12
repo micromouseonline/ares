@@ -458,31 +458,45 @@ class Mouse {
     return true;
   }
 
+  /**
+   * Here the top-level actions of the mouse.
+   * After initialisation, control should jump to this method which will
+   * run as an endless loop.
+   *
+   * In simulation, the robot manager will reset the m_running flag in
+   * order to shut down the entire program. On the traget hardware, the
+   * m_running flag would never get cleared
+   *
+   */
   void run() {
     std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
     m_current_trajectory = std::move(idle);
     while (m_running) {
-      m_activity = m_vehicle->getActivity();
-      //      m_vehicle->clearActivity();
-      switch (m_activity) {
-        case ACT_TEST_SS90:
-          test_SS90(m_iterations);
-          break;
-        case ACT_TEST_SS180:
-          test_SS180(m_iterations);
-          break;
-        case ACT_TEST_CIRCUIT:
-          test_circuit_run(m_iterations * 4);
-          break;
-        case ACT_TEST_FOLLOW_TO:
-          followTo(Location(0, 0));
-          break;
-        case ACT_SEARCH: {
-          testSearch();
-          delay_ms(1);
-        } break;
-        default:  // do nothing
-          break;
+      uint8_t buttons = m_vehicle->getButtons();
+      if (buttons != 0) {
+        m_vehicle->clearButtons();
+        //        m_activity = m_vehicle->getActivity();
+        //        m_vehicle->clearActivity();
+        switch (m_activity) {
+          case ACT_TEST_SS90:
+            test_SS90(m_iterations);
+            break;
+          case ACT_TEST_SS180:
+            test_SS180(m_iterations);
+            break;
+          case ACT_TEST_CIRCUIT:
+            test_circuit_run(m_iterations * 4);
+            break;
+          case ACT_TEST_FOLLOW_TO:
+            followTo(Location(0, 0));
+            break;
+          case ACT_SEARCH: {
+            testSearch();
+            delay_ms(1);
+          } break;
+          default:  // do nothing
+            break;
+        }
       }
 
       m_activity = ACT_NONE;

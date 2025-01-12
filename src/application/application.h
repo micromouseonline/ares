@@ -207,6 +207,8 @@ class Application : public IEventObserver {
     state_summary << " Dist:  " + formatSensorData((int)sensors.lfs_distance, (int)sensors.lds_distance, (int)sensors.rds_distance, (int)sensors.rfs_distance);
     state_summary << "\n";
     state_summary << formatRobotState(m_vehicle_state);
+    state_summary << (int)m_vehicle_state.buttons << "\n";
+    state_summary << m_vehicle_state.activity << "\n";
 
     /////  IMGUI ////////////////////////////////////////////////////////////////////////////
     ImGui::Begin("MouseUI", nullptr);
@@ -217,10 +219,22 @@ class Application : public IEventObserver {
       ImGui::SameLine();
     }
     ImGui::Text("LEDS");
+    const uint8_t buttons = m_vehicle_state.buttons;
+    for (int i = 7; i >= 0; i--) {
+      bool bitState = buttons & BIT(i);
+      DrawLED(bitState, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));  // Green color for ON state
+      ImGui::SameLine();
+    }
+    ImGui::Text("BUTTONS");
 
-    bool button_rst = CustomButton("RESET", ImVec2(104, 24));
+    if (ImGui::Button("RESET", ImVec2(104, 24))) {
+      m_vehicle_inputs.buttons |= Button::BTN_RESET;
+    }
     ImGui::SameLine();
-    bool button_go = CustomButton("GO", ImVec2(104, 24));
+    if (ImGui::Button("GO", ImVec2(104, 24))) {
+      m_vehicle_inputs.buttons |= Button::BTN_GO;
+    }
+
     drawSensorUpdateTime(m_process_time.asMicroseconds());
     ImGui::Text("%s", state_summary.str().c_str());
     ImGui::End();
@@ -283,7 +297,7 @@ class Application : public IEventObserver {
 
     ImGui::SameLine();
     if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
-      m_vehicle_state.buttons |= (Button::BTN_RESET);
+      //      m_vehicle_state.buttons |= (Button::BTN_RESET);
       m_robot_manager.reset();
       maze_changed = true;
       g_ticks = 0;
@@ -319,6 +333,7 @@ class Application : public IEventObserver {
     speed[index] = m_vehicle_state.velocity;
     omega[index] = m_vehicle_state.angular_velocity;
     rds[index] = m_vehicle_state.sensors.rds_power;
+    rds[index] = (int)m_vehicle_state.buttons;
     index = (index + 1) % IM_ARRAYSIZE(speed);
     ImGui::PlotLines("speed", speed, IM_ARRAYSIZE(speed), index, "", 0, 3000, ImVec2(330, 100));
     ImGui::PlotLines("angular_velocity", omega, IM_ARRAYSIZE(omega), index, "", -1000, 1000, ImVec2(330, 140));

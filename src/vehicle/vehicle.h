@@ -134,23 +134,32 @@ class Vehicle {
 
   /// This is safe to call only from the behaviour (mouse) code
   int getActivity() {
-    return m_vehicle_inputs.activity;
+    return m_inputs.activity;
   }
 
   /// This is safe to call only from the behaviour (mouse) code
   void clearActivity() {
-    m_vehicle_inputs.activity = ACT_NONE;
+    m_inputs.activity = ACT_NONE;
     m_state.activity_complete = true;
   }
 
   /// This is safe to call only from the behaviour (mouse) code
   int getActivityArgs() {
-    return m_vehicle_inputs.activity_arg;
+    return m_inputs.activity_arg;
   }
 
   /// This is safe to call only from the behaviour (mouse) code
   bool readButton(int btn) {
-    return ((m_vehicle_inputs.buttons & (1 << btn)) != 0);
+    return ((m_inputs.buttons & btn) != 0);
+  }
+
+  uint8_t getButtons() {
+    return m_inputs.buttons;
+  }
+
+  void clearButtons() {
+    m_inputs.buttons = 0;
+    m_state.buttons = 0;
   }
 
   /// this should be a single method that updates the state of the vehicle
@@ -160,17 +169,18 @@ class Vehicle {
   /// Conditional compilation can distinguish the source of this data
   void updateSensors() {
     if (m_sensor_callback) {
-      m_vehicle_inputs = m_sensor_callback(m_state);
-      m_state.sensors = m_vehicle_inputs.sensors;
+      m_inputs = m_sensor_callback(m_state);
+      m_state.sensors = m_inputs.sensors;
     }
   }
 
   /// always call after sensors
   void updateInputs() {
-    m_state.buttons = m_vehicle_inputs.buttons;
-    m_state.leds = m_vehicle_inputs.leds;
-    m_activity = m_vehicle_inputs.activity;
-    m_activity_arg = m_vehicle_inputs.activity_arg;
+    m_state.buttons = m_inputs.buttons;
+    m_state.leds = m_inputs.leds;
+    m_state.activity = m_inputs.activity;
+    m_activity = m_inputs.activity;
+    m_activity_arg = m_inputs.activity_arg;
   }
   /**
    * @brief Simulates a hardware timer interrupt for the robot.
@@ -191,7 +201,12 @@ class Vehicle {
     m_state.ticks++;
     updateSensors();
     updateInputs();
-    m_state.leds |= 1 << 2;  /// 'alive' LED
+    static bool q;
+    if (m_state.ticks % 100 == 0) {
+      q = !q;
+      setLed(3, q);
+    }
+    setLed(2, 1);
 
     /// The speeds are set directly from the behaviour code and now are
     /// used to update the vehicle pose.
@@ -214,7 +229,7 @@ class Vehicle {
                                                 //  bool m_running;
   SensorDataCallback m_sensor_callback = nullptr;
   VehicleState m_state;
-  VehicleInputs m_vehicle_inputs;
+  VehicleInputs m_inputs;
   int m_activity;
   int m_activity_arg;
 };

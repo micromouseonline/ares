@@ -62,6 +62,7 @@ struct VehicleState {
   uint8_t leds;          // bitfield for led states
   uint8_t buttons;       // bitfield for button states
   SensorData sensors;
+  int activity;
   bool activity_complete;
   //  VehicleInputs vehicle_inputs;
 
@@ -74,6 +75,7 @@ struct VehicleState {
         total_distance(0.0f),
         leds(0),
         buttons(0),
+        activity(0),
         activity_complete(true) {
     //
   }
