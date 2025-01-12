@@ -19,32 +19,30 @@ class Application {
   }
 
   ~Application() {
-    uiThread.detach();
+    if (uiThread.joinable()) {
+      uiThread.join();
+    }
     ImGui::SFML::Shutdown();
   }
 
   void setup() {
-    SensorCallbackFunction cb = [this](int q) { return this->sensorCallback(q); };
-    manager.setSensorCallback(cb);
+    manager.setSensorCallback([this](int pin) { return this->sensorCallback(pin); });
   }
-  // manager.setSensorCallback([this](int pin) { return sensorCallback(pin); });
-  // // [this](VehicleState state) -> VehicleInputs { return sensorDataCallback(state); })
 
   void uiThreadFunction() {
-    while (true) {
+    while (running) {
       onButtonPress(10, manager);
       refreshUI(manager);
       std::this_thread::sleep_for(std::chrono::seconds(1));
     }
   }
-  // Plain function for sensor readings
+
   SensorData sensorCallback(int pin) {
     SensorData data;
     data.lfs = pin;
     return data;
   }
 
-  // UI functions
   void onButtonPress(int buttonID, Manager &mgr) {
     mgr.simulateButtonPress(buttonID);
   }
@@ -61,12 +59,12 @@ class Application {
         ImGui::SFML::ProcessEvent(window, event);
         if (event.type == sf::Event::Closed) {
           window.close();
+          running = false;
         }
       }
 
       ImGui::SFML::Update(window, deltaClock.restart());
 
-      // Start the ImGui frame
       ImGui::Begin("Hello, ImGui!");
       ImGui::Text("This is an ImGui window.");
       ImGui::End();
@@ -81,4 +79,5 @@ class Application {
   sf::RenderWindow window;
   Manager manager;
   std::thread uiThread;
+  bool running = true;
 };
