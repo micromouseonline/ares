@@ -5,6 +5,7 @@
 #pragma once
 #include <atomic>
 #include <condition_variable>
+#include <cstdio>
 #include <mutex>
 #include <queue>
 #include <thread>
@@ -24,6 +25,7 @@ class Manager {
  public:
   Manager() : running(true) {
     targetThread = std::thread(&Manager::RunTarget, this);
+    printf("Manager created\n");
   }
 
   ~Manager() {
@@ -32,6 +34,7 @@ class Manager {
     if (targetThread.joinable()) {
       targetThread.join();
     }
+    printf("Manager destroyed\n");
   }
 
   void RunTarget() {
@@ -66,7 +69,7 @@ class Manager {
     commandCV.notify_all();
   }
 
-  void setSensorCallback(int (*callback)(int)) {
-    target.setSensorCallback(callback);
+  void setSensorCallback(SensorCallbackFunction cb) {
+    target.setSensorCallback(cb);
   }
 };

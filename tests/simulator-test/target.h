@@ -6,6 +6,15 @@
 
 #include <cstdio>
 
+struct SensorData {
+  int lfs;
+  int lds;
+  int rds;
+  int rfs;
+};
+
+typedef std::function<SensorData(int)> SensorCallbackFunction;
+
 // Constants
 const int INPUT = 0;
 const int OUTPUT = 1;
@@ -17,16 +26,22 @@ class Target {
  public:
   volatile bool led10;
   volatile bool led11;
-  int (*sensorCallback)(int);
+  SensorData sensors;
+  SensorCallbackFunction sensorCallback;
 
   Target() : led10(false), led11(false), sensorCallback(nullptr) {
+    setup();
+    printf("Target setup\n");
+  }
+
+  ~Target() {
+    printf("Target cleanup\n");
   }
 
   // Timer setup for 500Hz simulated using a member function
   void timerISR() {
     if (sensorCallback) {
-      led10 = sensorCallback(10);
-      led11 = sensorCallback(11);
+      sensors = sensorCallback(10);
     }
   }
 
@@ -54,7 +69,7 @@ class Target {
     }
   }
 
-  void setSensorCallback(int (*callback)(int)) {
+  void setSensorCallback(SensorCallbackFunction callback) {
     sensorCallback = callback;
   }
 
