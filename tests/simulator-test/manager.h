@@ -75,10 +75,10 @@ class Manager {
       /// can be executed until it is released
       std::unique_lock<std::mutex> lock(target_mutex);
       /// The wait method releases the lock and re-acquires it when
-      /// the condition is met.
-      commandCV.wait(lock, [this]() {  //
-        return !commandQueue.empty() || !manager_running;
-      });
+      /// the condition is met. Timeout after 100ms just to ensure there
+      /// is no holdup.
+      commandCV.wait_for(lock, std::chrono::milliseconds(100), [this]() { return !commandQueue.empty() || !manager_running; });
+
       /// now we continue, with the mutex locked to ensure we have
       /// exclusive access while processing the command queue
       while (!commandQueue.empty()) {
