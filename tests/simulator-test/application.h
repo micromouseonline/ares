@@ -59,6 +59,8 @@ class Application {
 
   void run() {
     sf::Clock deltaClock;
+    bool scrollToBottom = true;
+    int log_size = 0;
     while (window.isOpen()) {
       sf::Event event;
       while (window.pollEvent(event)) {
@@ -83,7 +85,7 @@ class Application {
       }
       ImGui::Text("status LEDS");
 
-      if (ImGui::Button("RESET")) {
+      if (ImGui::Button("TOGGLE")) {
         manager.setPinState(11, LOW);
       }
       static bool goButton = HIGH;
@@ -118,6 +120,38 @@ class Application {
           manager.pauseCV.notify_all();  // Notify Manager to resume
         }
       }
+      ImGui::End();
+      //////////////////////////////////////////////////////////////////
+      // Fetch logs from the Manager
+      auto logs = manager.getLogs();
+      if (logs.size() > log_size) {
+        scrollToBottom = true;
+        log_size = logs.size();
+      } else {
+        scrollToBottom = false;
+      }
+      // ImGui window for logs
+      ImGui::Begin("Log Window");
+
+      // Display logs
+      for (const auto& log : logs) {
+        ImGui::TextUnformatted(log.c_str());
+      }
+
+      // Check if the user is at the bottom of the log window
+      float scrollY = ImGui::GetScrollY();
+      float maxScrollY = ImGui::GetScrollMaxY();
+      //      if (scrollY >= maxScrollY) {
+      //        scrollToBottom = true;  // User is at the bottom, so we can scroll to bottom automatically
+      //      } else {
+      //        scrollToBottom = false;  // User is not at the bottom, manual scroll is happening
+      //      }
+
+      // Scroll to the bottom if necessary
+      if (scrollToBottom) {
+        ImGui::SetScrollHereY(1.0f);  // Scroll to the bottom
+      }
+
       ImGui::End();
       //////////////////////////////////////////////////////////////////
       renderLogs();

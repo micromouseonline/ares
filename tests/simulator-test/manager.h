@@ -116,6 +116,18 @@ class Manager {
     target.resumeRunning();
   }
 
+  // Method to collect logs from the target
+  std::vector<std::string> getLogs() {
+    std::lock_guard<std::mutex> lock(target_mutex);
+    std::queue<std::string> logQueue = target.getLogs();
+    std::vector<std::string> logs;
+    while (!logQueue.empty()) {
+      logs.push_back(logQueue.front());
+      logQueue.pop();
+    }
+    return logs;
+  }
+
   void setPinState(int i, bool state) {
     std::lock_guard<std::mutex> lock(target_mutex);
     target.digitalWrite(i, state);

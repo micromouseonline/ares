@@ -5,6 +5,7 @@
 #pragma once
 
 #include <cstdio>
+#include <string>
 #include "common/expfilter.h"
 
 struct SensorData {
@@ -34,6 +35,7 @@ class Target {
   SensorData sensors;
   SensorCallbackFunction sensorCallback;
   ExpFilter<float> battery;
+  std::queue<std::string> log_buffer;
 
   Target() : sensorCallback(nullptr), battery(0.95) {
     setup();
@@ -66,6 +68,7 @@ class Target {
     for (auto& pin : pins) {
       pin = HIGH;
     }
+    log("Target Ready");
   }
 
   void stopRunning() {
@@ -73,11 +76,21 @@ class Target {
   }
 
   void pauseRunning() {
+    log("Paused");
     paused = true;
   }
 
   void resumeRunning() {
+    log("Resumed");
     paused = false;
+  }
+
+  void log(const std::string msg) {
+    log_buffer.push(msg);
+  }
+
+  std::queue<std::string> getLogs() {
+    return log_buffer;
   }
 
   void mainLoop() {
@@ -89,7 +102,8 @@ class Target {
       }
       if (digitalRead(11) == LOW) {
         digitalWrite(12, !digitalRead(12));
-        digitalWrite(11, 1);
+        digitalWrite(11, true);
+        log("toggled pin 12");
       }
       if (ticks >= next_update) {
         next_update += interval;
