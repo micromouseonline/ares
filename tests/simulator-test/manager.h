@@ -15,13 +15,16 @@
 
 // Manager class
 class Manager {
+ public:
   Target target;
   std::thread manager_loop_thread;
   std::thread target_main_thread;
   std::atomic<bool> manager_running;
+  std::atomic<bool> paused;
   std::mutex target_mutex;
   std::queue<Command> commandQueue;
   std::condition_variable commandCV;
+  std::condition_variable pauseCV;
 
  public:
   Manager() : manager_running(true) {
@@ -74,6 +77,8 @@ class Manager {
       /// start by locking the mutex. No other methods using this mutex
       /// can be executed until it is released
       std::unique_lock<std::mutex> lock(target_mutex);
+      pauseCV.wait(lock, [this]() { return !paused || !manager_running; });  // Wait if paused
+
       /// The wait method releases the lock and re-acquires it when
       /// the condition is met. Timeout after 100ms just to ensure there
       /// is no holdup.
@@ -81,6 +86,9 @@ class Manager {
 
       /// now we continue, with the mutex locked to ensure we have
       /// exclusive access while processing the command queue
+      if (paused) {
+        continue;
+      }
       while (!commandQueue.empty()) {
         auto command = commandQueue.front();
         commandQueue.pop();
@@ -94,6 +102,16 @@ class Manager {
   }
 
   void stopTarget() {
+    std::lock_guard<std::mutex> lock(target_mutex);
+    target.stopRunning();
+  }
+
+  void pauseTarget() {
+    std::lock_guard<std::mutex> lock(target_mutex);
+    target.stopRunning();
+  }
+
+  void resumeTarget() {
     std::lock_guard<std::mutex> lock(target_mutex);
     target.stopRunning();
   }

@@ -33,12 +33,17 @@ class Application {
   }
 
   SensorData sensorCallback(int pin) {
+    static SensorData last_known_data = target_sensors;
+    if (paused) {
+      return last_known_data;
+    }
     static int q = 0;
     q = (q + 1) % 2550;
     SensorData data = target_sensors;
     data.lfs = target_pins[pin] * 100;
     data.lds = q / 10;
     data.rds = (data.rds + 1) % 128;
+    last_known_data = data;
     return data;
   }
 
@@ -107,6 +112,24 @@ class Application {
 
       ImGui::End();
       //////////////////////////////////////////////////////////////////
+      ImGui::Begin("Simulation Controls");
+      if (ImGui::Button(paused ? "Resume" : "Pause")) {
+        paused = !paused;
+        if (paused) {
+          manager.pauseCV.notify_all();  // Notify Manager to pause
+        } else {
+          manager.pauseCV.notify_all();  // Notify Manager to resume
+        }
+      }
+      ImGui::End();
+      ImGui::Begin("Simulation Status");
+      if (paused) {
+        ImGui::Text("Simulation Paused");
+      } else {
+        ImGui::Text("Simulation Running");
+      }
+      ImGui::End();
+      //////////////////////////////////////////////////////////////////
       renderLogs();
 
       window.clear();
@@ -121,4 +144,5 @@ class Application {
   SensorData target_sensors;
   std::array<bool, 16> target_pins;
   bool running = true;
+  bool paused = false;
 };
