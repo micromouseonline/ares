@@ -55,10 +55,15 @@ class Application {
         }
       }
 
+      /// update with window state and events. Prepare for rendering
       ImGui::SFML::Update(window, deltaClock.restart());
 
-      ImGui::Begin("Simulation model");
+      ////////////// update Local copies of the target state ////////////
       target_pins = manager.getPins();
+      target_sensors = manager.getSensors();
+
+      ////////////// ImGui dialogue /////////////////////////////////////
+      ImGui::Begin("Simulation model");
       for (int i = 15; i >= 0; i--) {
         DrawLEDx(target_pins[i], 6, IM_COL32(255, 64, 64, 255));
       }
@@ -70,20 +75,15 @@ class Application {
       static bool goButton = HIGH;
       if (PushButton("GO")) {
         if (goButton == HIGH) {
-          ImGui::SameLine();
-          ImGui::Text("Setting pin low\n");
           goButton = LOW;
           manager.setPinState(10, LOW);
         }
       } else {
         if (goButton == LOW) {
-          ImGui::SameLine();
-          ImGui::Text("Setting pin high\n");
           goButton = HIGH;
           manager.setPinState(10, HIGH);
         }
       }
-      target_sensors = manager.getSensors();
       ImGui::Text("Sensor Data");
       ImGui::ProgressBar(static_cast<float>(target_sensors.lfs) / 255.0f, ImVec2(0.0f, 0.0f), "LFS");
       ImGui::ProgressBar(static_cast<float>(target_sensors.lds) / 255.0f, ImVec2(0.0f, 0.0f), "LDS");
@@ -92,6 +92,7 @@ class Application {
       ImGui::ProgressBar(static_cast<float>(target_sensors.battery) / 255.0f, ImVec2(0.0f, 0.0f), "BATT");
 
       ImGui::End();
+      //////////////////////////////////////////////////////////////////
 
       window.clear();
       ImGui::SFML::Render(window);
