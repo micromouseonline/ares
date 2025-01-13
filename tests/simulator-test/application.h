@@ -80,14 +80,16 @@ class Application {
 
       ////////////// ImGui dialogue /////////////////////////////////////
       ImGui::Begin("Simulation model");
+      ImGui::SeparatorText("IO Pins");
       for (int i = 15; i >= 0; i--) {
         DrawLEDx(target_pins[i], 6, IM_COL32(255, 64, 64, 255));
       }
-      ImGui::Text("status LEDS");
-
+      ImGui::NewLine();
+      ImGui::SeparatorText("Actions");
       if (ImGui::Button("TOGGLE")) {
         manager.setPinState(11, LOW);
       }
+      ImGui::SameLine();
       static bool goButton = HIGH;
       if (PushButton("GO")) {
         if (goButton == HIGH) {
@@ -100,16 +102,7 @@ class Application {
           manager.setPinState(10, HIGH);
         }
       }
-      ImGui::Text("Sensor Data");
-      ImGui::ProgressBar(static_cast<float>(target_sensors.lfs) / 255.0f, ImVec2(0.0f, 0.0f), "LFS");
-      ImGui::ProgressBar(static_cast<float>(target_sensors.lds) / 255.0f, ImVec2(0.0f, 0.0f), "LDS");
-      ImGui::ProgressBar(static_cast<float>(target_sensors.rds) / 255.0f, ImVec2(0.0f, 0.0f), "RDS");
-      ImGui::ProgressBar(static_cast<float>(target_sensors.rfs) / 255.0f, ImVec2(0.0f, 0.0f), "RFS");
-      ImGui::ProgressBar(static_cast<float>(target_sensors.battery) / 255.0f, ImVec2(0.0f, 0.0f), "BATT");
-
-      ImGui::End();
-      //////////////////////////////////////////////////////////////////
-      ImGui::Begin("Simulation Controls");
+      ImGui::SameLine();
       if (ImGui::Button(paused ? "Resume" : "Pause")) {
         paused = !paused;
         if (paused) {
@@ -120,7 +113,21 @@ class Application {
           manager.pauseCV.notify_all();  // Notify Manager to resume
         }
       }
+      ImGui::SeparatorText("Parameters");
+      float alpha = manager.getParameter();
+      if (ImGui::SliderFloat("Filter Alpha", &alpha, 0.0f, 1.0f)) {
+        // When the slider value changes, update the target parameter
+        manager.setParameter(alpha);
+      }
+      ImGui::SeparatorText("Sensor Data");
+      ImGui::ProgressBar(static_cast<float>(target_sensors.lfs) / 255.0f, ImVec2(0.0f, 0.0f), "LFS");
+      ImGui::ProgressBar(static_cast<float>(target_sensors.lds) / 255.0f, ImVec2(0.0f, 0.0f), "LDS");
+      ImGui::ProgressBar(static_cast<float>(target_sensors.rds) / 255.0f, ImVec2(0.0f, 0.0f), "RDS");
+      ImGui::ProgressBar(static_cast<float>(target_sensors.rfs) / 255.0f, ImVec2(0.0f, 0.0f), "RFS");
+      ImGui::ProgressBar(static_cast<float>(target_sensors.battery) / 255.0f, ImVec2(0.0f, 0.0f), "BATT");
+
       ImGui::End();
+
       //////////////////////////////////////////////////////////////////
       // Fetch logs from the Manager
       auto logs = manager.getLogs();

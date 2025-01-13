@@ -116,6 +116,15 @@ class Manager {
     target.resumeRunning();
   }
 
+  void setParameter(float p) {
+    std::lock_guard<std::mutex> lock(target_mutex);
+    target.setFilterAlpha(p);
+  }
+  float getParameter() {
+    std::lock_guard<std::mutex> lock(target_mutex);
+    return target.getFilterAlpha();
+  }
+
   // Method to collect logs from the target
   std::vector<std::string> getLogs() {
     std::lock_guard<std::mutex> lock(target_mutex);

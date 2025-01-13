@@ -36,6 +36,7 @@ class Target {
   SensorCallbackFunction sensorCallback;
   ExpFilter<float> battery;
   std::queue<std::string> log_buffer;
+  float filter_alpha = 0.90f;
 
   Target() : sensorCallback(nullptr), battery(0.95) {
     setup();
@@ -91,6 +92,15 @@ class Target {
 
   std::queue<std::string> getLogs() {
     return log_buffer;
+  }
+
+  void setFilterAlpha(float alpha) {
+    filter_alpha = alpha;
+    battery.m_alpha = filter_alpha;
+  }
+
+  float getFilterAlpha() {
+    return filter_alpha;
   }
 
   void mainLoop() {
