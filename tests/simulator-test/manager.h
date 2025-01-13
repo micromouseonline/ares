@@ -18,23 +18,23 @@ class Manager {
   Target target;
   std::thread manager_loop_thread;
   std::thread target_main_thread;
-  std::atomic<bool> target_running;
+  std::atomic<bool> manager_running;
   std::mutex target_mutex;
   std::queue<Command> commandQueue;
   std::condition_variable commandCV;
 
  public:
-  Manager() : target_running(true) {
+  Manager() : manager_running(true) {
     manager_loop_thread = std::thread(&Manager::RunTarget, this);
     printf("Manager created\n");
   }
 
   ~Manager() {
-    target_running = false;
+    manager_running = false;
     printf("Make sure the command queue is processed\n");
     commandCV.notify_all();
     printf("Stop the target main loop\n");
-    target.stopRunning();
+    stopTarget();
     printf("Join the Manager loop thread\n");
     if (manager_loop_thread.joinable()) {
       manager_loop_thread.join();
@@ -55,7 +55,9 @@ class Manager {
     /// its thread is not running
     target.setup();
 
-    /// start the thread that the target runs in
+    /// start the thread that the target runs in. When the manager has
+    /// finished with the target, be sure to call the target's
+    /// stopRunning method.
     target_main_thread = std::thread([this]() { target.mainLoop(); });
 
     /// Now we need to take care interacting with the target
@@ -68,14 +70,14 @@ class Manager {
     /// If we do not need the command queue, we do not need
     /// all this locking and guarding - just wait until
     /// target_running becames false;
-    while (target_running) {
+    while (manager_running) {
       /// start by locking the mutex. No other methods using this mutex
       /// can be executed until it is released
       std::unique_lock<std::mutex> lock(target_mutex);
       /// The wait method releases the lock and re-acquires it when
       /// the condition is met.
       commandCV.wait(lock, [this]() {  //
-        return !commandQueue.empty() || !target_running;
+        return !commandQueue.empty() || !manager_running;
       });
       /// now we continue, with the mutex locked to ensure we have
       /// exclusive access while processing the command queue
@@ -89,6 +91,11 @@ class Manager {
         }
       }
     }
+  }
+
+  void stopTarget() {
+    std::lock_guard<std::mutex> lock(target_mutex);
+    target.stopRunning();
   }
 
   void setPinState(int i, bool state) {
