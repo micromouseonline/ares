@@ -125,18 +125,9 @@ class Manager {
     return target.getFilterAlpha();
   }
 
-  void getLogBuffer(char* buffer) {
+  bool getLogBuffer(char* buffer) {
     std::lock_guard<std::mutex> lock(target_mutex);
-    target.getLogBuffer(buffer);  // Retrieve log messages from the target
-                                  //    target.clearLogBuffer();
-  }
-
-  void resetBuffer() {
-  }
-
-  int getLogRemaining() {
-    std::lock_guard<std::mutex> lock(target_mutex);
-    return target.getLogRemaining();
+    return target.getLogBuffer(buffer);  // Retrieve log messages from the target
   }
 
   void setPinState(int i, bool state) {

@@ -49,15 +49,61 @@ class Application {
     }
   }
 
-  void DisplayHexDump(const char* buffer, size_t size) {
+  int addLinesToTargetLog(const char* buffer, size_t size) {
+    int count = 0;     // Count of lines added
+    size_t start = 0;  // Start index of the current line
+
+    while (start < size && buffer[start] != '\0') {
+      size_t end = start;
+
+      // Find the end of the current line
+      while (end < size && buffer[end] != '\n' && buffer[end] != '\0') {
+        end++;
+      }
+
+      // If a line is found, add it to the log
+      if (end > start) {
+        target_log.emplace_back(buffer + start, end - start);
+        count++;  // Increment line count
+      }
+
+      // Skip the newline character if present
+      if (end < size && buffer[end] == '\n') {
+        end++;
+      }
+
+      // Move start to the end for the next iteration
+      start = ++end;
+    }
+
+    return count;
+  }
+
+  void displayTargetLog() {
+    ImGui::Begin("Target Log Window");
+    // Make the window scrollable
+    ImGui::BeginChild("ScrollingRegion", ImVec2(0, 0), false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+    // Display each line
+    for (const auto& line : target_log) {
+      ImGui::TextUnformatted(line.c_str());
+    }
+    // Scroll to the bottom if at the bottom already
+    if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+      ImGui::SetScrollHereY(1.0f);
+    }
+    ImGui::EndChild();
+    ImGui::End();
+  }
+
+  void DisplayHexDump(const char* buffer, int size) {
     ImGui::Begin("Hex Dump");
     // Iterate through the buffer and display the hex values
-    for (size_t i = 0; i < size; i += 16) {
+    for (int i = 0; i < size; i += 16) {
       // Display address offset (hex)
       ImGui::Text("%04X ", i);
       ImGui::SameLine();
       // Display the hex values for the current line
-      for (size_t j = 0; j < 16; ++j) {
+      for (int j = 0; j < 16; ++j) {
         if (i + j < size) {
           ImGui::Text("%02X ", static_cast<unsigned char>(buffer[i + j]));
         } else {
@@ -67,8 +113,7 @@ class Application {
       }
       ImGui::SameLine();
       // Display the ASCII representation for the current line
-      char txt[20];
-      for (size_t j = 0; j < 16; ++j) {
+      for (int j = 0; j < 16; ++j) {
         if (i + j < size) {
           char c = buffer[i + j];
           ImGui::Text("%c", (c >= 32 && c <= 126) ? c : '.');
@@ -84,10 +129,7 @@ class Application {
 
   void run() {
     sf::Clock deltaClock;
-    bool scrollToBottom = true;
     char logBuffer[LOG_BUFFER_SIZE] = {0};  // Buffer to hold log messages
-    bool autoScroll = true;
-    int log_size = 0;
     while (window.isOpen()) {
       sf::Event event;
       while (window.pollEvent(event)) {
@@ -104,8 +146,12 @@ class Application {
       ////////////// update Local copies of the target state ////////////
       target_pins = manager.getPins();
       target_sensors = manager.getSensors();
-      int log_space = manager.getLogRemaining();
-      manager.getLogBuffer(logBuffer);
+      static int log_space_used = 0;
+      if (manager.getLogBuffer(logBuffer)) {
+        log_space_used = addLinesToTargetLog(logBuffer, LOG_BUFFER_SIZE);
+      }
+      DisplayHexDump(logBuffer, LOG_BUFFER_SIZE);
+      displayTargetLog();
 
       ////////////// ImGui dialogue /////////////////////////////////////
       ImGui::Begin("Simulation model");
@@ -154,55 +200,11 @@ class Application {
       ImGui::ProgressBar(static_cast<float>(target_sensors.rds) / 255.0f, ImVec2(0.0f, 0.0f), "RDS");
       ImGui::ProgressBar(static_cast<float>(target_sensors.rfs) / 255.0f, ImVec2(0.0f, 0.0f), "RFS");
       ImGui::ProgressBar(static_cast<float>(target_sensors.battery) / 255.0f, ImVec2(0.0f, 0.0f), "BATT");
-      ImGui::Text(std::to_string(log_space).c_str());
+      ImGui::Text("Target Log lines: %d (%d)", (int)target_log.size(), log_space_used);
+      ImGui::ProgressBar(static_cast<float>(log_space_used) / LOG_BUFFER_SIZE, ImVec2(0.0f, 0.0f), "% free");
       ImGui::End();
 
-      DisplayHexDump(logBuffer, LOG_BUFFER_SIZE);
       //////////////////////////////////////////////////////////////////
-      // Fetch logs from the Manager
-      /*
-      auto logs = manager.getLogs();
-      if (logs.size() > log_size) {
-        scrollToBottom = true;
-        log_size = logs.size();
-      } else {
-        scrollToBottom = false;
-      }
-      // ImGui window for logs
-      ImGui::Begin("Log Window");
-
-      // Display logs
-      for (const auto& log : logs) {
-        ImGui::TextUnformatted(log.c_str());
-      }
-      //////////////////////////////////////////////////////////////////
-
-      // Check if the user is at the bottom of the log window
-      float scrollY = ImGui::GetScrollY();
-      float maxScrollY = ImGui::GetScrollMaxY();
-      //      if (scrollY >= maxScrollY) {
-      //        scrollToBottom = true;  // User is at the bottom, so we can scroll to bottom automatically
-      //      } else {
-      //        scrollToBottom = false;  // User is not at the bottom, manual scroll is happening
-      //      }
-
-      // Scroll to the bottom if necessary
-      if (scrollToBottom) {
-        ImGui::SetScrollHereY(1.0f);  // Scroll to the bottom
-      }
-
-      ImGui::End();
-       */
-      //////////////////////////////////////////////////////////////////
-      ImGui::Begin("Target Log");
-      ImGui::Checkbox("Auto-scroll", &autoScroll);
-      ImGui::TextWrapped("%s", logBuffer);
-      if (autoScroll) {
-        ImGui::SetScrollHereY(1.0f);  // Scroll to the bottom
-      }
-      ImGui::End();
-      //////////////////////////////////////////////////////////////////
-      //      renderLogs();
       window.clear();
       ImGui::SFML::Render(window);
       window.display();
@@ -214,6 +216,7 @@ class Application {
   Manager manager;
   SensorData target_sensors;
   std::array<bool, 16> target_pins;
+  std::vector<std::string> target_log;
   bool running = true;
   bool paused = false;
 };

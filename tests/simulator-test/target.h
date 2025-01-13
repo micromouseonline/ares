@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <string>
 #include "common/expfilter.h"
+#include "common/timer.h"
 
 struct SensorData {
   int lfs;
@@ -14,7 +15,7 @@ struct SensorData {
   int rds;
   int rfs;
   float battery;
-  SensorData() : lfs(0), lds(0), rds(0), rfs(0), battery(78){};
+  SensorData() : lfs(0), lds(0), rds(0), rfs(0), battery(78) {};
 };
 
 typedef std::function<SensorData(int)> SensorCallbackFunction;
@@ -38,7 +39,7 @@ class Target {
   std::queue<std::string> log_buffer;
   float filter_alpha = 0.90f;
 
-#define LOG_BUFFER_SIZE 256
+#define LOG_BUFFER_SIZE 1024
   char logBuffer[LOG_BUFFER_SIZE];  // Array of 32-character strings
   volatile int logIndex = 0;
 
@@ -54,13 +55,16 @@ class Target {
 
   // Timer setup for 500Hz simulated using a member function
   void timerISR() {
+    Timer timer;
     ticks += 2;
     if (sensorCallback) {
       sensors = sensorCallback(12);
     }
 
     sensors.battery = battery.update(50 + random() % 30);
-    std::this_thread::sleep_for(std::chrono::milliseconds(2));  // Simulate 500Hz timer
+    log("systick  log ");
+    timer.wait_us(1000 * 2);
+    //    std::this_thread::sleep_for(std::chrono::milliseconds(2));  // Simulate 500Hz timer
   }
 
   void delay_ms(uint32_t ms) {
@@ -95,18 +99,16 @@ class Target {
     logIndex += messageLength;
     logBuffer[logIndex++] = '\0';  // Null-terminate the message
   }
-  int getLogRemaining() {
-    return LOG_BUFFER_SIZE - logIndex;
-  }
 
   /// Copy the logging buffer. Do not bother if it is empty
-  void getLogBuffer(char* buffer) {
+  bool getLogBuffer(char* buffer) {
     if (logBuffer[0] == '\0') {
-      return;
+      return false;
     }
     memcpy(buffer, logBuffer, LOG_BUFFER_SIZE);
     buffer[LOG_BUFFER_SIZE - 1] = '\0';
     clearLogBuffer();
+    return true;
   }
 
   // Add a method to clear the log buffer
@@ -156,18 +158,26 @@ class Target {
       if (paused) {
         continue;
       }
+      //      log("check pin 11");
       if (!digitalRead(11)) {
+        log("Pin 11 was high");
         digitalWrite(12, !digitalRead(12));
         digitalWrite(11, true);
         log("toggled pin 12");
       }
       if (ticks >= next_update) {
         next_update += interval;
+        log("update the blinker");
         pins[0] = !pins[0];
-        for (int k = 0; k < 8; k++) {
-          log("lsdfglhsdfglhs");
+
+        for (int i = 0; i < 8; i++) {
+          delay_ms(4);
+          char buf[32];
+          sprintf(buf, "... loop %d", i);
+          log(buf);
         }
       }
+
       delay_ms(2);  // get at least one tick in every cycle
     }
   }
