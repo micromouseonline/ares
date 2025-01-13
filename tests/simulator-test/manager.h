@@ -55,6 +55,10 @@ class Manager {
     /// either the commandQueue is not empty, meaning there's something
     /// to process, or target_running becomes false, indicating a
     /// stop condition.
+
+    /// If we do not need the command queue, we do not need
+    /// all this locking and guarding - just wait until
+    /// target_running becames false;
     while (target_running) {
       /// start by locking the mutex. No other methods using this mutex
       /// can be executed until it is released
@@ -83,15 +87,7 @@ class Manager {
   void setPinState(int i, bool state) {
     std::lock_guard<std::mutex> lock(target_mutex);
     target.digitalWrite(i, state);
-    target.digitalWrite(i, state);
   }
-  //
-  //  void setPinState(int i, bool state) {
-  //    std::lock_guard<std::mutex> lock(target_mutex);
-  //    target.digitalWrite(i, state);
-  //    commandQueue.push({ButtonPress, i, state, {}});
-  //    commandCV.notify_all();
-  //  }
 
   std::array<bool, 16> getPins() {
     std::lock_guard<std::mutex> lock(target_mutex);
@@ -101,12 +97,6 @@ class Manager {
   SensorData getSensors() {
     std::lock_guard<std::mutex> lock(target_mutex);
     return target.getSensors();
-  }
-
-  void updateLEDStates() {
-    std::lock_guard<std::mutex> lock(target_mutex);
-    commandQueue.push({UpdateLEDs, 0, false, {}});
-    commandCV.notify_all();
   }
 
   void setSensorCallback(SensorCallbackFunction cb) {

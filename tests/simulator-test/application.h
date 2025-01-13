@@ -39,10 +39,6 @@ class Application {
     return data;
   }
 
-  void refreshUI(Manager &mgr) {
-    mgr.updateLEDStates();
-  }
-
   void run() {
     sf::Clock deltaClock;
     while (window.isOpen()) {
