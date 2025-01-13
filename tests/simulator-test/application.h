@@ -60,6 +60,8 @@ class Application {
   void run() {
     sf::Clock deltaClock;
     bool scrollToBottom = true;
+    char logBuffer[LOG_BUFFER_SIZE * LOG_MESSAGE_SIZE] = {0};  // Buffer to hold log messages
+    bool autoScroll = true;
     int log_size = 0;
     while (window.isOpen()) {
       sf::Event event;
@@ -77,6 +79,7 @@ class Application {
       ////////////// update Local copies of the target state ////////////
       target_pins = manager.getPins();
       target_sensors = manager.getSensors();
+      manager.getLogMessages(logBuffer, LOG_BUFFER_SIZE);
 
       ////////////// ImGui dialogue /////////////////////////////////////
       ImGui::Begin("Simulation model");
@@ -144,6 +147,7 @@ class Application {
       for (const auto& log : logs) {
         ImGui::TextUnformatted(log.c_str());
       }
+      //////////////////////////////////////////////////////////////////
 
       // Check if the user is at the bottom of the log window
       float scrollY = ImGui::GetScrollY();
@@ -160,6 +164,23 @@ class Application {
       }
 
       ImGui::End();
+      //////////////////////////////////////////////////////////////////
+
+      // Begin logging window
+      ImGui::Begin("Log");
+
+      // Enable auto-scroll if necessary
+      ImGui::Checkbox("Auto-scroll", &autoScroll);
+
+      // Display log messages
+      ImGui::TextWrapped("%s", logBuffer);
+
+      if (autoScroll) {
+        //        ImGui::SetScrollHere(1.0f);  // Scroll to the bottom
+      }
+
+      ImGui::End();
+
       //////////////////////////////////////////////////////////////////
       renderLogs();
 

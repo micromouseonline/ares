@@ -125,6 +125,9 @@ class Manager {
     return target.getFilterAlpha();
   }
 
+  void getLogMessages(char* buffer, int maxMessages) {
+    target.getLogMessages(buffer, maxMessages);  // Retrieve log messages from the target
+  }
   // Method to collect logs from the target
   std::vector<std::string> getLogs() {
     std::lock_guard<std::mutex> lock(target_mutex);

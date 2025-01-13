@@ -38,6 +38,11 @@ class Target {
   std::queue<std::string> log_buffer;
   float filter_alpha = 0.90f;
 
+#define LOG_BUFFER_SIZE 128
+#define LOG_MESSAGE_SIZE 64
+  char logBuffer[LOG_BUFFER_SIZE][LOG_MESSAGE_SIZE];  // Array of 32-character strings
+  int logIndex = 0;
+
   Target() : sensorCallback(nullptr), battery(0.95) {
     setup();
     printf("Target setup\n");
@@ -65,6 +70,23 @@ class Target {
     }
   }
 
+  void log(const char* message) {
+    strncpy(logBuffer[logIndex], message, 32);    // Copy message to buffer
+    logIndex = (logIndex + 1) % LOG_BUFFER_SIZE;  // Wrap around buffer index
+  }
+
+  // Retrieve log messages for the application
+  void getLogMessages(char* buffer, int maxMessages) {
+    int count = 0;
+    int index = logIndex;
+    while (count < maxMessages && index != logIndex) {
+      index = (index - 1 + LOG_BUFFER_SIZE) % LOG_BUFFER_SIZE;
+      strncat(buffer, logBuffer[index], LOG_MESSAGE_SIZE);
+      strncat(buffer, "\n", 1);  // Add newline for readability
+      count++;
+    }
+  }
+
   void setup() {
     for (auto& pin : pins) {
       pin = HIGH;
@@ -84,10 +106,6 @@ class Target {
   void resumeRunning() {
     log("Resumed");
     paused = false;
-  }
-
-  void log(const std::string msg) {
-    log_buffer.push(msg);
   }
 
   std::queue<std::string> getLogs() {
