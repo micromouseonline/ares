@@ -16,7 +16,8 @@
 // Manager class
 class Manager {
   Target target;
-  std::thread targetThread;
+  std::thread manager_loop_thread;
+  std::thread target_main_thread;
   std::atomic<bool> target_running;
   std::mutex target_mutex;
   std::queue<Command> commandQueue;
@@ -24,15 +25,23 @@ class Manager {
 
  public:
   Manager() : target_running(true) {
-    targetThread = std::thread(&Manager::RunTarget, this);
+    manager_loop_thread = std::thread(&Manager::RunTarget, this);
     printf("Manager created\n");
   }
 
   ~Manager() {
     target_running = false;
+    printf("Make sure the command queue is processed\n");
     commandCV.notify_all();
-    if (targetThread.joinable()) {
-      targetThread.join();
+    printf("Stop the target main loop\n");
+    target.stopRunning();
+    printf("Join the Manager loop thread\n");
+    if (manager_loop_thread.joinable()) {
+      manager_loop_thread.join();
+    }
+    printf("Join the Target main thread\n");
+    if (target_main_thread.joinable()) {
+      target_main_thread.join();
     }
     printf("Manager destroyed\n");
   }
@@ -47,7 +56,7 @@ class Manager {
     target.setup();
 
     /// start the thread that the target runs in
-    std::thread loopThread([this]() { target.mainLoop(); });
+    target_main_thread = std::thread([this]() { target.mainLoop(); });
 
     /// Now we need to take care interacting with the target
 
@@ -80,8 +89,6 @@ class Manager {
         }
       }
     }
-
-    loopThread.detach();
   }
 
   void setPinState(int i, bool state) {

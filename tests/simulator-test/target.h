@@ -27,6 +27,7 @@ const bool LOW = false;
 // Simulated Arduino Nano Target class
 class Target {
  public:
+  bool is_running = true;
   volatile bool pins[16];
   volatile uint32_t ticks;
   SensorData sensors;
@@ -66,10 +67,14 @@ class Target {
     }
   }
 
+  void stopRunning() {
+    is_running = false;
+  }
+
   void mainLoop() {
     uint32_t interval = 500;
     uint32_t next_update = ticks + interval;
-    while (true) {
+    while (is_running) {
       if (digitalRead(11) == LOW) {
         digitalWrite(12, !digitalRead(12));
         digitalWrite(11, 1);
