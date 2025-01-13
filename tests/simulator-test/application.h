@@ -9,6 +9,8 @@
 #include "manager.h"
 #include "target.h"
 
+std::vector<std::string> logs;
+
 class Application {
  public:
   Application()
@@ -19,6 +21,7 @@ class Application {
       exit(1);
     };
     setup();
+    logMessage("Good to go");
   }
 
   ~Application() {
@@ -37,6 +40,21 @@ class Application {
     data.lds = q / 10;
     data.rds = (data.rds + 1) % 128;
     return data;
+  }
+
+  void logMessage(const std::string& message) {
+    logs.push_back(message);
+    if (logs.size() > 100) {
+      logs.erase(logs.begin());
+    }
+  }
+
+  void renderLogs() {
+    ImGui::Begin("Logs");
+    for (const auto& log : logs) {
+      ImGui::Text("%s", log.c_str());
+    }
+    ImGui::End();
   }
 
   void run() {
@@ -89,6 +107,7 @@ class Application {
 
       ImGui::End();
       //////////////////////////////////////////////////////////////////
+      renderLogs();
 
       window.clear();
       ImGui::SFML::Render(window);
