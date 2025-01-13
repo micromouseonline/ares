@@ -38,13 +38,13 @@ class Target {
   std::queue<std::string> log_buffer;
   float filter_alpha = 0.90f;
 
-#define LOG_BUFFER_SIZE 128
-#define LOG_MESSAGE_SIZE 64
-  char logBuffer[LOG_BUFFER_SIZE][LOG_MESSAGE_SIZE];  // Array of 32-character strings
-  int logIndex = 0;
+#define LOG_BUFFER_SIZE 256
+  char logBuffer[LOG_BUFFER_SIZE];  // Array of 32-character strings
+  volatile int logIndex = 0;
 
   Target() : sensorCallback(nullptr), battery(0.95) {
     setup();
+    logBuffer[logIndex++] = '\0';
     printf("Target setup\n");
   }
 
@@ -70,27 +70,56 @@ class Target {
     }
   }
 
-  void log(const char* message) {
-    strncpy(logBuffer[logIndex], message, 32);    // Copy message to buffer
-    logIndex = (logIndex + 1) % LOG_BUFFER_SIZE;  // Wrap around buffer index
+  void logTicks() {
+    if (logIndex > LOG_BUFFER_SIZE - 12) {
+      return;
+    }
+    char* p = logBuffer + logIndex;
+    int len = snprintf(p, 10, "%7u ", ticks);
+    logIndex += len;
   }
 
-  // Retrieve log messages for the application
-  void getLogMessages(char* buffer, int maxMessages) {
-    int count = 0;
-    int index = logIndex;
-    while (count < maxMessages && index != logIndex) {
-      index = (index - 1 + LOG_BUFFER_SIZE) % LOG_BUFFER_SIZE;
-      strncat(buffer, logBuffer[index], LOG_MESSAGE_SIZE);
-      strncat(buffer, "\n", 1);  // Add newline for readability
-      count++;
+  /***
+   * Logged messages automatically get a timestamp prepended and are
+   * null terminated
+   * @param message
+   */
+  void log(const char* message) {
+    int messageLength = strlen(message);
+    // Ensure the message fits in the remaining space in the buffer
+    if ((messageLength + logIndex + 10) >= LOG_BUFFER_SIZE - 1) {
+      return;
     }
+    logTicks();
+    strncpy(logBuffer + logIndex, message, messageLength);
+    logIndex += messageLength;
+    logBuffer[logIndex++] = '\0';  // Null-terminate the message
+  }
+  int getLogRemaining() {
+    return LOG_BUFFER_SIZE - logIndex;
+  }
+
+  /// Copy the logging buffer. Do not bother if it is empty
+  void getLogBuffer(char* buffer) {
+    if (logBuffer[0] == '\0') {
+      return;
+    }
+    memcpy(buffer, logBuffer, LOG_BUFFER_SIZE);
+    buffer[LOG_BUFFER_SIZE - 1] = '\0';
+    clearLogBuffer();
+  }
+
+  // Add a method to clear the log buffer
+  void clearLogBuffer() {
+    memset(logBuffer, 0, LOG_BUFFER_SIZE);  // Reset the buffer
+    logIndex = 0;                           // Reset the index to the beginning
   }
 
   void setup() {
     for (auto& pin : pins) {
       pin = HIGH;
     }
+    ticks = 0;
     log("Target Ready");
   }
 
@@ -108,13 +137,12 @@ class Target {
     paused = false;
   }
 
-  std::queue<std::string> getLogs() {
-    return log_buffer;
-  }
-
   void setFilterAlpha(float alpha) {
     filter_alpha = alpha;
     battery.m_alpha = filter_alpha;
+    char buf[64];
+    snprintf(buf, 60, "Filter set to %5.3f\n", alpha);
+    log(buf);
   }
 
   float getFilterAlpha() {
@@ -128,7 +156,7 @@ class Target {
       if (paused) {
         continue;
       }
-      if (digitalRead(11) == LOW) {
+      if (!digitalRead(11)) {
         digitalWrite(12, !digitalRead(12));
         digitalWrite(11, true);
         log("toggled pin 12");
@@ -136,6 +164,9 @@ class Target {
       if (ticks >= next_update) {
         next_update += interval;
         pins[0] = !pins[0];
+        for (int k = 0; k < 8; k++) {
+          log("lsdfglhsdfglhs");
+        }
       }
       delay_ms(2);  // get at least one tick in every cycle
     }

@@ -125,19 +125,18 @@ class Manager {
     return target.getFilterAlpha();
   }
 
-  void getLogMessages(char* buffer, int maxMessages) {
-    target.getLogMessages(buffer, maxMessages);  // Retrieve log messages from the target
-  }
-  // Method to collect logs from the target
-  std::vector<std::string> getLogs() {
+  void getLogBuffer(char* buffer) {
     std::lock_guard<std::mutex> lock(target_mutex);
-    std::queue<std::string> logQueue = target.getLogs();
-    std::vector<std::string> logs;
-    while (!logQueue.empty()) {
-      logs.push_back(logQueue.front());
-      logQueue.pop();
-    }
-    return logs;
+    target.getLogBuffer(buffer);  // Retrieve log messages from the target
+                                  //    target.clearLogBuffer();
+  }
+
+  void resetBuffer() {
+  }
+
+  int getLogRemaining() {
+    std::lock_guard<std::mutex> lock(target_mutex);
+    return target.getLogRemaining();
   }
 
   void setPinState(int i, bool state) {
