@@ -86,7 +86,7 @@ class Manager {
 
       /// now we continue, with the mutex locked to ensure we have
       /// exclusive access while processing the command queue
-      if (paused) {
+      if (target.paused) {
         continue;
       }
       while (!commandQueue.empty()) {
@@ -108,12 +108,12 @@ class Manager {
 
   void pauseTarget() {
     std::lock_guard<std::mutex> lock(target_mutex);
-    target.stopRunning();
+    target.pauseRunning();
   }
 
   void resumeTarget() {
     std::lock_guard<std::mutex> lock(target_mutex);
-    target.stopRunning();
+    target.resumeRunning();
   }
 
   void setPinState(int i, bool state) {

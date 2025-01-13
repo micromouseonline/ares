@@ -13,7 +13,7 @@ struct SensorData {
   int rds;
   int rfs;
   float battery;
-  SensorData() : lfs(0), lds(0), rds(0), rfs(0), battery(78) {};
+  SensorData() : lfs(0), lds(0), rds(0), rfs(0), battery(78){};
 };
 
 typedef std::function<SensorData(int)> SensorCallbackFunction;
@@ -28,6 +28,7 @@ const bool LOW = false;
 class Target {
  public:
   bool is_running = true;
+  bool paused = false;
   volatile bool pins[16];
   volatile uint32_t ticks;
   SensorData sensors;
@@ -71,10 +72,21 @@ class Target {
     is_running = false;
   }
 
+  void pauseRunning() {
+    paused = true;
+  }
+
+  void resumeRunning() {
+    paused = false;
+  }
+
   void mainLoop() {
     uint32_t interval = 500;
     uint32_t next_update = ticks + interval;
     while (is_running) {
+      if (paused) {
+        continue;
+      }
       if (digitalRead(11) == LOW) {
         digitalWrite(12, !digitalRead(12));
         digitalWrite(11, 1);
