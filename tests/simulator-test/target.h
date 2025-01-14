@@ -40,9 +40,9 @@ class Target {
   SensorCallbackFunction sensorCallback;
   ExpFilter<float> battery;
   float filter_alpha = 0.90f;
-  Queue<char> output_buffer;
+  Queue<char> output_queue;
 
-  Target() : sensorCallback(nullptr), battery(0.95), output_buffer(LOG_BUFFER_SIZE) {
+  Target() : sensorCallback(nullptr), battery(0.95), output_queue(LOG_BUFFER_SIZE) {
     setup();
     printf("Target setup\n");
   }
@@ -76,7 +76,7 @@ class Target {
     snprintf(buf, 10, "%7u ", ticks);
     char* c = buf;
     while (*c) {
-      output_buffer.push(*c);
+      output_queue.push(*c);
       c++;
     }
   }
@@ -91,14 +91,14 @@ class Target {
     logTicks();
     const char* c = message;
     while (*c) {
-      output_buffer.push(*c);
+      output_queue.push(*c);
       c++;
     }
-    output_buffer.push('\n');
-    output_buffer.push('\0');
+    output_queue.push('\n');
+    output_queue.push('\0');
     log_locked = false;
   }
-  
+
   void setup() {
     for (auto& pin : pins) {
       pin = HIGH;
