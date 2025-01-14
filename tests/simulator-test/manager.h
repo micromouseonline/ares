@@ -11,6 +11,7 @@
 #include <thread>
 
 #include "commands.h"
+#include "common/timer.h"
 #include "target.h"
 
 // Manager class
@@ -23,9 +24,10 @@ class Manager {
   std::atomic<bool> paused;
   std::mutex target_mutex;
   std::condition_variable pauseCV;
+  Queue<char> target_serial_out;
 
  public:
-  Manager() : manager_running(true) {
+  Manager() : manager_running(true), target_serial_out(LOG_BUFFER_SIZE) {
     manager_loop_thread = std::thread(&Manager::RunTarget, this);
     printf("Manager created\n");
   }
@@ -62,6 +64,13 @@ class Manager {
     target_main_thread = std::thread([this]() { target.mainLoop(); });
     while (manager_running) {
       /// nothing to see here but we could be feeding stuff to the target
+      while (!target.output_buffer.empty()) {
+        std::lock_guard<std::mutex> lock(target_mutex);
+        char c = target.output_buffer.head();
+        target_serial_out.push(c);
+      }
+      Timer timer;
+      timer.wait_us(3000);
     }
   }
   ////////////////////////////////////
@@ -91,16 +100,13 @@ class Manager {
     return target.getFilterAlpha();
   }
 
-  int getLogBuffer(char* buffer) {
+  int getLogBuffer() {
     std::lock_guard<std::mutex> lock(target_mutex);
-    char* p = buffer;
     int result = 0;
     while (!target.output_buffer.empty()) {
       result++;
-      *p++ = target.output_buffer.head();
-    }
-    if (result) {
-      p++;
+      char c = target.output_buffer.head();
+      target_serial_out.push(c);
     }
     return result;
   }
