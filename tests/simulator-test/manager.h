@@ -9,8 +9,10 @@
 #include <mutex>
 #include <queue>
 #include <thread>
+#include <vector>
 
 #include "commands.h"
+#include "common/line-processor.h"
 #include "common/timer.h"
 #include "target.h"
 
@@ -25,6 +27,7 @@ class Manager {
   std::mutex target_mutex;
   std::condition_variable pauseCV;
   Queue<char> target_serial_out;
+  std::vector<std::string> target_log;
 
  public:
   Manager() : manager_running(true), target_serial_out(LOG_BUFFER_SIZE) {
@@ -62,13 +65,13 @@ class Manager {
     /// finished with the target, be sure to call the target's
     /// stopRunning method.
     target_main_thread = std::thread([this]() { target.mainLoop(); });
+    LineProcessor processor;
     while (manager_running) {
-      /// nothing to see here but we could be feeding stuff to the target
-      while (!target.output_buffer.empty()) {
-        std::lock_guard<std::mutex> lock(target_mutex);
-        char c = target.output_buffer.head();
-        target_serial_out.push(c);
-      }
+      /// nothing much to see here but we could be feeding stuff to the target
+      //      {
+      //        std::lock_guard<std::mutex> lock(target_mutex);
+      //        processor.processQueue(target.output_queue, target_log);
+      //      }
       Timer timer;
       timer.wait_us(3000);
     }
@@ -103,9 +106,9 @@ class Manager {
   int getLogBuffer() {
     std::lock_guard<std::mutex> lock(target_mutex);
     int result = 0;
-    while (!target.output_buffer.empty()) {
+    while (!target.output_queue.empty()) {
       result++;
-      char c = target.output_buffer.head();
+      char c = target.output_queue.head();
       target_serial_out.push(c);
     }
     return result;
