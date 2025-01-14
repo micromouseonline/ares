@@ -79,6 +79,9 @@ class Application {
     static bool scrolling = true;
     const int max_lines = 16;
     int log_size = target_log.size();
+    const float line_height = ImGui::GetTextLineHeight();
+    ImGui::SetNextWindowSizeConstraints(ImVec2(0, max_lines * line_height + 122),  //
+                                        ImVec2(FLT_MAX, max_lines * line_height + 122));
 
     if (scrolling && log_size > max_lines) {
       start_index = log_size - 16;
@@ -92,11 +95,11 @@ class Application {
     }
     ImGui::Begin("Target Log Window");
     // Display the portion of log_lines
-    ImGui::BeginChild("ScrollingRegion", ImVec2(0, ImGui::GetTextLineHeight() * 16));
+    //    ImGui::BeginChild("ScrollingRegion", ImVec2(0, ImGui::GetTextLineHeight() * 16), true, ImGuiWindowFlags_HorizontalScrollbar);
     for (int i = start_index; i < end_index; ++i) {
       ImGui::TextUnformatted(target_log[i].c_str());
     }
-    ImGui::EndChild();
+    //    ImGui::EndChild();
 
     ImGui::Separator();
     const int button_width = 60;
@@ -127,10 +130,10 @@ class Application {
     if (!scrolling && ImGui::IsWindowHovered()) {
       float wheel = ImGui::GetIO().MouseWheel;
       if (wheel > 0) {
-        start_index -= 5;
+        start_index -= 1;
       }
       if (wheel < 0) {
-        start_index += 5;
+        start_index += 1;
       }
     }
     ImGui::End();
