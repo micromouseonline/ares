@@ -1,8 +1,7 @@
 //
 // Created by peter on 22/11/24.
 //
-
-#include <vector>
+#pragma once
 
 template <class item_t>
 class Queue {
@@ -29,7 +28,7 @@ class Queue {
     mData[mTail] = item;
     ++mTail;
     ++mItemCount;
-    if (mTail > m_size) {
+    if (mTail >= m_size) {  // Corrected condition
       mTail -= m_size;
     }
   }
@@ -41,7 +40,7 @@ class Queue {
   item_t head() {
     item_t result = mData[mHead];
     ++mHead;
-    if (mHead > m_size) {
+    if (mHead >= m_size) {  // Corrected condition
       mHead -= m_size;
     }
     --mItemCount;
