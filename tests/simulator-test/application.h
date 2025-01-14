@@ -50,7 +50,7 @@ class Application {
     }
   }
 
-  void ShowTargetLogWindow() {
+  void ShowTargetLogWindow(std::vector<std::string>& target_log) {
     static int start_index = 0;
     static bool scrolling = true;
     const int max_lines = 16;
@@ -134,11 +134,8 @@ class Application {
       ////////////// update Local copies of the target state ////////////
       target_pins = manager.getPins();
       target_sensors = manager.getSensors();
-      //      manager.getLogBuffer();
-      int line_count = line_processor.processQueue(manager.target_serial_out, target_log);
-
-      //      DisplayHexDump(logBuffer, LOG_BUFFER_SIZE);
-      ShowTargetLogWindow();
+      int line_count = 1;
+      ShowTargetLogWindow(target_log);
       uint32_t ticks = manager.getTicks();
       int elapsed = ticks - last_ticks;
       last_ticks = ticks;
