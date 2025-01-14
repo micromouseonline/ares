@@ -5,7 +5,8 @@
 #include <functional>
 #include <thread>
 
-#include "application//widgets.h"
+#include "application/widgets.h"
+#include "common/line-processor.h"
 #include "manager.h"
 #include "target.h"
 
@@ -47,31 +48,6 @@ class Application {
     if (logs.size() > 100) {
       logs.erase(logs.begin());
     }
-  }
-
-  int addLinesToTargetLog(const char* buffer, size_t size) {
-    int count = 0;     // Count of lines added
-    size_t start = 0;  // Start index of the current line
-    while (start < size && buffer[start] != '\0') {
-      size_t end = start;
-      // Find the end of the current line
-      while (end < size && buffer[end] != '\n' && buffer[end] != '\0') {
-        end++;
-      }
-      // If a line is found, add it to the log
-      if (end > start) {
-        target_log.emplace_back(buffer + start, end - start);
-        count++;  // Increment line count
-      }
-      // Skip the newline character if present
-      if (end < size && buffer[end] == '\n') {
-        end++;
-      }
-      // Move start to the end for the next iteration
-      start = ++end;
-    }
-
-    return count;
   }
 
   void ShowTargetLogWindow() {
@@ -141,7 +117,6 @@ class Application {
 
   void run() {
     sf::Clock deltaClock;
-    char logBuffer[LOG_BUFFER_SIZE] = {0};  // Buffer to hold log messages
     while (window.isOpen()) {
       static uint32_t last_ticks = manager.getTicks();
       sf::Event event;
@@ -159,12 +134,10 @@ class Application {
       ////////////// update Local copies of the target state ////////////
       target_pins = manager.getPins();
       target_sensors = manager.getSensors();
-      static int log_space_used = 0;
-      if (manager.getLogBuffer(logBuffer)) {
-        log_space_used = addLinesToTargetLog(logBuffer, LOG_BUFFER_SIZE);
-      }
-      // NOTE - as the log get big, it can take more than one frame to add a line
-      DisplayHexDump(logBuffer, LOG_BUFFER_SIZE);
+      //      manager.getLogBuffer();
+      int line_count = line_processor.processQueue(manager.target_serial_out, target_log);
+
+      //      DisplayHexDump(logBuffer, LOG_BUFFER_SIZE);
       ShowTargetLogWindow();
       uint32_t ticks = manager.getTicks();
       int elapsed = ticks - last_ticks;
@@ -217,9 +190,9 @@ class Application {
       ImGui::ProgressBar(static_cast<float>(target_sensors.rds) / 255.0f, ImVec2(0.0f, 0.0f), "RDS");
       ImGui::ProgressBar(static_cast<float>(target_sensors.rfs) / 255.0f, ImVec2(0.0f, 0.0f), "RFS");
       ImGui::ProgressBar(static_cast<float>(target_sensors.battery) / 255.0f, ImVec2(0.0f, 0.0f), "BATT");
-      ImGui::Text("Target Log lines: %d of %d (%d)", (int)target_log.size(), (int)target_log.capacity(), log_space_used);
-      ImGui::ProgressBar(static_cast<float>(log_space_used) / LOG_BUFFER_SIZE, ImVec2(0.0f, 0.0f), "% free");
-      ImGui::Text("elapsed ticks: %3d", elapsed);
+      ImGui::Text("elapsed target ticks: %3d", elapsed);
+      ImGui::Text("target log queue size: %3d", line_count);
+
       ImGui::End();
 
       //////////////////////////////////////////////////////////////////
@@ -237,4 +210,6 @@ class Application {
   std::vector<std::string> target_log;
   bool running = true;
   bool paused = false;
+  LineProcessor line_processor;
+  std::mutex manager_mutex;
 };
