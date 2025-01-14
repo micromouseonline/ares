@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <string>
 #include "common/expfilter.h"
+#include "common/queue.h"
 #include "common/timer.h"
 
 struct SensorData {
@@ -25,27 +26,24 @@ const int INPUT = 0;
 const int OUTPUT = 1;
 const bool HIGH = true;
 const bool LOW = false;
+const int LOG_BUFFER_SIZE = 1024;
 
 // Simulated Arduino Nano Target class
 class Target {
  public:
   bool is_running = true;
   bool paused = false;
+  bool log_locked = false;
   volatile bool pins[16];
   volatile uint32_t ticks;
   SensorData sensors;
   SensorCallbackFunction sensorCallback;
   ExpFilter<float> battery;
-  std::queue<std::string> log_buffer;
   float filter_alpha = 0.90f;
+  Queue<char> output_buffer;
 
-#define LOG_BUFFER_SIZE 1024
-  char logBuffer[LOG_BUFFER_SIZE];  // Array of 32-character strings
-  volatile int logIndex = 0;
-
-  Target() : sensorCallback(nullptr), battery(0.95) {
+  Target() : sensorCallback(nullptr), battery(0.95), output_buffer(LOG_BUFFER_SIZE) {
     setup();
-    logBuffer[logIndex++] = '\0';
     printf("Target setup\n");
   }
 
@@ -56,15 +54,14 @@ class Target {
   // Timer setup for 500Hz simulated using a member function
   void timerISR() {
     Timer timer;
-    ticks += 2;
+    ticks += 1;
     if (sensorCallback) {
       sensors = sensorCallback(12);
     }
 
     sensors.battery = battery.update(50 + random() % 30);
     log("systick  log ");
-    timer.wait_us(1000 * 2);
-    //    std::this_thread::sleep_for(std::chrono::milliseconds(2));  // Simulate 500Hz timer
+    timer.wait_us(1000);
   }
 
   void delay_ms(uint32_t ms) {
@@ -75,12 +72,13 @@ class Target {
   }
 
   void logTicks() {
-    if (logIndex > LOG_BUFFER_SIZE - 12) {
-      return;
+    char buf[16];
+    snprintf(buf, 10, "%7u ", ticks);
+    char* c = buf;
+    while (*c) {
+      output_buffer.push(*c);
+      c++;
     }
-    char* p = logBuffer + logIndex;
-    int len = snprintf(p, 10, "%7u ", ticks);
-    logIndex += len;
   }
 
   /***
@@ -89,34 +87,18 @@ class Target {
    * @param message
    */
   void log(const char* message) {
-    int messageLength = strlen(message);
-    // Ensure the message fits in the remaining space in the buffer
-    if ((messageLength + logIndex + 10) >= LOG_BUFFER_SIZE - 1) {
-      return;
-    }
+    log_locked = true;
     logTicks();
-    strncpy(logBuffer + logIndex, message, messageLength);
-    logIndex += messageLength;
-    logBuffer[logIndex++] = '\0';  // Null-terminate the message
-  }
-
-  /// Copy the logging buffer. Do not bother if it is empty
-  bool getLogBuffer(char* buffer) {
-    if (logBuffer[0] == '\0') {
-      return false;
+    const char* c = message;
+    while (*c) {
+      output_buffer.push(*c);
+      c++;
     }
-    memcpy(buffer, logBuffer, LOG_BUFFER_SIZE);
-    buffer[LOG_BUFFER_SIZE - 1] = '\0';
-    clearLogBuffer();
-    return true;
+    output_buffer.push('\n');
+    output_buffer.push('\0');
+    log_locked = false;
   }
-
-  // Add a method to clear the log buffer
-  void clearLogBuffer() {
-    memset(logBuffer, 0, LOG_BUFFER_SIZE);  // Reset the buffer
-    logIndex = 0;                           // Reset the index to the beginning
-  }
-
+  
   void setup() {
     for (auto& pin : pins) {
       pin = HIGH;
@@ -125,6 +107,7 @@ class Target {
     log("Target Ready");
   }
 
+  ////////////////////////////////////
   void stopRunning() {
     is_running = false;
   }
@@ -138,6 +121,7 @@ class Target {
     log("Resumed");
     paused = false;
   }
+  ////////////////////////////////////
 
   void setFilterAlpha(float alpha) {
     filter_alpha = alpha;
