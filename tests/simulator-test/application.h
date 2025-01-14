@@ -126,6 +126,7 @@ class Application {
     sf::Clock deltaClock;
     char logBuffer[LOG_BUFFER_SIZE] = {0};  // Buffer to hold log messages
     while (window.isOpen()) {
+      static uint32_t last_ticks = manager.getTicks();
       sf::Event event;
       while (window.pollEvent(event)) {
         ImGui::SFML::ProcessEvent(window, event);
@@ -145,8 +146,12 @@ class Application {
       if (manager.getLogBuffer(logBuffer)) {
         log_space_used = addLinesToTargetLog(logBuffer, LOG_BUFFER_SIZE);
       }
+      // NOTE - as the log get big, it can take more than one frame to add a line
       DisplayHexDump(logBuffer, LOG_BUFFER_SIZE);
       displayTargetLog();
+      uint32_t ticks = manager.getTicks();
+      int elapsed = ticks - last_ticks;
+      last_ticks = ticks;
 
       ////////////// ImGui dialogue /////////////////////////////////////
       ImGui::Begin("Simulation model");
@@ -197,6 +202,7 @@ class Application {
       ImGui::ProgressBar(static_cast<float>(target_sensors.battery) / 255.0f, ImVec2(0.0f, 0.0f), "BATT");
       ImGui::Text("Target Log lines: %d of %d (%d)", (int)target_log.size(), (int)target_log.capacity(), log_space_used);
       ImGui::ProgressBar(static_cast<float>(log_space_used) / LOG_BUFFER_SIZE, ImVec2(0.0f, 0.0f), "% free");
+      ImGui::Text("elapsed ticks: %3d", elapsed);
       ImGui::End();
 
       //////////////////////////////////////////////////////////////////

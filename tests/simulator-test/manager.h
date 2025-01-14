@@ -120,6 +120,7 @@ class Manager {
     std::lock_guard<std::mutex> lock(target_mutex);
     target.setFilterAlpha(p);
   }
+
   float getParameter() {
     std::lock_guard<std::mutex> lock(target_mutex);
     return target.getFilterAlpha();
@@ -128,6 +129,11 @@ class Manager {
   bool getLogBuffer(char* buffer) {
     std::lock_guard<std::mutex> lock(target_mutex);
     return target.getLogBuffer(buffer);  // Retrieve log messages from the target
+  }
+
+  uint32_t getTicks() {
+    std::lock_guard<std::mutex> lock(target_mutex);
+    return target.ticks;
   }
 
   void setPinState(int i, bool state) {
