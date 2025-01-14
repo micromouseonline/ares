@@ -74,19 +74,65 @@ class Application {
     return count;
   }
 
-  void displayTargetLog() {
-    ImGui::Begin("Target Log Window");
-    // Make the window scrollable
-    ImGui::BeginChild("ScrollingRegion", ImVec2(0, 0), false, ImGuiWindowFlags_AlwaysVerticalScrollbar);
-    // Display each line
-    for (const auto& line : target_log) {
-      ImGui::TextUnformatted(line.c_str());
+  void ShowTargetLogWindow() {
+    static int start_index = 0;
+    static bool scrolling = true;
+    const int max_lines = 16;
+    int log_size = target_log.size();
+
+    if (scrolling && log_size > max_lines) {
+      start_index = log_size - 16;
     }
-    // Scroll to the bottom if at the bottom already
-    if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-      ImGui::SetScrollHereY(1.0f);
+    if (start_index < 0) {
+      start_index = 0;
+    }
+    int end_index = start_index + max_lines;
+    if (end_index > log_size) {
+      end_index = log_size;
+    }
+    ImGui::Begin("Target Log Window");
+    // Display the portion of log_lines
+    ImGui::BeginChild("ScrollingRegion", ImVec2(0, ImGui::GetTextLineHeight() * 16));
+    for (int i = start_index; i < end_index; ++i) {
+      ImGui::TextUnformatted(target_log[i].c_str());
     }
     ImGui::EndChild();
+
+    ImGui::Separator();
+    const int button_width = 60;
+    if (ImGui::Button("UP", ImVec2(button_width, 0)) && start_index > 0) {
+      start_index -= max_lines;
+      scrolling = false;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("DOWN", ImVec2(button_width, 0)) && end_index < log_size) {
+      start_index += max_lines;
+      scrolling = false;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("HOME", ImVec2(button_width, 0))) {
+      scrolling = false;
+      start_index = 0;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("END", ImVec2(button_width, 0))) {
+      scrolling = false;
+      start_index = log_size - max_lines;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(scrolling ? "PAUSE" : "RESUME", ImVec2(button_width, 0))) {
+      scrolling = !scrolling;
+    }
+    ///// or use the mouse
+    if (!scrolling && ImGui::IsWindowHovered()) {
+      float wheel = ImGui::GetIO().MouseWheel;
+      if (wheel > 0) {
+        start_index -= 5;
+      }
+      if (wheel < 0) {
+        start_index += 5;
+      }
+    }
     ImGui::End();
   }
 
@@ -148,7 +194,7 @@ class Application {
       }
       // NOTE - as the log get big, it can take more than one frame to add a line
       DisplayHexDump(logBuffer, LOG_BUFFER_SIZE);
-      displayTargetLog();
+      ShowTargetLogWindow();
       uint32_t ticks = manager.getTicks();
       int elapsed = ticks - last_ticks;
       last_ticks = ticks;
