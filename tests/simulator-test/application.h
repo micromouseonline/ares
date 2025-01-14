@@ -14,7 +14,7 @@ std::vector<std::string> logs;
 class Application {
  public:
   Application()
-      : window(sf::VideoMode(1200, 600), "SFML + ImGui"),  //
+      : window(sf::VideoMode(1200, 800), "SFML + ImGui"),  //
         manager() {
     window.setVerticalSyncEnabled(true);
     if (!ImGui::SFML::Init(window)) {
@@ -52,26 +52,21 @@ class Application {
   int addLinesToTargetLog(const char* buffer, size_t size) {
     int count = 0;     // Count of lines added
     size_t start = 0;  // Start index of the current line
-
     while (start < size && buffer[start] != '\0') {
       size_t end = start;
-
       // Find the end of the current line
       while (end < size && buffer[end] != '\n' && buffer[end] != '\0') {
         end++;
       }
-
       // If a line is found, add it to the log
       if (end > start) {
         target_log.emplace_back(buffer + start, end - start);
         count++;  // Increment line count
       }
-
       // Skip the newline character if present
       if (end < size && buffer[end] == '\n') {
         end++;
       }
-
       // Move start to the end for the next iteration
       start = ++end;
     }
@@ -200,7 +195,7 @@ class Application {
       ImGui::ProgressBar(static_cast<float>(target_sensors.rds) / 255.0f, ImVec2(0.0f, 0.0f), "RDS");
       ImGui::ProgressBar(static_cast<float>(target_sensors.rfs) / 255.0f, ImVec2(0.0f, 0.0f), "RFS");
       ImGui::ProgressBar(static_cast<float>(target_sensors.battery) / 255.0f, ImVec2(0.0f, 0.0f), "BATT");
-      ImGui::Text("Target Log lines: %d (%d)", (int)target_log.size(), log_space_used);
+      ImGui::Text("Target Log lines: %d of %d (%d)", (int)target_log.size(), (int)target_log.capacity(), log_space_used);
       ImGui::ProgressBar(static_cast<float>(log_space_used) / LOG_BUFFER_SIZE, ImVec2(0.0f, 0.0f), "% free");
       ImGui::End();
 
