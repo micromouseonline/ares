@@ -37,8 +37,8 @@ class Timer {
   };
 
   void wait_us(int microseconds) {
-    start();
 #ifdef _WIN32
+    start();
     while (!hasElapsed(microseconds)) {
       // busy-wait
     }
