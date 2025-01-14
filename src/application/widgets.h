@@ -97,3 +97,35 @@ inline void drawSensorUpdateTime(int sensor_update_time) {
   ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + update_time, p.y + 18), bar_color);
   ImGui::NewLine();
 }
+
+void DisplayHexDump(const char* buffer, int size) {
+  ImGui::Begin("Hex Dump");
+  // Iterate through the buffer and display the hex values
+  for (int i = 0; i < size; i += 16) {
+    // Display address offset (hex)
+    ImGui::Text("%04X ", i);
+    ImGui::SameLine();
+    // Display the hex values for the current line
+    for (int j = 0; j < 16; ++j) {
+      if (i + j < size) {
+        ImGui::Text("%02X ", static_cast<unsigned char>(buffer[i + j]));
+      } else {
+        ImGui::Text("   ");  // Empty space for incomplete lines
+      }
+      ImGui::SameLine();
+    }
+    ImGui::SameLine();
+    // Display the ASCII representation for the current line
+    for (int j = 0; j < 16; ++j) {
+      if (i + j < size) {
+        char c = buffer[i + j];
+        ImGui::Text("%c", (c >= 32 && c <= 126) ? c : '.');
+      } else {
+        ImGui::Text(" ");  // Empty space for incomplete lines
+      }
+      ImGui::SameLine();
+    }
+    ImGui::NewLine();
+  }
+  ImGui::End();
+}
