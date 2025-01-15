@@ -11,24 +11,14 @@
 
 class LineProcessor {
  public:
-  LineProcessor(std::mutex* mutex = nullptr) : buffer(), mtx(mutex) {
-  }
-
-  int processQueue(Queue<char>& queue, std::vector<std::string>& log) {
-    if (mtx) {
-      std::lock_guard<std::mutex> lock(*mtx);
-      return processQueueInt(queue, log);
-    } else {
-      return processQueueInt(queue, log);
-    }
+  LineProcessor() : buffer() {
   }
 
   std::string getBuffer() const {
     return buffer;
   }
 
- private:
-  int processQueueInt(Queue<char>& queue, std::vector<std::string>& log) {
+  int processQueue(Queue<char>& queue, std::vector<std::string>& log) {
     int count = 0;
     while (!queue.empty()) {
       char ch = queue.head();
@@ -45,6 +35,7 @@ class LineProcessor {
     }
     return count;
   }
+
+ private:
   std::string buffer;
-  std::mutex* mtx;
 };
