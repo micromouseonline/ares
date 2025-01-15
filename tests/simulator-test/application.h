@@ -205,7 +205,6 @@ class Application {
   Manager manager;
   SensorData target_sensors;
   std::array<bool, 16> target_pins;
-  std::vector<std::string> target_log;
   bool running = true;
   bool paused = false;
   LineProcessor line_processor;
