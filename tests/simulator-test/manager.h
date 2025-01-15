@@ -19,6 +19,7 @@
 // Manager class
 class Manager {
  public:
+  const int OUTPUT_QUEUE_SIZE = 2048;
   Target target;
   std::thread target_thread;
   Queue<char> target_serial_out;
@@ -32,7 +33,7 @@ class Manager {
   LineProcessor processor;
 
  public:
-  Manager() : target(), target_serial_out(LOG_BUFFER_SIZE), target_mutex(), log_mutex(), processor() {
+  Manager() : target(), target_serial_out(OUTPUT_QUEUE_SIZE), target_mutex(), log_mutex(), processor() {
     printf("Manager created\n");
     RunTarget();
   }

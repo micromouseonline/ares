@@ -26,7 +26,6 @@ const int INPUT = 0;
 const int OUTPUT = 1;
 const bool HIGH = true;
 const bool LOW = false;
-const int LOG_BUFFER_SIZE = 1024;
 
 // Simulated Arduino Nano Target class
 class Target {
@@ -68,7 +67,7 @@ class Target {
     }
 
     sensors.battery = battery.update(50 + random() % 30);
-    log("systick  log ");
+    log("systick  log 0123456789012345678901234567890123456789 0123456789");
     timer.wait_us(1000);
   }
 
