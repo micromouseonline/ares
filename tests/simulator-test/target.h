@@ -39,15 +39,24 @@ class Target {
   SensorCallbackFunction sensorCallback;
   ExpFilter<float> battery;
   float filter_alpha = 0.90f;
-  Queue<char>& output_queue;  /// this will be owned by the manager
+  using LogCallback = std::function<void(const char*)>;
+  LogCallback logCallback;
 
-  Target(Queue<char>& output) : sensorCallback(nullptr), battery(0.95), output_queue(output) {
+  Target() : sensorCallback(nullptr), battery(0.95) {
     setup();
     printf("Target setup\n");
   }
 
   ~Target() {
     printf("Target cleanup\n");
+  }
+
+  void setLogCallback(LogCallback cb) {
+    logCallback = cb;
+  }
+
+  void setSensorCallback(SensorCallbackFunction callback) {
+    sensorCallback = callback;
   }
 
   // Timer setup for 500Hz simulated using a member function
@@ -70,30 +79,18 @@ class Target {
     }
   }
 
-  void logTicks() {
-    char buf[16];
-    snprintf(buf, 10, "%7u ", ticks);
-    char* c = buf;
-    while (*c) {
-      output_queue.push(*c);
-      c++;
-    }
-  }
-
   /***
    * Logged messages automatically get a timestamp prepended and are
    * null terminated
    * @param message
    */
   void log(const char* message) {
-    logTicks();
-    const char* c = message;
-    while (*c) {
-      output_queue.push(*c);
-      c++;
+    char buf[128];
+    snprintf(buf, 126, "%7u %s", ticks, message);
+    if (logCallback) {
+      logCallback(buf);
     }
-    output_queue.push('\n');
-    output_queue.push('\0');
+    return;
   }
 
   void setup() {
@@ -161,10 +158,6 @@ class Target {
 
       delay_ms(2);  // get at least one tick in every cycle
     }
-  }
-
-  void setSensorCallback(SensorCallbackFunction callback) {
-    sensorCallback = callback;
   }
 
   SensorData getSensors() {

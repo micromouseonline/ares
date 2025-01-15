@@ -30,7 +30,7 @@ class Manager {
   LineProcessor processor;
 
  public:
-  Manager() : target_serial_out(LOG_BUFFER_SIZE), target(target_serial_out) {
+  Manager() : target_serial_out(LOG_BUFFER_SIZE), target(), target_mutex(), processor(&target_mutex) {
     printf("Manager created\n");
     RunTarget();
   }
@@ -50,6 +50,7 @@ class Manager {
   }
 
   void RunTarget() {
+    target.setLogCallback([this](const char* message) { this->logCallback(message); });
     printf("Start the target thread\n");
     target_thread = std::thread([this]() { target.mainLoop(); });
   }
@@ -81,9 +82,20 @@ class Manager {
   }
 
   int processOutput() {
-    std::lock_guard<std::mutex> lock(target_mutex);
+    //    std::lock_guard<std::mutex> lock(target_mutex);
     int count = processor.processQueue(target_serial_out, target_log);
     return count;
+  }
+
+  void logCallback(const char* msg) {
+    std::lock_guard<std::mutex> lock(target_mutex);
+    const char* c = msg;
+    while (*c) {
+      target_serial_out.push(*c);
+      c++;
+    }
+    target_serial_out.push('\n');
+    target_serial_out.push('\0');
   }
 
   const std::vector<std::string>& getLog() {
