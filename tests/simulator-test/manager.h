@@ -19,18 +19,20 @@
 // Manager class
 class Manager {
  public:
-  std::thread manager_loop_thread;
-  std::thread target_thread;
-  std::atomic<bool> paused;
-  std::mutex target_mutex;
-  std::condition_variable pauseCV;
-  Queue<char> target_serial_out;
   Target target;
+  std::thread target_thread;
+  Queue<char> target_serial_out;
+  std::atomic<bool> paused;
+  /// we need a mutex for access into the target
+  std::mutex target_mutex;
+  /// and a mutex just for the logging queue
+  std::mutex log_mutex;
+  std::condition_variable pauseCV;
   std::vector<std::string> target_log;
   LineProcessor processor;
 
  public:
-  Manager() : target_serial_out(LOG_BUFFER_SIZE), target(), target_mutex(), processor(&target_mutex) {
+  Manager() : target(), target_serial_out(LOG_BUFFER_SIZE), target_mutex(), log_mutex(), processor(&log_mutex) {
     printf("Manager created\n");
     RunTarget();
   }
@@ -82,13 +84,13 @@ class Manager {
   }
 
   int processOutput() {
-    //    std::lock_guard<std::mutex> lock(target_mutex);
+    //        std::lock_guard<std::mutex> lock(log_mutex);
     int count = processor.processQueue(target_serial_out, target_log);
     return count;
   }
 
   void logCallback(const char* msg) {
-    std::lock_guard<std::mutex> lock(target_mutex);
+    std::lock_guard<std::mutex> lock(log_mutex);
     const char* c = msg;
     while (*c) {
       target_serial_out.push(*c);
