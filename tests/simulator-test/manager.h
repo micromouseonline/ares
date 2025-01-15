@@ -85,7 +85,8 @@ class Manager {
 
   int processOutput() {
     std::lock_guard<std::mutex> lock(log_mutex);
-    int count = processor.processQueue(target_serial_out, target_log);
+    int count = target_serial_out.size();
+    processor.processQueue(target_serial_out, target_log);
     return count;
   }
 
