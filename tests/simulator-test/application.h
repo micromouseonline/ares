@@ -134,8 +134,7 @@ class Application {
       ////////////// update Local copies of the target state ////////////
       target_pins = manager.getPins();
       target_sensors = manager.getSensors();
-      int line_count = 1;
-      manager.processOutput();
+      int line_count = manager.processOutput();
       ShowTargetLogWindow(manager.getLog());
       uint32_t ticks = manager.getTicks();
       int elapsed = ticks - last_ticks;
