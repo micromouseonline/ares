@@ -32,7 +32,7 @@ class Manager {
   LineProcessor processor;
 
  public:
-  Manager() : target(), target_serial_out(LOG_BUFFER_SIZE), target_mutex(), log_mutex(), processor(&log_mutex) {
+  Manager() : target(), target_serial_out(LOG_BUFFER_SIZE), target_mutex(), log_mutex(), processor() {
     printf("Manager created\n");
     RunTarget();
   }
@@ -84,7 +84,7 @@ class Manager {
   }
 
   int processOutput() {
-    //        std::lock_guard<std::mutex> lock(log_mutex);
+    std::lock_guard<std::mutex> lock(log_mutex);
     int count = processor.processQueue(target_serial_out, target_log);
     return count;
   }
