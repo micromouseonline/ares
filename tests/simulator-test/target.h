@@ -33,16 +33,15 @@ class Target {
  public:
   bool is_running = true;
   bool paused = false;
-  bool log_locked = false;
   volatile bool pins[16];
   volatile uint32_t ticks;
   SensorData sensors;
   SensorCallbackFunction sensorCallback;
   ExpFilter<float> battery;
   float filter_alpha = 0.90f;
-  Queue<char> output_queue;
+  Queue<char>& output_queue;  /// this will be owned by the manager
 
-  Target() : sensorCallback(nullptr), battery(0.95), output_queue(LOG_BUFFER_SIZE) {
+  Target(Queue<char>& output) : sensorCallback(nullptr), battery(0.95), output_queue(output) {
     setup();
     printf("Target setup\n");
   }
@@ -87,7 +86,6 @@ class Target {
    * @param message
    */
   void log(const char* message) {
-    log_locked = true;
     logTicks();
     const char* c = message;
     while (*c) {
@@ -96,7 +94,6 @@ class Target {
     }
     output_queue.push('\n');
     output_queue.push('\0');
-    log_locked = false;
   }
 
   void setup() {

@@ -50,7 +50,7 @@ class Application {
     }
   }
 
-  void ShowTargetLogWindow(std::vector<std::string>& target_log) {
+  void ShowTargetLogWindow(const std::vector<std::string>& target_log) {
     static int start_index = 0;
     static bool scrolling = true;
     const int max_lines = 16;
@@ -135,7 +135,8 @@ class Application {
       target_pins = manager.getPins();
       target_sensors = manager.getSensors();
       int line_count = 1;
-      ShowTargetLogWindow(target_log);
+      manager.processOutput();
+      ShowTargetLogWindow(manager.getLog());
       uint32_t ticks = manager.getTicks();
       int elapsed = ticks - last_ticks;
       last_ticks = ticks;

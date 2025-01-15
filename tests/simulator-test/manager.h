@@ -19,35 +19,28 @@
 // Manager class
 class Manager {
  public:
-  Target target;
   std::thread manager_loop_thread;
-  std::thread target_main_thread;
-  std::atomic<bool> manager_running;
+  std::thread target_thread;
   std::atomic<bool> paused;
   std::mutex target_mutex;
   std::condition_variable pauseCV;
   Queue<char> target_serial_out;
+  Target target;
   std::vector<std::string> target_log;
+  LineProcessor processor;
 
  public:
-  Manager() : manager_running(true), target_serial_out(LOG_BUFFER_SIZE) {
-    manager_loop_thread = std::thread(&Manager::RunTarget, this);
+  Manager() : target_serial_out(LOG_BUFFER_SIZE), target(target_serial_out) {
     printf("Manager created\n");
+    RunTarget();
   }
 
   ~Manager() {
-    manager_running = false;
-    printf("Make sure the command queue is processed\n");
-    //    commandCV.notify_all();
-    printf("Stop the target main loop\n");
+    printf("Stop the target\n");
     stopTarget();
-    printf("Join the Target main thread\n");
-    if (target_main_thread.joinable()) {
-      target_main_thread.join();
-    }
-    printf("Join the Manager loop thread\n");
-    if (manager_loop_thread.joinable()) {
-      manager_loop_thread.join();
+    printf("Join the target thread\n");
+    if (target_thread.joinable()) {
+      target_thread.join();
     }
     printf("Manager destroyed\n");
   }
@@ -57,24 +50,8 @@ class Manager {
   }
 
   void RunTarget() {
-    /// We can freely access the target here because
-    /// its thread is not running
-    target.setup();
-
-    /// start the thread that the target runs in. When the manager has
-    /// finished with the target, be sure to call the target's
-    /// stopRunning method.
-    target_main_thread = std::thread([this]() { target.mainLoop(); });
-    LineProcessor processor;
-    while (manager_running) {
-      /// nothing much to see here but we could be feeding stuff to the target
-      //      {
-      //        std::lock_guard<std::mutex> lock(target_mutex);
-      //        processor.processQueue(target.output_queue, target_log);
-      //      }
-      Timer timer;
-      timer.wait_us(3000);
-    }
+    printf("Start the target thread\n");
+    target_thread = std::thread([this]() { target.mainLoop(); });
   }
   ////////////////////////////////////
   void stopTarget() {
@@ -103,15 +80,14 @@ class Manager {
     return target.getFilterAlpha();
   }
 
-  int getLogBuffer() {
+  int processOutput() {
     std::lock_guard<std::mutex> lock(target_mutex);
-    int result = 0;
-    while (!target.output_queue.empty()) {
-      result++;
-      char c = target.output_queue.head();
-      target_serial_out.push(c);
-    }
-    return result;
+    int count = processor.processQueue(target_serial_out, target_log);
+    return count;
+  }
+
+  const std::vector<std::string>& getLog() {
+    return target_log;
   }
 
   uint32_t getTicks() {
