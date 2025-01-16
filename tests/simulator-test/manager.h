@@ -35,7 +35,7 @@ class Manager {
  public:
   Manager() : target(), output_queue(OUTPUT_QUEUE_SIZE), target_mutex(), log_mutex(), processor() {
     printf("Manager created\n");
-    RunTarget();
+    StartTarget();
   }
 
   ~Manager() {
@@ -52,7 +52,7 @@ class Manager {
     return target;
   }
 
-  void RunTarget() {
+  void StartTarget() {
     target.setLogCallback([this](const char* message) { this->serialOutCallback(message); });
     printf("Start the target thread\n");
     target_thread = std::thread([this]() { target.mainLoop(); });

@@ -63,7 +63,7 @@ class Target {
   }
 
   // Timer setup for 500Hz simulated using a member function
-  void timerISR() {
+  void systick() {
     Timer timer;
     ticks += 1;
     if (sensorCallback) {
@@ -78,7 +78,7 @@ class Target {
   void delay_ms(uint32_t ms) {
     uint32_t end = ticks + ms;
     while (ticks < end) {
-      timerISR();
+      systick();
     }
   }
 
