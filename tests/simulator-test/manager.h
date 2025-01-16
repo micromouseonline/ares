@@ -22,7 +22,7 @@ class Manager {
   const int OUTPUT_QUEUE_SIZE = 2048;
   Target target;
   std::thread target_thread;
-  Queue<char> target_serial_out;
+  Queue<char> output_queue;
   std::atomic<bool> paused;
   /// we need a mutex for access into the target
   std::mutex target_mutex;
@@ -33,7 +33,7 @@ class Manager {
   LineProcessor processor;
 
  public:
-  Manager() : target(), target_serial_out(OUTPUT_QUEUE_SIZE), target_mutex(), log_mutex(), processor() {
+  Manager() : target(), output_queue(OUTPUT_QUEUE_SIZE), target_mutex(), log_mutex(), processor() {
     printf("Manager created\n");
     RunTarget();
   }
@@ -86,8 +86,8 @@ class Manager {
 
   int processOutput() {
     std::lock_guard<std::mutex> lock(log_mutex);
-    int count = target_serial_out.size();
-    processor.processQueue(target_serial_out, target_log);
+    int count = output_queue.size();
+    processor.processQueue(output_queue, target_log);
     return count;
   }
 
@@ -95,11 +95,11 @@ class Manager {
     std::lock_guard<std::mutex> lock(log_mutex);
     const char* c = msg;
     while (*c) {
-      target_serial_out.push(*c);
+      output_queue.push(*c);
       c++;
     }
-    target_serial_out.push('\n');
-    target_serial_out.push('\0');
+    output_queue.push('\n');
+    output_queue.push('\0');
   }
 
   /***
@@ -163,7 +163,7 @@ class Manager {
   void serialWriteCallback(const char* data, int length) {
     std::lock_guard<std::mutex> lock(log_mutex);
     for (int i = 0; i < length; i++) {
-      target_serial_out.push(data[i]);
+      output_queue.push(data[i]);
     }
   }
 
