@@ -50,14 +50,27 @@ class Target {
     }
   }
 
-  void log(const char* message) {
-    char buf[128];
-    int count = snprintf(buf, 126, "%7u %s", ticks, message);
-    for (int i = 0; i < count; i++) {
-      serialOut(buf[i]);
+  int serialPrintf(Target::SerialCallback out, const char* format, ...) {
+    if (!out) {
+      return -1;  // Return error if no valid callback is provided
     }
-    std::cout << buf;
-    return;
+    char buffer[256];  // Adjust size as needed
+    va_list args;
+    va_start(args, format);
+    int count = vsnprintf_(buffer, sizeof(buffer), format, args);
+    va_end(args);
+
+    if (count > 0) {
+      for (int i = 0; i < count && i < static_cast<int>(sizeof(buffer)); ++i) {
+        out(buffer[i]);
+      }
+    }
+    return count;  // Return the number of characters written
+  }
+
+  int log(const char* message) {
+    int count = serialPrintf(serialOut, "%7u %s", ticks, message);
+    return count;
   }
 
   void stopRunning() {
@@ -88,7 +101,6 @@ class Manager {
   /// and a mutex just for the logging queue
   std::mutex target_mutex;
   std::mutex log_mutex;
-  std::condition_variable pauseCV;
 
  public:
   Manager() : target(), output_queue(OUTPUT_QUEUE_SIZE), target_mutex(), log_mutex() {
