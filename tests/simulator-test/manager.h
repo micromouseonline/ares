@@ -53,8 +53,7 @@ class Manager {
   }
 
   void RunTarget() {
-    // target.setLogCallback([this](const char* message) { this->targetSerialOutCallback(message); });
-    target.setLogCallback([this](char c, void* arg) { this->logHandler(c, arg); }, &target_serial_out);
+    target.setLogCallback([this](const char* message) { this->targetSerialOutCallback(message); });
     printf("Start the target thread\n");
     target_thread = std::thread([this]() { target.mainLoop(); });
   }
@@ -168,11 +167,6 @@ class Manager {
     }
   }
 
-  void logHandler(char c, void* arg) {
-    std::lock_guard<std::mutex> lock(log_mutex);
-    target_serial_out.push(c);
-  }
-
   /***
    * serialReadCallback will be called by the target's _read() function.
    * _read() is the end of the chain called by scanf, getchar and getc.
@@ -198,7 +192,7 @@ class Manager {
    * @param data
    * @param length
    */
-  int serialReadCallback(char data, int length) {
+  int serialReadCallback(char* data, int length) {
     std::lock_guard<std::mutex> lock(log_mutex);
     for (int i = 0; i < length; i++) {
       /// NOTE: check that the input queue is not empty

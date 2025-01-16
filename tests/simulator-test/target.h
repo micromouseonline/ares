@@ -28,6 +28,9 @@ const int OUTPUT = 1;
 const bool HIGH = true;
 const bool LOW = false;
 
+void _putchar(char c) {
+  std::cout << c;
+}
 // Simulated Arduino Nano Target class
 class Target {
  public:
@@ -39,11 +42,10 @@ class Target {
   SensorCallbackFunction sensorCallback;
   ExpFilter<float> battery;
   float filter_alpha = 0.90f;
-  using LogCallback = std::function<void(const char, void*)>;
+  using LogCallback = std::function<void(const char*)>;
   LogCallback logCallback;
-  void* logarg;
 
-  Target() : sensorCallback(nullptr), battery(0.95), logCallback(nullptr) {
+  Target() : sensorCallback(nullptr), battery(0.95) {
     setup();
     printf("Target setup\n");
   }
@@ -52,13 +54,8 @@ class Target {
     printf("Target cleanup\n");
   }
 
-  // void setLogCallback(LogCallback cb) {
-  //   logCallback = cb;
-  // }
-
-  void setLogCallback(LogCallback cb, void* arg) {
+  void setLogCallback(LogCallback cb) {
     logCallback = cb;
-    logarg = arg;
   }
 
   void setSensorCallback(SensorCallbackFunction callback) {
@@ -94,103 +91,95 @@ class Target {
     char buf[128];
     snprintf(buf, 126, "%7u %s", ticks, message);
     if (logCallback) {
-      {
-        auto lambda = [](char c, void* arg) {
-          auto func = static_cast<LogCallback*>(arg);
-          (*func)(c, nullptr);
-        };
+      logCallback(buf);
+    }
+    return;
+  }
 
-        fctprintf(lambda, &logCallback, "%7u %s", ticks, message);
+  void setup() {
+    for (auto& pin : pins) {
+      pin = HIGH;
+    }
+    ticks = 0;
+    log("Target Ready");
+  }
 
-        // logCallback(buf);
+  ////////////////////////////////////
+  void stopRunning() {
+    is_running = false;
+  }
+
+  void pauseRunning() {
+    log("Paused");
+    paused = true;
+  }
+
+  void resumeRunning() {
+    log("Resumed");
+    paused = false;
+  }
+  ////////////////////////////////////
+
+  void setFilterAlpha(float alpha) {
+    filter_alpha = alpha;
+    battery.m_alpha = filter_alpha;
+    char buf[64];
+    snprintf(buf, 60, "Filter set to %5.3f\n", alpha);
+    log(buf);
+  }
+
+  float getFilterAlpha() {
+    return filter_alpha;
+  }
+
+  void mainLoop() {
+    uint32_t interval = 500;
+    uint32_t next_update = ticks + interval;
+    while (is_running) {
+      if (paused) {
+        continue;
       }
-      return;
-    }
-
-    void setup() {
-      for (auto& pin : pins) {
-        pin = HIGH;
+      //      log("check pin 11");
+      if (!digitalRead(11)) {
+        log("Pin 11 was high");
+        digitalWrite(12, !digitalRead(12));
+        digitalWrite(11, true);
+        log("toggled pin 12");
       }
-      ticks = 0;
-      log("Target Ready");
-    }
+      if (ticks >= next_update) {
+        next_update += interval;
+        log("update the blinker");
+        pins[0] = !pins[0];
 
-    ////////////////////////////////////
-    void stopRunning() {
-      is_running = false;
-    }
-
-    void pauseRunning() {
-      log("Paused");
-      paused = true;
-    }
-
-    void resumeRunning() {
-      log("Resumed");
-      paused = false;
-    }
-    ////////////////////////////////////
-
-    void setFilterAlpha(float alpha) {
-      filter_alpha = alpha;
-      battery.m_alpha = filter_alpha;
-      char buf[64];
-      snprintf(buf, 60, "Filter set to %5.3f\n", alpha);
-      log(buf);
-    }
-
-    float getFilterAlpha() {
-      return filter_alpha;
-    }
-
-    void mainLoop() {
-      uint32_t interval = 500;
-      uint32_t next_update = ticks + interval;
-      while (is_running) {
-        if (paused) {
-          continue;
+        for (int i = 0; i < 8; i++) {
+          delay_ms(4);
+          char buf[32];
+          sprintf(buf, "... loop %d", i);
+          log(buf);
         }
-        //      log("check pin 11");
-        if (!digitalRead(11)) {
-          log("Pin 11 was high");
-          digitalWrite(12, !digitalRead(12));
-          digitalWrite(11, true);
-          log("toggled pin 12");
-        }
-        if (ticks >= next_update) {
-          next_update += interval;
-          log("update the blinker");
-          pins[0] = !pins[0];
-
-          for (int i = 0; i < 8; i++) {
-            delay_ms(4);
-            char buf[32];
-            sprintf(buf, "... loop %d", i);
-            log(buf);
-          }
-        }
-
-        delay_ms(2);  // get at least one tick in every cycle
       }
-    }
 
-    SensorData getSensors() {
-      return sensors;
+      delay_ms(2);  // get at least one tick in every cycle
     }
+  }
 
-    std::array<bool, 16> getPinState() const {
-      std::array<bool, 16> pin_states;
-      for (int i = 0; i < 16; i++) {
-        pin_states[i] = pins[i];
-      }
-      return pin_states;
-    }
+  SensorData getSensors() {
+    return sensors;
+  }
 
-    bool digitalRead(int pin) {
-      return pins[pin];
+  std::array<bool, 16> getPinState() const {
+    std::array<bool, 16> pin_states;
+    for (int i = 0; i < 16; i++) {
+      pin_states[i] = pins[i];
     }
+    return pin_states;
+  }
 
-    void digitalWrite(int pin, bool state) {
-      pins[pin] = state;
-    }
-  };
+  bool digitalRead(int pin) {
+    return pins[pin];
+  }
+
+  void digitalWrite(int pin, bool state) {
+    pins[pin] = state;
+  }
+};
