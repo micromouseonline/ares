@@ -10,8 +10,8 @@
 
 #include "application/widgets.h"
 #include "common/line-processor.h"
+#include "common/printf/printf.h"
 #include "common/timer.h"
-#include "printf.h"
 
 std::vector<std::string> logs;
 
