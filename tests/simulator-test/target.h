@@ -4,9 +4,10 @@
 
 #pragma once
 
-#include <cstdio>
+// #include <cstdio>
 #include <string>
 #include "common/expfilter.h"
+#include "common/printf/printf.h"
 #include "common/queue.h"
 #include "common/timer.h"
 
@@ -16,7 +17,7 @@ struct SensorData {
   int rds;
   int rfs;
   float battery;
-  SensorData() : lfs(0), lds(0), rds(0), rfs(0), battery(78) {};
+  SensorData() : lfs(0), lds(0), rds(0), rfs(0), battery(78){};
 };
 
 typedef std::function<SensorData(int)> SensorCallbackFunction;
@@ -27,6 +28,9 @@ const int OUTPUT = 1;
 const bool HIGH = true;
 const bool LOW = false;
 
+void _putchar(char c) {
+  std::cout << c;
+}
 // Simulated Arduino Nano Target class
 class Target {
  public:
