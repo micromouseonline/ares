@@ -17,7 +17,7 @@ struct SensorData {
   int rds;
   int rfs;
   float battery;
-  SensorData() : lfs(0), lds(0), rds(0), rfs(0), battery(78){};
+  SensorData() : lfs(0), lds(0), rds(0), rfs(0), battery(78) {};
 };
 
 typedef std::function<SensorData(int)> SensorCallbackFunction;
@@ -42,8 +42,8 @@ class Target {
   SensorCallbackFunction sensorCallback;
   ExpFilter<float> battery;
   float filter_alpha = 0.90f;
-  using LogCallback = std::function<void(const char*)>;
-  LogCallback logCallback;
+  using SerialCallback = std::function<void(const char*)>;
+  SerialCallback serialOut;
 
   Target() : sensorCallback(nullptr), battery(0.95) {
     setup();
@@ -54,8 +54,8 @@ class Target {
     printf("Target cleanup\n");
   }
 
-  void setLogCallback(LogCallback cb) {
-    logCallback = cb;
+  void setLogCallback(SerialCallback cb) {
+    serialOut = cb;
   }
 
   void setSensorCallback(SensorCallbackFunction callback) {
@@ -90,8 +90,8 @@ class Target {
   void log(const char* message) {
     char buf[128];
     snprintf(buf, 126, "%7u %s", ticks, message);
-    if (logCallback) {
-      logCallback(buf);
+    if (serialOut) {
+      serialOut(buf);
     }
     return;
   }

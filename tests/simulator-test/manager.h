@@ -53,7 +53,7 @@ class Manager {
   }
 
   void RunTarget() {
-    target.setLogCallback([this](const char* message) { this->targetSerialOutCallback(message); });
+    target.setLogCallback([this](const char* message) { this->serialOutCallback(message); });
     printf("Start the target thread\n");
     target_thread = std::thread([this]() { target.mainLoop(); });
   }
@@ -91,7 +91,7 @@ class Manager {
     return count;
   }
 
-  void targetSerialOutCallback(const char* msg) {
+  void serialOutCallback(const char* msg) {
     std::lock_guard<std::mutex> lock(log_mutex);
     const char* c = msg;
     while (*c) {
