@@ -6,7 +6,7 @@
 
 // #include <cstdio>
 #include <string>
-#include "common/expfilter.h"
+#include "behaviour/expfilter.h"
 #include "common/printf/printf.h"
 #include "common/queue.h"
 #include "common/timer.h"

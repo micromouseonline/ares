@@ -11,7 +11,7 @@
 #include <mutex>
 #include <queue>
 #include "SFML/Graphics.hpp"
-#include "types.h"
+#include "application/types.h"
 
 constexpr float kPI = 3.14159265358979323846f;  // More precise
 
