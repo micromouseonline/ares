@@ -27,8 +27,8 @@
  */
 
 #include <stdint.h>
+#include "common/queue.h"
 #include "config.h"
-#include "queue.h"
 
 // #include "vt100.h"
 
@@ -493,7 +493,7 @@ class Maze {
      */
     const int QUEUE_LENGTH = MAZE_CELL_COUNT / 4;
     int max_length = 0;
-    Queue<Location, QUEUE_LENGTH> queue;
+    Queue<Location> queue(QUEUE_LENGTH);
     setCost(target, 0);
     queue.add(target);
     while (queue.size() > 0) {

@@ -63,6 +63,7 @@
 #include <thread>
 #include <vector>
 #include "behaviour/mouse.h"
+#include "common/queue.h"
 #include "vehicle/vehicle.h"
 
 class RobotManager {
@@ -70,16 +71,16 @@ class RobotManager {
   enum class RobotState { Stopped, Running, Paused, Resetting };
 
   RobotManager(Mouse& mouse, Vehicle& vehicle)  //
-      : m_mouse(mouse), m_vehicle(vehicle), m_run_state(RobotState::Stopped) {
+      : m_mouse(mouse), m_vehicle(vehicle), m_run_state(RobotState::Stopped), m_output_queue(2048) {
     //
     /// the mouse and vehicle construcors should initialise their repective
     /// instances
     ARES_INFO(" RM: Assign Vehicle to Mouse");
     m_mouse.setVehicle(m_vehicle);
+    ARES_INFO(" RM: Assign Serial Callback");
+    m_mouse.setSerialOut([this](char c) { this->serialOutCallback(c); });
     ARES_INFO(" RM: Start Mouse");
     m_mouse.startRunning();
-    //    m_vehicle.setPose(96.0f, 96.0f, 90.0f);
-    //    m_vehicle.startRunning();
     if (!m_thread.joinable()) {
       ARES_INFO(" RM: Starting Robot Thread")
       m_thread = std::thread(&RobotManager::run, this);
@@ -150,6 +151,23 @@ class RobotManager {
     }
   }
 
+  /***
+   * serialOutCallback simply places the characters in a queue much as you
+   * might with a transmit buffer. In this demonstration code, the
+   * queue is emptied on every display frame for display in the main
+   * window.
+   *
+   * Several such callbacks might exist to simulate other devices.
+   *
+   * Note that the queue must be protected with a mutex to ensure
+   *      the addition of characters does not interfere with the
+   *      processing, by the application, of the contents of the queue.
+   */
+  void serialOutCallback(const char c) {
+    std::lock_guard<std::mutex> lock(m_serial_out_mutex);
+    m_output_queue.push(c);
+  }
+
   std::string getState() {
     switch (m_run_state) {
       case RobotState::Stopped:
@@ -190,4 +208,6 @@ class RobotManager {
   std::thread m_thread;
   std::atomic<bool> m_running;
   RobotState m_run_state;
+  std::mutex m_serial_out_mutex;
+  Queue<char> m_output_queue;
 };

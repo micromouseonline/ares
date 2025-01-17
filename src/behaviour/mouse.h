@@ -15,6 +15,7 @@
 #include "application/applog-manager.h"
 #include "application/timer.h"
 #include "common/pose.h"
+#include "common/printf/printf.h"
 #include "maze.h"
 #include "motion-compiler.h"
 #include "mouse-log.h"
@@ -29,8 +30,10 @@
 
 class Mouse {
  public:
+  using SerialOut = std::function<void(const char)>;
+
   // TODO: Never instantiate the mouse without a vehicle
-  Mouse() : m_vehicle(nullptr), m_running(false), m_terminate(false), m_timeStamp(0), m_reset(false) {
+  Mouse() : m_vehicle(nullptr), m_running(false), m_terminate(false), m_timeStamp(0), m_reset(false), m_SerialOut(nullptr) {
     //
     std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
     m_current_trajectory = std::move(idle);
@@ -47,6 +50,48 @@ class Mouse {
     m_vehicle = &vehicle;
   }
 
+  void setSerialOut(SerialOut out) {
+    m_SerialOut = out;
+  }
+
+  /***
+   * This wrapper for the vsnprintf_ function will send its
+   * output, character-by-character, to the given function.
+   *
+   * Call this just as you would normally call snprintf().
+   *
+   * The specific printf vsnprintf_ function here comes from the
+   * Marco Paland lightweight printf library which uses no dynamic
+   * memory and is thread safe.
+   *
+   * Note: Output is null-terminated to ensure compatibility with
+   *       string processing functions and to mark the end of transmitted
+   *       data explicitly.
+   *
+   * @return number of characters written including the termiator
+   */
+  int serialPrintf(Mouse::SerialOut out, const char* format, ...) {
+    if (!out) {
+      return -1;  // Return error if no valid callback is provided
+    }
+    const int BUFFER_SIZE = 256;
+    char buffer[BUFFER_SIZE];  // Adjust size as needed
+    va_list args;
+    va_start(args, format);
+    /// remember to leave space for a terminating null
+    int count = vsnprintf_(buffer, BUFFER_SIZE - 1, format, args);
+    va_end(args);
+
+    if (count > 0) {
+      for (int i = 0; i < count && i < BUFFER_SIZE - 1; ++i) {
+        out(buffer[i]);
+      }
+      out(buffer[count] = '\0');
+      count++;
+    }
+    return count;  // Return the number of characters written
+  }
+
   void reset() {
     m_reset = true;
     m_activity = ACT_NONE;
@@ -55,6 +100,7 @@ class Mouse {
   }
 
   void startRunning() {
+    serialPrintf(m_SerialOut, "Hey - here we are\n");
     m_running = true;
   }
 
@@ -643,6 +689,7 @@ class Mouse {
     return m_current_trajectory->isFinished();
   }
 
+ private:
   Vehicle* m_vehicle = nullptr;
   Direction m_heading;
   Location m_location;
@@ -665,4 +712,5 @@ class Mouse {
   std::atomic<float> m_speed_up = 1.0f;
 
   std::unique_ptr<Trajectory> m_current_trajectory = std::unique_ptr<IdleTrajectory>();
+  SerialOut m_SerialOut;
 };

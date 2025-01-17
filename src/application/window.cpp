@@ -5,6 +5,10 @@
 #include "window.h"
 #include "application/configuration.h"
 
+extern "C" void _putchar(char c) {
+  (void)c;
+}
+
 /***
  * The window manager really just looks after things like creating and destroying
  * the main window.

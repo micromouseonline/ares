@@ -26,7 +26,7 @@ class Target {
   bool is_running = true;
   volatile uint32_t ticks;
 
-  using SerialCallback = std::function<void(const char)>;
+  using SerialOut = std::function<void(const char)>;
   SerialCallback serialOut;
 
   Target() : ticks(0), serialOut(nullptr) {
@@ -244,9 +244,9 @@ class Manager {
   Target target;
   std::thread target_thread;
   const int OUTPUT_QUEUE_SIZE = 2048;
-  Queue<char> output_queue;  /// a serial output buffer for the target
-  std::mutex target_mutex;   /// we need a mutex just the target
-  std::mutex log_mutex;      /// and another for the logging queue
+  Queue<char>(2048) output_queue;  /// a serial output buffer for the target
+  std::mutex target_mutex;         /// we need a mutex just the target
+  std::mutex log_mutex;            /// and another for the logging queue
 };
 
 //////////////////////////////////////////////////////////////////////////////

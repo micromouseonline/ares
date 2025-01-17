@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-project("mouse-simulator" LANGUAGES CXX)
+project("mouse-simulator" LANGUAGES C CXX)
 
 # Set project directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
@@ -154,6 +154,7 @@ target_sources(${APP} PRIVATE
         src/main.cpp
         src/application/window.cpp
         src/world/mazedata.cpp
+        src/common/printf/printf.c
 )
 
 # ###############################################################
