@@ -11,6 +11,7 @@
 
 #pragma once
 
+/// TODO: Mouse should know nothing about application
 #include "application/applog-manager.h"
 #include "application/timer.h"
 #include "common/pose.h"

@@ -20,7 +20,7 @@
 
 #include <cstddef>
 #include "behaviour/trajectory.h"
-#include "behaviour/util.h"
+#include "common/core.h"
 
 /***
  * I found the original code for this trapezoidal profiler as part of the
