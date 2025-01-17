@@ -5,8 +5,8 @@
 #include <functional>
 #include <thread>
 
+#include "application/line-processor.h"
 #include "application/widgets.h"
-#include "common/line-processor.h"
 #include "manager.h"
 #include "target.h"
 

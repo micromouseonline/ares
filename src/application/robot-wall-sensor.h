@@ -3,10 +3,10 @@
 
 #include <vector>
 #include "SFML/Graphics.hpp"
-#include "common/collisions.h"
-#include "common/utils.h"
+#include "collisions.h"
 #include "configuration.h"
 #include "drawing.h"
+#include "utils.h"
 /**
  * The RobotWallSensor is a mocked device that calculates sensor data for the simulated
  * robot. Instances of the lass represent a single sensor that can calculate the

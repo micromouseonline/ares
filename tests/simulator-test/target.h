@@ -6,10 +6,10 @@
 
 // #include <cstdio>
 #include <string>
+#include "application/timer.h"
 #include "behaviour/expfilter.h"
 #include "common/printf/printf.h"
 #include "common/queue.h"
-#include "common/timer.h"
 
 struct SensorData {
   int lfs;

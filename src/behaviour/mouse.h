@@ -12,8 +12,8 @@
 #pragma once
 
 #include "application/applog-manager.h"
+#include "application/timer.h"
 #include "common/pose.h"
-#include "common/timer.h"
 #include "maze.h"
 #include "motion-compiler.h"
 #include "mouse-log.h"
@@ -404,7 +404,6 @@ class Mouse {
       MouseLog::add("good to go...");
     }
 
-    uint32_t ticks = g_ticks;
     //////////////////////////////////////////////////////////////////////////////////////TERMINATING CONDITION IS WRONG !
     while (!(getLocation() == target)) {
       if (m_terminate || m_reset) {  /// TODO: should m_terminate just set m_reset?
@@ -454,7 +453,7 @@ class Mouse {
     }
     /// come to a halt in the cell centre
     doMove(90, 700, 0, 3000);
-    MouseLog::add(fmt::format("  - completed after {:>8} ms", g_ticks - ticks).c_str());
+    MouseLog::add(fmt::format("  - completed ").c_str());
     return true;
   }
 
@@ -548,7 +547,6 @@ class Mouse {
 
       {
         m_timeStamp++;
-        g_ticks++;
       }
       ms--;
       timer.wait_us(1000 * m_speed_up);

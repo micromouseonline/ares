@@ -5,7 +5,7 @@
 #ifndef COLLISIONS_H
 #define COLLISIONS_H
 
-#include <SFML/Graphics.hpp>
+#include "SFML/Graphics.hpp"
 
 /**
  * In this file is a static struct that contains collision detection functions.  It is a struct

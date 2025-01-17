@@ -35,7 +35,6 @@ class MouseLog {
   }
 
   static void add(std::string &msg) {
-    msg = fmt::format("{:>8} ", g_ticks) + msg;
     logMessage(msg);
   }
 

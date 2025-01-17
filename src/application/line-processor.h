@@ -7,7 +7,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
-#include "queue.h"
+#include "common/queue.h"
 
 class LineProcessor {
  public:

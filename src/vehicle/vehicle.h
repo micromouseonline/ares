@@ -10,7 +10,6 @@
 // #include <mutex>
 #include "behaviour/trajectories/straight.h"
 #include "common/core.h"
-#include "common/pose.h"
 #include "vehicle-state.h"
 
 /**

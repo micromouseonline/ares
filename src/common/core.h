@@ -10,33 +10,22 @@
 #include <limits>
 #include <mutex>
 #include <queue>
-#include "SFML/Graphics.hpp"
-#include "application/types.h"
+// #include "SFML/Graphics.hpp"
+#include "application/sensor-geometry.h"
 
-constexpr float kPI = 3.14159265358979323846f;  // More precise
+#ifndef kPI
+#define kPI 3.14159265358979323846f  // More precise
+#define RADIANS (kPI / 180.0f)
+#define DEGREES (180.0f / kPI)
+#endif
 
-constexpr float kEpsilon = std::numeric_limits<float>::epsilon();
+#ifndef BIT
+#define BIT(b) (1UL << (b))
+#endif
 
-constexpr int BIT(int x) {
-  return 1 << x;
-}
-
-inline float sign(float a) {
-  return a >= 0 ? 1.0f : -1.0f;
-}
-
-constexpr float RADIANS = kPI / 180.0f;
-constexpr float DEGREES = 180.0f / kPI;
-
-inline float toRadians(float deg) {
-  return deg * RADIANS;
-}
-
-inline float toDegrees(float rad) {
-  return rad * DEGREES;
-}
-
-inline std::atomic<uint32_t> g_ticks = 0;
+#ifndef SIGN
+#define SIGN(x) ((0 < x) - (x < 0))
+#endif
 
 /// TODO - use a thread-safe class for this
 inline std::mutex g_log_mutex;  // Protects the global log
@@ -46,19 +35,5 @@ inline void logMessage(const std::string msg) {
   std::lock_guard<std::mutex> lock(g_log_mutex);
   g_log_messages.push(msg);
 }
-
-/** * CRITICAL_SECTION
- *
- * The macro uses a C++17 feature where the if statement condition can include an
- * initializer.
- * This allows you to initialize variables within the if statement, followed
- * by a condition that determines if the block should be executed.
- *
- * Usage:
- * CRITICAL_SECTION(m_systick_mutex) {
- *     // guarded code
- * }
- */
-#define CRITICAL_SECTION(the_mutex) if (std::lock_guard<std::mutex> lock(the_mutex); true)
 
 #endif  // CORE_H

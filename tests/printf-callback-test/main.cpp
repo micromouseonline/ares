@@ -7,9 +7,9 @@
 #include <iostream>
 #include <thread>
 
-#include "common/line-processor.h"
+#include "application/line-processor.h"
+#include "application/timer.h"
 #include "common/printf/printf.h"
-#include "common/timer.h"
 
 //////////////////////////////////////////////////////////////////////////////
 /// Target class /////////////////////////////////////////////////////////////

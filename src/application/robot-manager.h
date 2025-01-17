@@ -144,6 +144,7 @@ class RobotManager {
   }
 
   void setActivity(int activity, int count) {
+    (void)count;
     if (m_mouse.getActivity() == ACT_NONE) {
       m_mouse.setActivity(activity);
     }

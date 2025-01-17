@@ -6,7 +6,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-#include "common/collisions.h"
+#include "collisions.h"
 #include "drawing.h"
 #include "robot-wall-sensor.h"
 #include "vehicle/vehicle.h"

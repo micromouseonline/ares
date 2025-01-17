@@ -20,6 +20,7 @@
 
 #include <cstddef>
 #include "behaviour/trajectory.h"
+#include "behaviour/util.h"
 
 /***
  * I found the original code for this trapezoidal profiler as part of the
@@ -51,7 +52,7 @@ class Spinturn : public Trajectory {
         m_w_limit(std::abs(w_max)),  // Ensure positive max velocity
         m_w2(std::abs(w_end)),       // Ensure positive end velocity
         m_a(std::abs(accel)),        // Ensure positive acceleration
-        m_dir(sign(dist))            // Direction of motion (+1 or -1)
+        m_dir(SIGN(dist))            // Direction of motion (+1 or -1)
   {
     setDeltaTime(dt);
   }

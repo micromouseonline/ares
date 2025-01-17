@@ -5,8 +5,8 @@
 #ifndef IMGUI_SFML_STARTER_UTILS_H
 #define IMGUI_SFML_STARTER_UTILS_H
 
-#include <SFML/Graphics.hpp>
 #include <cmath>
+#include "SFML/Graphics.hpp"
 #include "common/core.h"
 
 inline float exponential_filter(float var, float new_value, float alpha = 0.5) {

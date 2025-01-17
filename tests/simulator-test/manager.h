@@ -11,9 +11,9 @@
 #include <thread>
 #include <vector>
 
+#include "application/line-processor.h"
+#include "application/timer.h"
 #include "commands.h"
-#include "common/line-processor.h"
-#include "common/timer.h"
 #include "target.h"
 
 // Manager class

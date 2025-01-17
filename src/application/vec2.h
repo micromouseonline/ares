@@ -5,42 +5,67 @@
 #ifndef VEC2_H
 #define VEC2_H
 
-#include <SFML/Graphics.hpp>
 #include <cassert>
 #include <cmath>
+#include "SFML/Graphics.hpp"
 
 struct Vec2 {
   float x, y;
   static constexpr float EPSILON = 1e-6;
 
-  Vec2() : x(0.0f), y(0.0f) {}
-  Vec2(float x_, float y_) : x(x_), y(y_) {}
-  explicit Vec2(const sf::Vector2f& v) : x(v.x), y(v.y) {}
-  explicit Vec2(const sf::Vector2i& v) : x((float)v.x), y((float)v.y) {}
-  explicit Vec2(const sf::Vector2u& v) : x((float)v.x), y((float)v.y) {}
+  Vec2() : x(0.0f), y(0.0f) {
+  }
+  Vec2(float x_, float y_) : x(x_), y(y_) {
+  }
+  explicit Vec2(const sf::Vector2f& v) : x(v.x), y(v.y) {
+  }
+  explicit Vec2(const sf::Vector2i& v) : x((float)v.x), y((float)v.y) {
+  }
+  explicit Vec2(const sf::Vector2u& v) : x((float)v.x), y((float)v.y) {
+  }
 
-  static Vec2 fromRadians(float angle) { return {cosf(angle), sinf(angle)}; }
-  static Vec2 fromDegrees(float angle) { return {cosf(angle * RADIANS), sinf(angle * RADIANS)}; }
+  static Vec2 fromRadians(float angle) {
+    return {cosf(angle), sinf(angle)};
+  }
+  static Vec2 fromDegrees(float angle) {
+    return {cosf(angle * RADIANS), sinf(angle * RADIANS)};
+  }
 
-  static Vec2 zero() { return {0, 0}; }
-  static Vec2 up() { return {0, 1}; }
-  static Vec2 right() { return {1, 0}; }
+  static Vec2 zero() {
+    return {0, 0};
+  }
+  static Vec2 up() {
+    return {0, 1};
+  }
+  static Vec2 right() {
+    return {1, 0};
+  }
 
   /// convert to sf::Vector2f
-  explicit operator sf::Vector2f() const { return {x, y}; }
+  explicit operator sf::Vector2f() const {
+    return {x, y};
+  }
   /// convert to sf::Vector2i
-  explicit operator sf::Vector2i() const { return {(int)x, (int)y}; }
+  explicit operator sf::Vector2i() const {
+    return {(int)x, (int)y};
+  }
   /// convert to sf::Vector2u  - POTENTIALLY DANGEROUS - DROPS SIGN
-  explicit operator sf::Vector2u() const { return {(unsigned int)x, (unsigned int)y}; }
+  explicit operator sf::Vector2u() const {
+    return {(unsigned int)x, (unsigned int)y};
+  }
 
-  [[nodiscard]] float length() const { return sqrtf(x * x + y * y); }
+  [[nodiscard]] float length() const {
+    return sqrtf(x * x + y * y);
+  }
 
   [[nodiscard]] Vec2 getNormalized() const {
     const float len = length();
     return {x / len, y / len};
   }
 
-  [[nodiscard]] Vec2 normal() const { return {-y, x}; }
+  [[nodiscard]] Vec2 normal() const {
+    return {-y, x};
+  }
 
   [[nodiscard]] Vec2 leftNormal() const {
     Vec2 v(-y, x);
@@ -53,13 +78,19 @@ struct Vec2 {
   }
 
   // Add two vectors
-  Vec2 operator+(const Vec2& v) const { return {x + v.x, y + v.y}; }
+  Vec2 operator+(const Vec2& v) const {
+    return {x + v.x, y + v.y};
+  }
 
   // Subtract two vectors
-  Vec2 operator-(const Vec2& v) const { return {x - v.x, y - v.y}; }
+  Vec2 operator-(const Vec2& v) const {
+    return {x - v.x, y - v.y};
+  }
 
   // Multiply vector by a scalar
-  Vec2 operator*(float n) const { return {x * n, y * n}; }
+  Vec2 operator*(float n) const {
+    return {x * n, y * n};
+  }
 
   // Divide vector by a scalar
   Vec2 operator/(float n) const {
@@ -94,10 +125,14 @@ struct Vec2 {
     return *this;
   }
 
-  bool operator==(const Vec2& v) const { return (std::fabs(x - v.x) < EPSILON) && (std::fabs(y - v.y) < EPSILON); }
+  bool operator==(const Vec2& v) const {
+    return (std::fabs(x - v.x) < EPSILON) && (std::fabs(y - v.y) < EPSILON);
+  }
 
   // Calculate the magnitude of the vector
-  float magnitude() const { return std::sqrt(x * x + y * y); }
+  float magnitude() const {
+    return std::sqrt(x * x + y * y);
+  }
 
   // Normalize the vector to a unit vector
   Vec2& normalize() {
@@ -122,17 +157,29 @@ struct Vec2 {
   }
 
   // Calculate the dot product of two vectors
-  float dot(const Vec2& v) const { return x * v.x + y * v.y; }
+  float dot(const Vec2& v) const {
+    return x * v.x + y * v.y;
+  }
 
-  float dot(const Vec2& v1, const Vec2& v2) { return v1.x * v2.x + v1.y * v2.y; }
+  float dot(const Vec2& v1, const Vec2& v2) {
+    return v1.x * v2.x + v1.y * v2.y;
+  }
 
-  float angle() { return atan2f(y, x); }
+  float angle() {
+    return atan2f(y, x);
+  }
 
-  float angleTo(Vec2& v2) { return acosf(dot(v2) / (magnitude() * v2.magnitude())); }
+  float angleTo(Vec2& v2) {
+    return acosf(dot(v2) / (magnitude() * v2.magnitude()));
+  }
 
-  float signedAngleTo(const Vec2& v) const { return atan2f(v.y, v.x) - atan2f(y, x); }
+  float signedAngleTo(const Vec2& v) const {
+    return atan2f(v.y, v.x) - atan2f(y, x);
+  }
 
-  float cross(const Vec2& v) const { return x * v.y - y * v.x; }
+  float cross(const Vec2& v) const {
+    return x * v.y - y * v.x;
+  }
 
   Vec2& rotateTo(float theta) {
     float m = magnitude();

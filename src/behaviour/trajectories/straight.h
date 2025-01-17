@@ -44,7 +44,7 @@ class Straight : public Trajectory {
         m_v_limit(std::abs(v_max)),  // Ensure positive max velocity
         m_v2(std::abs(v_end)),       // Ensure positive end velocity
         m_a(std::abs(accel)),        // Ensure positive acceleration
-        m_dir(sign(dist))            // Direction of motion (+1 or -1)
+        m_dir(SIGN(dist))            // Direction of motion (+1 or -1)
   {
     setDeltaTime(dt);
   }

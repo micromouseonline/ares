@@ -12,13 +12,13 @@
 #include <mutex>
 #include <sstream>
 #include "common/core.h"
-#include "common/vec2.h"
 #include "event_observer.h"
 #include "imgui-SFML.h"
 #include "imgui.h"
 #include "maze-manager.h"
 #include "robot-manager.h"
 #include "robot-wall-sensor.h"
+#include "vec2.h"
 #include "window.h"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
@@ -300,7 +300,6 @@ class Application : public IEventObserver {
       //      m_vehicle_state.buttons |= (Button::BTN_RESET);
       m_robot_manager.reset();
       maze_changed = true;
-      g_ticks = 0;
     }
 
     ImGui::Text("Robot Manager State: %s", m_robot_manager.getState().c_str());
