@@ -3,11 +3,11 @@
 //
 #pragma once
 
-#include <fmt/format.h>
 #include <stdarg.h>
 #include <queue>
 #include <string>
-#include "core.h"
+#include "common/core.h"
+#include "fmt/format.h"
 
 typedef enum {
   LOG_ALL = 0,
@@ -23,7 +23,7 @@ const char *STR_INFO = "I: ";
 const char *STR_WARN = "W: ";
 const char *STR_ERROR = "E: ";
 
-class Log {
+class MouseLog {
  public:
   static void logSetLevel(LogLevel severity) {
     mLoggingLevel = severity;

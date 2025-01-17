@@ -12,11 +12,11 @@
 #pragma once
 
 #include "application/applog-manager.h"
-#include "common/logger.h"
 #include "common/pose.h"
 #include "common/timer.h"
 #include "maze.h"
 #include "motion-compiler.h"
+#include "mouse-log.h"
 #include "path-finder.h"
 #include "path-printer.h"
 #include "trajectories/cubic.h"
@@ -269,7 +269,7 @@ class Mouse {
   bool testSearch() {
     while (m_first_run) {
       m_first_run = false;
-      Log::add("Searching the maze");
+      MouseLog::add("Searching the maze");
       setHeading(DIR_N);
       setLocation({0, 0});
       m_target = Location(7, 7);
@@ -280,16 +280,16 @@ class Mouse {
       delay_ms(500);
       updateMap(robot_state);
       doMove(90 + 40.0f, 700, 700, 5000);
-      Log::add("Searching starts");
+      MouseLog::add("Searching starts");
       searchTo(m_target);
-      Log::add("Searching stops");
+      MouseLog::add("Searching stops");
       delay_ms(2000);
       // return true;
       if (m_reset || m_terminate) {
         return false;
       }
       if (m_frontWall) {
-        Log::add("Turning around");
+        MouseLog::add("Turning around");
         if (!m_leftWall) {
           doInPlaceTurn(90, 900, 0, 5000);
           delay_ms(200);
@@ -303,7 +303,7 @@ class Mouse {
           delay_ms(200);
         }
       }
-      Log::add("Begin return to start");
+      MouseLog::add("Begin return to start");
       doMove(90.04, 700, 700, 5000);
       m_target = Location(0, 0);
       searchTo(m_target);
@@ -312,7 +312,7 @@ class Mouse {
       }
       //      doInPlaceTurn(180, 900, 0, 5000);
       //      setHeading(behind_from(getHeading()));
-      Log::add("This round complete");
+      MouseLog::add("This round complete");
     }
     return true;
   }
@@ -383,17 +383,17 @@ class Mouse {
    */
   bool searchTo(Location target) {
     if (getLocation() == target) {
-      Log::add("Already at target");
+      MouseLog::add("Already at target");
       return true;
     }
     std::string msg;
     msg = fmt::format("\n\n\nSearching from {},{} HDG = {} to {},{}", m_location.x, m_location.y, m_heading, target.x, target.y);
-    Log::add(msg);
+    MouseLog::add(msg);
 
     m_maze.set_mask(MASK_OPEN);
     m_maze.flood_manhattan(target);  /////////////////////////////////////////////////////////////////The flood can fail, leaving all cells with 65535
     msg = fmt::format("Flooded the maze. cost = {}", m_maze.cost(m_location));
-    Log::add(msg);
+    MouseLog::add(msg);
     Direction newHeading = m_maze.direction_to_smallest(m_location, m_heading);
     if (newHeading != m_heading) {
       msg = fmt::format("Turning to face smallest neighbour at {}", newHeading);
@@ -401,7 +401,7 @@ class Mouse {
       //      turnToHeading(newHeading);
       //      m_heading = newHeading;
     } else {
-      Log::add("good to go...");
+      MouseLog::add("good to go...");
     }
 
     uint32_t ticks = g_ticks;
@@ -449,12 +449,12 @@ class Mouse {
           break;
       }
       if (m_event_log_detailed) {
-        Log::add(msg);
+        MouseLog::add(msg);
       }
     }
     /// come to a halt in the cell centre
     doMove(90, 700, 0, 3000);
-    Log::add(fmt::format("  - completed after {:>8} ms", g_ticks - ticks).c_str());
+    MouseLog::add(fmt::format("  - completed after {:>8} ms", g_ticks - ticks).c_str());
     return true;
   }
 
