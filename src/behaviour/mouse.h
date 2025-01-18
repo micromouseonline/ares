@@ -31,6 +31,7 @@
 class Mouse {
  public:
   using SerialOut = std::function<void(const char)>;
+  using BinaryOut = std::function<void(const uint8_t)>;
 
   // TODO: Never instantiate the mouse without a vehicle
   Mouse() : m_vehicle(nullptr), m_running(false), m_terminate(false), m_timeStamp(0), m_reset(false), m_SerialOut(nullptr) {
@@ -50,6 +51,9 @@ class Mouse {
 
   void setSerialOut(SerialOut out) {
     m_SerialOut = out;
+  }
+  void setBinaryOut(BinaryOut out) {
+    m_BinaryOut = out;
   }
 
   void reset() {
@@ -712,4 +716,5 @@ class Mouse {
   MouseLog m_logger;
   std::unique_ptr<Trajectory> m_current_trajectory = std::unique_ptr<IdleTrajectory>();
   SerialOut m_SerialOut;
+  BinaryOut m_BinaryOut;
 };

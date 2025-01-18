@@ -29,15 +29,6 @@ class MouseLog {
     mLoggingLevel = severity;
   };
 
-  void add(const char *s) {
-    std::string msg(s);
-    add(msg);
-  }
-
-  void add(std::string &msg) {
-    logMessage(msg);
-  }
-
   void info(const char *format, ...) {
     if (LOG_INFO < mLoggingLevel) {
       return;
@@ -73,5 +64,15 @@ class MouseLog {
     //  logAddString(STR_ERROR);
     add(logLineBuffer);
     va_end(args);
+  }
+
+ private:
+  void add(const char *s) {
+    std::string msg(s);
+    add(msg);
+  }
+
+  void add(std::string &msg) {
+    logMessage(msg);
   }
 };

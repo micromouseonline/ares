@@ -71,7 +71,7 @@ class RobotManager {
   enum class RobotState { Stopped, Running, Paused, Resetting };
 
   RobotManager(Mouse& mouse, Vehicle& vehicle)  //
-      : m_mouse(mouse), m_vehicle(vehicle), m_run_state(RobotState::Stopped), m_output_queue(2048) {
+      : m_mouse(mouse), m_vehicle(vehicle), m_run_state(RobotState::Stopped), m_serial_output_queue(2048), m_binary_output_queue(1024 * 1024) {
     //
     /// the mouse and vehicle construcors should initialise their repective
     /// instances
@@ -79,6 +79,7 @@ class RobotManager {
     m_mouse.setVehicle(m_vehicle);
     ARES_INFO(" RM: Assign Serial Callback");
     m_mouse.setSerialOut([this](char c) { this->serialOutCallback(c); });
+    m_mouse.setBinaryOut([this](uint8_t b) { this->binaryOutCallback(b); });
     ARES_INFO(" RM: Start Mouse");
     m_mouse.startRunning();
     if (!m_thread.joinable()) {
@@ -165,7 +166,26 @@ class RobotManager {
    */
   void serialOutCallback(const char c) {
     std::lock_guard<std::mutex> lock(m_serial_out_mutex);
-    m_output_queue.push(c);
+    m_serial_output_queue.push(c);
+  }
+
+  /***
+   *
+   * The sink for serialised binary data. On the actual robot this
+   * could be a Flash chip, SD card etc.
+   *
+   * binaryOutCallback simply places the bytes in a queue.
+   *
+   * For ARES, the queue could be processed into actual storage or
+   * translated into text and retained for the user
+   *
+   * Note that the queue must be protected with a mutex to ensure
+   *      the addition of characters does not interfere with the
+   *      processing, by the application, of the contents of the queue.
+   */
+  void binaryOutCallback(const char c) {
+    std::lock_guard<std::mutex> lock(m_binary_out_mutex);
+    m_binary_output_queue.push(c);
   }
 
   /***
@@ -181,10 +201,10 @@ class RobotManager {
   //  int processOutputQueue(std::vector<std::string>& log) {
   int processOutputQueue(std::queue<std::string>& log) {
     std::lock_guard<std::mutex> lock(m_serial_out_mutex);
-    int count = m_output_queue.size();
+    int count = m_serial_output_queue.size();
     static std::string s;
-    while (!m_output_queue.empty()) {
-      char c = m_output_queue.head();
+    while (!m_serial_output_queue.empty()) {
+      char c = m_serial_output_queue.head();
       s += c;
       if (c == '\0') {
         //        log.push_back(s);
@@ -236,5 +256,7 @@ class RobotManager {
   std::atomic<bool> m_running;
   RobotState m_run_state;
   std::mutex m_serial_out_mutex;
-  Queue<char> m_output_queue;
+  Queue<char> m_serial_output_queue;
+  std::mutex m_binary_out_mutex;
+  Queue<uint8_t> m_binary_output_queue;
 };
