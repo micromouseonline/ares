@@ -147,6 +147,7 @@ class Application : public IEventObserver {
   }
 
   void displayLogMessages() {
+    m_robot_manager.processOutputQueue(g_log_messages);  ///                          make the log  vector and use that
     while (!g_log_messages.empty()) {
       m_textbox.addText(g_log_messages.front());
       g_log_messages.pop();

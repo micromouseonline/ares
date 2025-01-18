@@ -45,51 +45,11 @@ class Mouse {
   }
 
   void setVehicle(Vehicle& vehicle) {
-    // NOTE that the mouse is free to call any code on the
-    //      vehicle - they are in the same thread
-    m_vehicle = &vehicle;
+    m_vehicle = &vehicle;  // can be freely accessed
   }
 
   void setSerialOut(SerialOut out) {
     m_SerialOut = out;
-  }
-
-  /***
-   * This wrapper for the vsnprintf_ function will send its
-   * output, character-by-character, to the given function.
-   *
-   * Call this just as you would normally call snprintf().
-   *
-   * The specific printf vsnprintf_ function here comes from the
-   * Marco Paland lightweight printf library which uses no dynamic
-   * memory and is thread safe.
-   *
-   * Note: Output is null-terminated to ensure compatibility with
-   *       string processing functions and to mark the end of transmitted
-   *       data explicitly.
-   *
-   * @return number of characters written including the termiator
-   */
-  int serialPrintf(Mouse::SerialOut out, const char* format, ...) {
-    if (!out) {
-      return -1;  // Return error if no valid callback is provided
-    }
-    const int BUFFER_SIZE = 256;
-    char buffer[BUFFER_SIZE];  // Adjust size as needed
-    va_list args;
-    va_start(args, format);
-    /// remember to leave space for a terminating null
-    int count = vsnprintf_(buffer, BUFFER_SIZE - 1, format, args);
-    va_end(args);
-
-    if (count > 0) {
-      for (int i = 0; i < count && i < BUFFER_SIZE - 1; ++i) {
-        out(buffer[i]);
-      }
-      out(buffer[count] = '\0');
-      count++;
-    }
-    return count;  // Return the number of characters written
   }
 
   void reset() {
@@ -690,6 +650,44 @@ class Mouse {
   }
 
  private:
+  /***
+   * This wrapper for the vsnprintf_ function will send its
+   * output, character-by-character, to the given function.
+   *
+   * Call this just as you would normally call snprintf().
+   *
+   * The specific printf vsnprintf_ function here comes from the
+   * Marco Paland lightweight printf library which uses no dynamic
+   * memory and is thread safe.
+   *
+   * Note: Output is null-terminated to ensure compatibility with
+   *       string processing functions and to mark the end of transmitted
+   *       data explicitly.
+   *
+   * @return number of characters written including the termiator
+   */
+  int serialPrintf(Mouse::SerialOut out, const char* format, ...) {
+    if (!out) {
+      return -1;  // Return error if no valid callback is provided
+    }
+    const int BUFFER_SIZE = 256;
+    char buffer[BUFFER_SIZE];  // Adjust size as needed
+    va_list args;
+    va_start(args, format);
+    /// remember to leave space for a terminating null
+    int count = vsnprintf_(buffer, BUFFER_SIZE - 1, format, args);
+    va_end(args);
+
+    if (count > 0) {
+      for (int i = 0; i < count && i < BUFFER_SIZE - 1; ++i) {
+        out(buffer[i]);
+      }
+      out(buffer[count] = '\0');
+      count++;
+    }
+    return count;  // Return the number of characters written
+  }
+
   Vehicle* m_vehicle = nullptr;
   Direction m_heading;
   Location m_location;

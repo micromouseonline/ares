@@ -168,6 +168,33 @@ class RobotManager {
     m_output_queue.push(c);
   }
 
+  /***
+   * This method is called by the application. It extracts characters from
+   * the a queue and adds them to a string. When the target emits a
+   * string, it will ensure they are null terminated so it is possible to
+   * embed CR and LF character if desired.
+   * When the null is detected, the string is added to a vector of messages
+   * and the string reset.
+   * Note No checks are made that there is a null present.
+   *      This may not be a good thing.
+   */
+  //  int processOutputQueue(std::vector<std::string>& log) {
+  int processOutputQueue(std::queue<std::string>& log) {
+    std::lock_guard<std::mutex> lock(m_serial_out_mutex);
+    int count = m_output_queue.size();
+    static std::string s;
+    while (!m_output_queue.empty()) {
+      char c = m_output_queue.head();
+      s += c;
+      if (c == '\0') {
+        //        log.push_back(s);
+        log.push(s);
+        s = "";
+      }
+    }
+    return count;
+  }
+
   std::string getState() {
     switch (m_run_state) {
       case RobotState::Stopped:

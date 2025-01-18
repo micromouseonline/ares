@@ -43,7 +43,7 @@ class Target {
   ExpFilter<float> battery;
   float filter_alpha = 0.90f;
   using SerialOut = std::function<void(const char*)>;
-  SerialCallback serialOut;
+  SerialOut serialOut;
 
   Target() : sensorCallback(nullptr), battery(0.95) {
     setup();
@@ -54,7 +54,7 @@ class Target {
     printf("Target cleanup\n");
   }
 
-  void setLogCallback(SerialCallback cb) {
+  void setLogCallback(SerialOut cb) {
     serialOut = cb;
   }
 
