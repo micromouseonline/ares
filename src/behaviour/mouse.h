@@ -276,7 +276,7 @@ class Mouse {
   bool testSearch() {
     while (m_first_run) {
       m_first_run = false;
-      MouseLog::add("Searching the maze");
+      m_logger.info("Searching the maze");
       setHeading(DIR_N);
       setLocation({0, 0});
       m_target = Location(7, 7);
@@ -287,16 +287,16 @@ class Mouse {
       delay_ms(500);
       updateMap(robot_state);
       doMove(90 + 40.0f, 700, 700, 5000);
-      MouseLog::add("Searching starts");
+      m_logger.info("Searching starts");
       searchTo(m_target);
-      MouseLog::add("Searching stops");
+      m_logger.info("Searching stops");
       delay_ms(2000);
       // return true;
       if (m_reset || m_terminate) {
         return false;
       }
       if (m_frontWall) {
-        MouseLog::add("Turning around");
+        m_logger.info("Turning around");
         if (!m_leftWall) {
           doInPlaceTurn(90, 900, 0, 5000);
           delay_ms(200);
@@ -310,7 +310,7 @@ class Mouse {
           delay_ms(200);
         }
       }
-      MouseLog::add("Begin return to start");
+      m_logger.info("Begin return to start");
       doMove(90.04, 700, 700, 5000);
       m_target = Location(0, 0);
       searchTo(m_target);
@@ -319,7 +319,7 @@ class Mouse {
       }
       //      doInPlaceTurn(180, 900, 0, 5000);
       //      setHeading(behind_from(getHeading()));
-      MouseLog::add("This round complete");
+      m_logger.info("This round complete");
     }
     return true;
   }
@@ -390,25 +390,25 @@ class Mouse {
    */
   bool searchTo(Location target) {
     if (getLocation() == target) {
-      MouseLog::add("Already at target");
+      m_logger.info("Already at target");
       return true;
     }
-    std::string msg;
-    msg = fmt::format("\n\n\nSearching from {},{} HDG = {} to {},{}", m_location.x, m_location.y, m_heading, target.x, target.y);
-    MouseLog::add(msg);
+    //    std::string msg;
+    //    msg = fmt::format("\n\n\nSearching from {},{} HDG = {} to {},{}", m_location.x, m_location.y, m_heading, target.x, target.y);
+    m_logger.info("Searching from %d,%d HDG=%d to %d,%d", m_location.x, m_location.y, m_heading, target.x, target.y);
 
     m_maze.set_mask(MASK_OPEN);
     m_maze.flood_manhattan(target);  /////////////////////////////////////////////////////////////////The flood can fail, leaving all cells with 65535
-    msg = fmt::format("Flooded the maze. cost = {}", m_maze.cost(m_location));
-    MouseLog::add(msg);
+                                     //    msg = fmt::format("Flooded the maze. cost = {}", m_maze.cost(m_location));
+    m_logger.info("Flooded the maze. cost = %d", m_maze.cost(m_location));
     Direction newHeading = m_maze.direction_to_smallest(m_location, m_heading);
     if (newHeading != m_heading) {
-      msg = fmt::format("Turning to face smallest neighbour at {}", newHeading);
+      m_logger.info("Turning to face smallest neighbour at %d", newHeading);
       //      Log::add(msg);
       //      turnToHeading(newHeading);
       //      m_heading = newHeading;
     } else {
-      MouseLog::add("good to go...");
+      m_logger.info("good to go...");
     }
 
     //////////////////////////////////////////////////////////////////////////////////////TERMINATING CONDITION IS WRONG !
@@ -420,6 +420,7 @@ class Mouse {
       setLocation(getLocation().neighbour(getHeading()));
       VehicleState robot_state = m_vehicle->getState();
       updateMap(robot_state);
+      std::string msg;
       msg = "";
       msg += fmt::format(" @ {:>5} ", (int)robot_state.total_distance);
       msg += fmt::format("[{:>2},{:>2}], HDG {} ", getLocation().x, getLocation().y, getHeading());
@@ -455,12 +456,12 @@ class Mouse {
           break;
       }
       if (m_event_log_detailed) {
-        MouseLog::add(msg);
+        m_logger.info(msg.c_str());
       }
     }
     /// come to a halt in the cell centre
     doMove(90, 700, 0, 3000);
-    MouseLog::add(fmt::format("  - completed ").c_str());
+    m_logger.info(fmt::format("  - completed ").c_str());
     return true;
   }
 
@@ -708,7 +709,7 @@ class Mouse {
   std::atomic<int> m_activity = ACT_NONE;
   std::atomic<int> m_iterations = 0;
   std::atomic<float> m_speed_up = 1.0f;
-
+  MouseLog m_logger;
   std::unique_ptr<Trajectory> m_current_trajectory = std::unique_ptr<IdleTrajectory>();
   SerialOut m_SerialOut;
 };
