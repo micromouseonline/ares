@@ -218,12 +218,16 @@ class Application : public IEventObserver {
     }
     ImGui::Text("LEDS");
 
-    if (ImGui::Button("RESET", ImVec2(104, 24))) {
-      m_vehicle_inputs.buttons |= Button::BTN_RESET;
+    if (PushButton("RESET", ImVec2(104, 24))) {
+      m_vehicle_buttons |= (uint8_t)Button::BTN_RESET;
+    } else {
+      m_vehicle_buttons &= !(uint8_t)Button::BTN_RESET;
     }
     ImGui::SameLine();
-    if (ImGui::Button("GO", ImVec2(104, 24))) {
-      m_vehicle_inputs.buttons |= Button::BTN_GO;
+    if (PushButton("GO", ImVec2(104, 24))) {
+      m_vehicle_buttons |= (uint8_t)Button::BTN_GO;
+    } else {
+      m_vehicle_buttons &= !(uint8_t)Button::BTN_GO;
     }
 
     drawSensorUpdateTime(m_process_time.asMicroseconds());
@@ -276,10 +280,10 @@ class Application : public IEventObserver {
     ImGui::SameLine();
     if (ImGui::Button("SEARCH", ImVec2(b_wide, 0))) {
       ARES_INFO("APP: Set Search Mode");
-      if (m_vehicle_inputs.activity == ACT_NONE) {
-        m_robot_manager.setVehiclePose(96, 96, 90);
-        m_robot_manager.setActivity(ACT_SEARCH, 1);
-      }
+      //      if (m_vehicle_inputs.activity == ACT_NONE) {
+      //        m_robot_manager.setVehiclePose(96, 96, 90);
+      //        m_robot_manager.setActivity(ACT_SEARCH, 1);
+      //      }
     }
 
     if (ImGui::Button("START", ImVec2(b_wide, 0))) {
@@ -423,6 +427,7 @@ class Application : public IEventObserver {
     m_vehicle_inputs.sensors.rds_distance = m_robot_body.getSensor(conf::RDS).getDistance();
     m_vehicle_inputs.sensors.rfs_distance = m_robot_body.getSensor(conf::RFS).getDistance();
 
+    m_vehicle_inputs.buttons = m_vehicle_buttons;
     m_process_time = m_timer.getElapsedTime();
     /// the returned data is copied so there is no need for a lock
     return m_vehicle_inputs;
@@ -454,6 +459,7 @@ class Application : public IEventObserver {
   TextBox m_textbox;
   ImFont* m_guiFont = nullptr;
   std::mutex m_application_mutex;
+  uint8_t m_vehicle_buttons = 0;
 };
 
 #endif  // APPLICATION_H

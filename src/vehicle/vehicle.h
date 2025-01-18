@@ -129,11 +129,11 @@ class Vehicle {
 
   /// This is safe to call only from the behaviour (mouse) code
   bool readButton(int btn) {
-    return ((m_inputs.buttons & btn) != 0);
+    return ((m_state.buttons & btn) != 0);
   }
 
   uint8_t getButtons() {
-    return m_inputs.buttons;
+    return m_state.buttons;
   }
 
   /// this should be a single method that updates the state of the vehicle
@@ -145,6 +145,8 @@ class Vehicle {
     if (m_sensor_callback) {
       m_inputs = m_sensor_callback(m_state);
       m_state.sensors = m_inputs.sensors;
+      setLed(0, m_inputs.buttons & BIT(0));
+      setLed(1, m_inputs.buttons & BIT(1));
     }
   }
 

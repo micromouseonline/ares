@@ -39,10 +39,7 @@ struct SensorData {
 
 struct VehicleInputs {
   SensorData sensors;
-  int activity = ACT_NONE;
-  int activity_arg = 0;
   uint8_t buttons = 0;
-  uint8_t leds = 0;
 };
 /**
  * Positions here are in world coordinates with
@@ -52,25 +49,16 @@ struct VehicleInputs {
  *
  */
 struct VehicleState {
-  uint32_t ticks;
-  float x;
-  float y;
-  float angle;
-  float velocity;
-  float angular_velocity;
-  float total_distance;  // accumulated from last reset
-  uint8_t leds;          // bitfield for led states
+  uint32_t ticks = 0;
+  float x = 0;
+  float y = 0;
+  float angle = 0;
+  float velocity = 0;
+  float angular_velocity = 0;
+  float total_distance = 0;  // accumulated from last reset
+  uint8_t leds = 0;          // bitfield for led states
+  uint8_t buttons = 0;       // bitfield for button states
   SensorData sensors;
-
-  VehicleState()
-      : x(0.0f),
-        y(0.0f),
-        angle(0.0f),
-        velocity(0.0f),          //
-        angular_velocity(0.0f),  //
-        total_distance(0.0f),
-        leds(0) {
-  }
 };
 
 #include <functional>

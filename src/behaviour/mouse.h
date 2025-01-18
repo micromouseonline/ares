@@ -515,7 +515,7 @@ class Mouse {
       m_activity = ACT_NONE;
       if ((m_ticks - last_update) >= interval) {
         last_update += interval;
-        m_vehicle->setLed(0, ticktock);
+        m_vehicle->setLed(3, ticktock);
         ticktock = !ticktock;
       }
 
