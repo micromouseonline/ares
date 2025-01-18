@@ -483,7 +483,7 @@ class Mouse {
     /// setup
     std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
     m_current_trajectory = std::move(idle);
-    uint32_t interval = 1000;
+    uint32_t interval = 500;
     uint32_t last_update = m_ticks;
     bool ticktock = true;
     /// loop
@@ -519,10 +519,6 @@ class Mouse {
       if ((m_ticks - last_update) >= interval) {
         last_update += interval;
         m_vehicle->setLed(0, ticktock);
-        m_vehicle->setLed(1, ticktock);
-        m_vehicle->setLed(2, ticktock);
-        m_vehicle->setLed(3, ticktock);
-        //        m_logger.info("%s", ticktock ? "tick" : "tock");
         ticktock = !ticktock;
       }
 

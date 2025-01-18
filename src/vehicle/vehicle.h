@@ -156,7 +156,7 @@ class Vehicle {
   /// always call after sensors
   void updateInputs() {
     m_state.buttons = m_inputs.buttons;
-    m_state.leds = m_inputs.leds;
+    //    m_state.leds = m_inputs.leds;
     m_state.activity = m_inputs.activity;
     m_activity = m_inputs.activity;
     m_activity_arg = m_inputs.activity_arg;
