@@ -28,6 +28,15 @@
 #include "trajectory.h"
 #include "vehicle/vehicle.h"
 
+enum Activity {
+  ACT_NONE,
+  ACT_TEST_SS90,
+  ACT_TEST_SS180,
+  ACT_TEST_CIRCUIT,
+  ACT_TEST_FOLLOW_TO,
+  ACT_SEARCH,
+};
+
 class Mouse {
  public:
   using SerialOut = std::function<void(const char)>;
