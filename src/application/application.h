@@ -218,34 +218,57 @@ class Application : public IEventObserver {
     }
     ImGui::Text("LEDS");
     const char* item_names[] = {
-        "Run Contest", "Search", "Speedrun 1", "Speedrun 2", "Speedrun 3", "Speedrun 4", "Speedrun 5", "Circuit Run", "Wall Follower",
-        "SS90E",       "SS90F",  "SS180",      "SD45",       "SD135",      "DS45",       "DS135",      "DD90",
+        "NOTHING",     "Run Contest", "Search", "Speedrun 1", "Speedrun 2", "Speedrun 3", "Speedrun 4", "Speedrun 5", "Wall Follower",
+        "Circuit Run", "SS90E",       "SS90F",  "SS180",      "SD45",       "SD135",      "DS45",       "DS135",      "DD90",
     };
+    const Activity activity[] = {
+        ACT_NONE,         ACT_CONTEST,    ACT_SEARCH,     ACT_SPEED_1,    ACT_SPEED_2,   ACT_SPEED_3,    ACT_SPEED_4,   ACT_SPEED_5,    ACT_TEST_FOLLOW_TO,
+        ACT_TEST_CIRCUIT, ACT_TEST_SS90E, ACT_TEST_SS90F, ACT_TEST_SS180, ACT_TEST_SD45, ACT_TEST_SD135, ACT_TEST_DS45, ACT_TEST_DS135, ACT_TEST_DD90,
+    };
+
     static int item_type = 1;
     static bool item_disabled = false;
     ImGui::Combo("Item Type", &item_type, item_names, IM_ARRAYSIZE(item_names), IM_ARRAYSIZE(item_names));
 
-    if (PushButton("RESET", ImVec2(104, 24))) {
+    if (item_type >= ACT_TEST_CIRCUIT) {
+      static int counts = 2;
+      ImGui::AlignTextToFramePadding();
+      ImGui::Text("Test Count:");
+      ImGui::SameLine();
+      float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+      ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+      if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {
+        counts--;
+      }
+      ImGui::SameLine(0.0f, spacing);
+      if (ImGui::ArrowButton("##right", ImGuiDir_Right)) {
+        counts++;
+      }
+      ImGui::PopItemFlag();
+      counts = std::clamp(counts, 1, 20);
+      ImGui::SameLine();
+      ImGui::Text("%d", counts);
+    }
+    if (ImGui::Button("RESET", ImVec2(104, 24))) {
       m_vehicle_buttons |= (uint8_t)Button::BTN_RESET;
+      m_robot_manager.reset();
+      maze_changed = true;
     } else {
       m_vehicle_buttons &= ~(uint8_t)Button::BTN_RESET;
     }
     ImGui::SameLine();
-    if (PushButton("GO", ImVec2(104, 24))) {
+    if (ImGui::Button("GO", ImVec2(104, 24))) {
+      m_mouse.setActivity(activity[item_type]);
       m_vehicle_buttons |= (uint8_t)Button::BTN_GO;
     } else {
       m_vehicle_buttons &= ~(uint8_t)Button::BTN_GO;
     }
+    static float speedup = 1.0f;
+    ImGui::SliderFloat("Speedup", &speedup, 0.25, 4.0, "%4.2f");
+    m_mouse.setSpeedUp(speedup);
 
     drawSensorUpdateTime(m_process_time.asMicroseconds());
     ImGui::Text("%s", state_summary.str().c_str());
-    static int e = 0;
-    ImGui::RadioButton("radio a", &e, 0);
-    ImGui::SameLine();
-    ImGui::RadioButton("radio b", &e, 1);
-    ImGui::SameLine();
-    ImGui::RadioButton("xradio c", &e, 2);
-    ImGui::Text("Radio choice %3d", e);
     ImGui::End();
 
     /////  IMGUI ////////////////////////////////////////////////////////////////////////////
@@ -254,56 +277,13 @@ class Application : public IEventObserver {
     if (ImGui::Combo("Maze", &m_maze_index, m_maze_names.data(), (int)m_maze_names.size())) {
       maze_changed = true;
     }
-    static int counts = 2;
-    ImGui::AlignTextToFramePadding();
-    ImGui::Text("Turn Count:");
-    ImGui::SameLine();
-    float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
-    ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
-    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {
-      counts--;
-    }
-    ImGui::SameLine(0.0f, spacing);
-    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) {
-      counts++;
-    }
-    ImGui::PopItemFlag();
-    counts = std::clamp(counts, 1, 20);
-    ImGui::SameLine();
-    ImGui::Text("%d", counts);
+
+    sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
     float b_wide = ImGui::CalcTextSize("       ").x;
     b_wide += ImGui::GetStyle().FramePadding.x * 2.0;
-    sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
-
-    if (ImGui::Button("SS90", ImVec2(b_wide, 0))) {
-      m_vehicle.setPose(start_pos.x, start_pos.y, 90.0f);
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("SS180", ImVec2(b_wide, 0))) {
-      m_vehicle.setPose(start_pos.x, start_pos.y, 90.0f);
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("CIRCUIT", ImVec2(b_wide, 0))) {
-      m_vehicle.setPose(start_pos.x, start_pos.y, 90.0f);
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("FOLLOW", ImVec2(b_wide, 0))) {
-      ARES_INFO("APP: Set Follow Mode");
-      m_vehicle.setPose(start_pos.x, start_pos.y, 90.0f);
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("SEARCH", ImVec2(b_wide, 0))) {
-      ARES_INFO("APP: Set Search Mode");
-      //      if (m_vehicle_inputs.activity == ACT_NONE) {
-      //        m_robot_manager.setVehiclePose(96, 96, 90);
-      //        m_robot_manager.setActivity(ACT_SEARCH, 1);
-      //      }
-    }
-
     if (ImGui::Button("START", ImVec2(b_wide, 0))) {
       m_robot_manager.start();
     }
-
     ImGui::SameLine();
     if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
       //      m_vehicle_state.buttons |= (Button::BTN_RESET);
@@ -324,9 +304,6 @@ class Application : public IEventObserver {
       m_mouse.setContinuous(continuous_search);
     }
 
-    static float speedup = 1.0f;
-    ImGui::SliderFloat("Speedup", &speedup, 0.25, 4.0, "%4.2f");
-    m_mouse.setSpeedUp(speedup);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "    time     X      Y   Theta     Vel   Omega");
     char s[60];
     /// NOTE: if the tick count is increasing, updateMotion is running and the thread is active

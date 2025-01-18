@@ -30,11 +30,23 @@
 
 enum Activity {
   ACT_NONE,
-  ACT_TEST_SS90,
-  ACT_TEST_SS180,
-  ACT_TEST_CIRCUIT,
-  ACT_TEST_FOLLOW_TO,
+  ACT_CONTEST,
   ACT_SEARCH,
+  ACT_SPEED_1,
+  ACT_SPEED_2,
+  ACT_SPEED_3,
+  ACT_SPEED_4,
+  ACT_SPEED_5,
+  ACT_TEST_FOLLOW_TO,
+  ACT_TEST_CIRCUIT,
+  ACT_TEST_SS90E,
+  ACT_TEST_SS90F,
+  ACT_TEST_SS180,
+  ACT_TEST_SD45,
+  ACT_TEST_SD135,
+  ACT_TEST_DS45,
+  ACT_TEST_DS135,
+  ACT_TEST_DD90,
 };
 
 class Mouse {
@@ -501,18 +513,17 @@ class Mouse {
         while (m_vehicle->readButton(Button::BTN_GO)) {
           delay_ms(1);
         }
-        m_activity = ACT_SEARCH;
         m_logger.info("GO clicked");
       }
       if (m_vehicle->readButton(Button::BTN_RESET)) {
         while (m_vehicle->readButton(Button::BTN_RESET)) {
           delay_ms(1);
         }
-        m_logger.info("RESET clicked");
+        m_logger.info("RESET clicked - and still not working!");
       }
 
       switch (m_activity) {
-        case ACT_TEST_SS90:
+        case ACT_TEST_SS90F:
           test_SS90(m_iterations);
           break;
         case ACT_TEST_SS180:
