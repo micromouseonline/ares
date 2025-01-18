@@ -35,7 +35,7 @@ extra bytes for overhead like line feeds, string lengths and so on.
 Streaming out data at 100,000 bytes per second would very quickly use up any on-board storage unless it were something
 like an SD card. Even a 4Mbit Flash chip would be filled in 4-5 seconds.
 
-Clearly, the data that is sent at systick rates will need to be in much smaller packets. Arguably the least that is
+Clearly, the data that is sent at updateMotion rates will need to be in much smaller packets. Arguably the least that is
 useful at that rate is a timestamp and the forward and rotational velocity. From these, a host application could
 generate the full pose by integration. Rounding errors should not accumulate excessively over a typical logging period.
 In binary, that might mean 12 bytes if the velocities are stored as floats or just 8 bytes if the velocities are stored
@@ -65,7 +65,8 @@ runs so that there is a record of the last fully successful run and the last uns
 
 Unless here is a suitable flash chip, or SD card, connected to the robot, the on-board memory of the processor will have
 to suffice. If you can scrape up 128k of RAM, you can store 8 seconds of data. Ideally, this is enough for a complete
-speed run. A slower robot might need to record every other systick. That should be fine since slower robots may still
+speed run. A slower robot might need to record every other updateMotion. That should be fine since slower robots may
+still
 get the same spatial resolution within the maze. Depending on the processor chip in use, a 128K block of flash might be
 available for non-volatile storage of the data.
 

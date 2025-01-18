@@ -71,7 +71,7 @@ class Target {
     }
 
     sensors.battery = battery.update(50 + random() % 30);
-    log("systick  log 0123456789012345678901234567890123456789 0123456789");
+    log("updateMotion  log 0123456789012345678901234567890123456789 0123456789");
     timer.wait_us(1000);
   }
 

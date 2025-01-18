@@ -216,15 +216,13 @@ class Application : public IEventObserver {
     const uint8_t leds = m_vehicle_state.leds;
     for (int i = 7; i >= 0; i--) {
       bool bitState = leds & BIT(i);
-      DrawLED(bitState, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));  // Green color for ON state
-      ImGui::SameLine();
+      DrawLEDx(bitState, 6, IM_COL32(255, 64, 64, 255));
     }
     ImGui::Text("LEDS");
     const uint8_t buttons = m_vehicle_state.buttons;
     for (int i = 7; i >= 0; i--) {
       bool bitState = buttons & BIT(i);
-      DrawLED(bitState, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));  // Green color for ON state
-      ImGui::SameLine();
+      DrawLEDx(bitState, 6, IM_COL32(64, 255, 64, 255));  // Green color for ON state
     }
     ImGui::Text("BUTTONS");
 
@@ -321,7 +319,7 @@ class Application : public IEventObserver {
     m_mouse.setSpeedUp(speedup);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "    time     X      Y   Theta     Vel   Omega");
     char s[60];
-    /// NOTE: if the tick count is increasing, systick is running and the thread is active
+    /// NOTE: if the tick count is increasing, updateMotion is running and the thread is active
     sprintf(s, "%8u %5.1f  %5.1f  %6.2f  %6.1f  %6.1f  ",  //
             m_vehicle_state.ticks, m_vehicle_state.x, m_vehicle_state.y, m_vehicle_state.angle, m_vehicle_state.velocity, m_vehicle_state.angular_velocity);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", s);

@@ -45,7 +45,7 @@
  *   settings switches or their equivalent
  *
  * - **Simulation of Hardware Interrupts:**
- *   The `systick()` method simulates a hardware timer interrupt, typically running
+ *   The `updateMotion()` method simulates a hardware timer interrupt, typically running
  *   at 1kHz on real robots. It updates low-level controllers, monitors encoders
  *   and sensors, and handles motion processing. This ensures accurate time
  *   synchronization and hardware-like behavior.
@@ -120,31 +120,11 @@ class Vehicle {
     m_state.angular_velocity = omega;
   }
 
-  //  [[nodiscard]] bool isRunning() const {
-  //    return m_running;
-  //  }
-
   /// This is safe to call only from the behaviour (mouse) code
   void setLed(const int i, const bool state) {
     const uint8_t mask = BIT(i);
     m_state.leds &= ~(mask);
     m_state.leds |= state ? mask : 0;
-  }
-
-  /// This is safe to call only from the behaviour (mouse) code
-  int getActivity() {
-    return m_inputs.activity;
-  }
-
-  /// This is safe to call only from the behaviour (mouse) code
-  void clearActivity() {
-    m_inputs.activity = ACT_NONE;
-    m_state.activity_complete = true;
-  }
-
-  /// This is safe to call only from the behaviour (mouse) code
-  int getActivityArgs() {
-    return m_inputs.activity_arg;
   }
 
   /// This is safe to call only from the behaviour (mouse) code
@@ -181,32 +161,16 @@ class Vehicle {
     m_activity = m_inputs.activity;
     m_activity_arg = m_inputs.activity_arg;
   }
-  /**
-   * @brief Simulates a hardware timer interrupt for the robot.
-   *
-   * The systick() method acts as a simulated ISR (Interrupt Service Routine) that
-   * updates the robot's state, sensors, and motion processing. On physical robots,
-   * such a timer ISR typically runs at 1kHz, handling IO operations, control systems,
-   * and time synchronization with hardware.
-   *
-   * In this simulation, the systick() method is invoked from the Behaviour class
+  /***
+   * In this simulation, the updateMotion() method is invoked from the Behaviour class
    * to advance the Robot's state by one tick. Since Behaviour runs in a separate
    * thread from the main application, the Vehicle code executes in its same thread.
    * This design allows Behaviour to interact with the Robot freely, but any calls
    * from the Application to Robot or Behaviour must be thread-safe, using mutexes
    * or atomic variables.
    */
-  void systick(float deltaTime) {
+  void updateMotion(float deltaTime) {
     m_state.ticks++;
-    updateSensors();
-    updateInputs();
-    static bool q;
-    if (m_state.ticks % 100 == 0) {
-      q = !q;
-      setLed(3, q);
-    }
-    setLed(2, 1);
-
     /// The speeds are set directly from the behaviour code and now are
     /// used to update the vehicle pose.
     float deltaDistance = m_state.velocity * deltaTime;

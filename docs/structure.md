@@ -9,14 +9,14 @@
     - Sensor data is held by the Vehicle. Interpretation of that data is not its concern.
     - Systick maintains internal time - one tick per iteration
     - Systick adds to a list of state information on every iteration. That is effectively a black box recorder running
-      at the systick frequency
+      at the updateMotion frequency
 1. Mouse: Combined with Vehicle, that is what makes this a micromouse simulation
     - Mouse is asynchronous in the sense that the behaviour code must wait for specific states or flags in the
       Vehicle
     - Vehicle never tells Mouse what to do.
     - Mouse tells the Vehicle what to do and constantly monitors its achievement.
     - Mouse does not care about the world time, If it cares at all it is about tick count from the robot.
-    - This dependence means that robot can run systick at arbitrary speed but behaviour can ticks its actions using
+    - This dependence means that robot can run updateMotion at arbitrary speed but behaviour can ticks its actions using
       the robot tick count.
     - Mouse also generates a log of actions. For simplicity, this can be separate to the Vehicle black box but the
       common time stamp lets you sync them up later.
@@ -38,7 +38,8 @@ That last item is, I think, pretty central in terms of one of the logging/black 
 If the Mouse and the Vehicle run as fast as the computer permits, it can spew out the black box and behaviour logs
 very quickly. There is no need to try and make the overall operation run at 1:1 real time.
 
-Suppose the systick frequency is 1kHz. One mode in the Application would be to just run through the data, displaying a
+Suppose the updateMotion frequency is 1kHz. One mode in the Application would be to just run through the data,
+displaying a
 new frame every 16/17 items. That would look like a real-time run of the robot.
 
 

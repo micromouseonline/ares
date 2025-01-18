@@ -480,8 +480,13 @@ class Mouse {
    *
    */
   void run() {
+    /// setup
     std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
     m_current_trajectory = std::move(idle);
+    uint32_t interval = 1000;
+    uint32_t last_update = m_ticks;
+    bool ticktock = true;
+    /// loop
     while (m_running) {
       uint8_t buttons = m_vehicle->getButtons();
       if (buttons != 0) {
@@ -511,7 +516,17 @@ class Mouse {
       }
 
       m_activity = ACT_NONE;
-      delay_ms(10);  /// make sure the regular tasks get updated
+      if ((m_ticks - last_update) >= interval) {
+        last_update += interval;
+        m_vehicle->setLed(0, ticktock);
+        m_vehicle->setLed(1, ticktock);
+        m_vehicle->setLed(2, ticktock);
+        m_vehicle->setLed(3, ticktock);
+        //        m_logger.info("%s", ticktock ? "tick" : "tock");
+        ticktock = !ticktock;
+      }
+
+      delay_ms(1);  /// make sure the regular tasks get updated
     }
   }
 
@@ -519,6 +534,33 @@ class Mouse {
     return m_timeStamp.load();  //
   }
 
+  void systick() {
+    if (m_vehicle) {
+      if (m_current_trajectory && !m_current_trajectory->isFinished()) {
+        m_current_trajectory->update();
+        float v = m_current_trajectory->getCurrentPose().getVelocity();
+        float w = m_current_trajectory->getCurrentPose().getOmega();
+        m_vehicle->setSpeeds(v, w);
+      } else {
+        if (m_current_trajectory->getType() != Trajectory::IDLE) {
+          std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
+          m_current_trajectory = std::move(idle);
+        }
+      }
+      m_vehicle->updateSensors();
+      m_vehicle->updateInputs();
+
+      m_vehicle->updateMotion(m_step_time);
+      VehicleState state = m_vehicle->getState();
+      m_vehicle->setLed(7, state.sensors.lfs_power > 18);
+      m_vehicle->setLed(6, state.sensors.lds_power > 40);
+      m_vehicle->setLed(5, state.sensors.rds_power > 40);
+      m_vehicle->setLed(4, state.sensors.rfs_power > 18);
+    }
+
+    m_timeStamp++;
+    m_ticks++;
+  }
   /***
    * delay_ms must be used in any busy-wait loops required by the Behaviour code.
    * For example, if you are waiting for a sensor value to drop below a threshold,
@@ -527,9 +569,9 @@ class Mouse {
    *      delay_ms(1);
    *    }
    *
-   * delay_ms calls the robot's systick method once per iteration. That is how
+   * delay_ms calls the robot's updateMotion method once per iteration. That is how
    * the robot motion processing gets updated and the sensors get read. If the
-   * robot systick is not called it will be unresponsive.
+   * robot updateMotion is not called it will be unresponsive.
    */
   void delay_ms(int ms) {
     if (ms <= 0) {
@@ -537,29 +579,7 @@ class Mouse {
     }
     Timer timer;
     while (ms > 0) {
-      if (m_vehicle) {
-        if (m_current_trajectory && !m_current_trajectory->isFinished()) {
-          m_current_trajectory->update();
-          float v = m_current_trajectory->getCurrentPose().getVelocity();
-          float w = m_current_trajectory->getCurrentPose().getOmega();
-          m_vehicle->setSpeeds(v, w);
-        } else {
-          if (m_current_trajectory->getType() != Trajectory::IDLE) {
-            std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
-            m_current_trajectory = std::move(idle);
-          }
-        }
-        m_vehicle->systick(m_step_time);
-        VehicleState state = m_vehicle->getState();
-        m_vehicle->setLed(7, state.sensors.lfs_power > 18);
-        m_vehicle->setLed(6, state.sensors.lds_power > 40);
-        m_vehicle->setLed(5, state.sensors.rds_power > 40);
-        m_vehicle->setLed(4, state.sensors.rfs_power > 18);
-      }
-
-      {
-        m_timeStamp++;
-      }
+      systick();
       ms--;
       timer.wait_us(1000 * m_speed_up);
     }
@@ -708,6 +728,7 @@ class Mouse {
   std::atomic<bool> m_running;
   std::atomic<bool> m_terminate;  /// shuts down the thread
   std::atomic<long> m_timeStamp = 0;
+  uint32_t m_ticks = 0;
   volatile std::atomic<bool> m_reset = false;
 
   std::atomic<int> m_activity = ACT_NONE;

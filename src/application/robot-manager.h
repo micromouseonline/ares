@@ -12,8 +12,8 @@
  * as the PC permits and record its state at regular intervals. These are 1ms at
  * present.
  *
- * This is made possible by calling the robot's systick method once for every
- * tick in the delay_ms method. The robot is quite dumb and its systick
+ * This is made possible by calling the robot's updateMotion method once for every
+ * tick in the delay_ms method. The robot is quite dumb and its updateMotion
  * method just updates the sensors and the motion. At the most basic level
  * the robot is assumed to behave perfectly so there is not control system
  * as such. Instead, all motion updates are executed exactly. Sensor updates
@@ -22,7 +22,7 @@
  *
  * There is no need for the Robot to run in its own thread.
  *
- * For testing, we can add a real delay between each call to the robot's systick
+ * For testing, we can add a real delay between each call to the robot's updateMotion
  * method.
  *
  *
@@ -253,6 +253,7 @@ class RobotManager {
   Mouse& m_mouse;
   Vehicle& m_vehicle;
   std::thread m_thread;
+  std::thread m_mouse_thread;
   std::atomic<bool> m_running;
   RobotState m_run_state;
   std::mutex m_serial_out_mutex;

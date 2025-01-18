@@ -20,6 +20,7 @@
 - [ ] Display Maze wall status as colours
 
 # IN PROGRESS
+
 - [ ] Generalise trajectory management
 
 # DONE
@@ -29,8 +30,8 @@
 - [x] Add basic logging
 - [x] Add Vehicle status LEDs - on Vehicle?
 - [x] Add Vehicle input buttons
-- [x] Add Vehicle status display 
-- [x] Implement systick-in-yield model
+- [x] Add Vehicle status display
+- [x] Implement updateMotion-in-yield model
 - [x] Add ImGui for GUI
 - [x] Add surrounding walls for sensor testing
 - [x] Make MazeManager capable of changing between 16 and 32 cell mazes.
