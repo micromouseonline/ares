@@ -60,11 +60,7 @@ struct VehicleState {
   float angular_velocity;
   float total_distance;  // accumulated from last reset
   uint8_t leds;          // bitfield for led states
-  uint8_t buttons;       // bitfield for button states
   SensorData sensors;
-  int activity;
-  bool activity_complete;
-  //  VehicleInputs vehicle_inputs;
 
   VehicleState()
       : x(0.0f),
@@ -73,11 +69,7 @@ struct VehicleState {
         velocity(0.0f),          //
         angular_velocity(0.0f),  //
         total_distance(0.0f),
-        leds(0),
-        buttons(0),
-        activity(0),
-        activity_complete(true) {
-    //
+        leds(0) {
   }
 };
 

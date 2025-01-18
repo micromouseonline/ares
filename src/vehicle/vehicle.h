@@ -136,11 +136,6 @@ class Vehicle {
     return m_inputs.buttons;
   }
 
-  void clearButtons() {
-    m_inputs.buttons = 0;
-    m_state.buttons = 0;
-  }
-
   /// this should be a single method that updates the state of the vehicle
   /// inputs like buttons, sensors, IMU, activity setting...
   /// the LEDS are included because of the simulation. They are better set
@@ -155,12 +150,8 @@ class Vehicle {
 
   /// always call after sensors
   void updateInputs() {
-    m_state.buttons = m_inputs.buttons;
-    //    m_state.leds = m_inputs.leds;
-    m_state.activity = m_inputs.activity;
-    m_activity = m_inputs.activity;
-    m_activity_arg = m_inputs.activity_arg;
   }
+
   /***
    * In this simulation, the updateMotion() method is invoked from the Behaviour class
    * to advance the Robot's state by one tick. Since Behaviour runs in a separate
@@ -193,6 +184,4 @@ class Vehicle {
   SensorDataCallback m_sensor_callback = nullptr;
   VehicleState m_state;
   VehicleInputs m_inputs;
-  int m_activity;
-  int m_activity_arg;
 };

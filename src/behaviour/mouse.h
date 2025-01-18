@@ -490,9 +490,6 @@ class Mouse {
     while (m_running) {
       uint8_t buttons = m_vehicle->getButtons();
       if (buttons != 0) {
-        m_vehicle->clearButtons();
-        //        m_activity = m_vehicle->getActivity();
-        //        m_vehicle->clearActivity();
         switch (m_activity) {
           case ACT_TEST_SS90:
             test_SS90(m_iterations);
