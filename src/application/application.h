@@ -217,6 +217,13 @@ class Application : public IEventObserver {
       DrawLEDx(bitState, 6, IM_COL32(255, 64, 64, 255));
     }
     ImGui::Text("LEDS");
+    const char* item_names[] = {
+        "Run Contest", "Search", "Speedrun 1", "Speedrun 2", "Speedrun 3", "Speedrun 4", "Speedrun 5", "Circuit Run", "Wall Follower",
+        "SS90E",       "SS90F",  "SS180",      "SD45",       "SD135",      "DS45",       "DS135",      "DD90",
+    };
+    static int item_type = 1;
+    static bool item_disabled = false;
+    ImGui::Combo("Item Type", &item_type, item_names, IM_ARRAYSIZE(item_names), IM_ARRAYSIZE(item_names));
 
     if (PushButton("RESET", ImVec2(104, 24))) {
       m_vehicle_buttons |= (uint8_t)Button::BTN_RESET;
@@ -232,6 +239,13 @@ class Application : public IEventObserver {
 
     drawSensorUpdateTime(m_process_time.asMicroseconds());
     ImGui::Text("%s", state_summary.str().c_str());
+    static int e = 0;
+    ImGui::RadioButton("radio a", &e, 0);
+    ImGui::SameLine();
+    ImGui::RadioButton("radio b", &e, 1);
+    ImGui::SameLine();
+    ImGui::RadioButton("xradio c", &e, 2);
+    ImGui::Text("Radio choice %3d", e);
     ImGui::End();
 
     /////  IMGUI ////////////////////////////////////////////////////////////////////////////
