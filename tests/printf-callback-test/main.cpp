@@ -27,7 +27,7 @@ class Target {
   volatile uint32_t ticks;
 
   using SerialOut = std::function<void(const char)>;
-  SerialCallback serialOut;
+  SerialOut serialOut;
 
   Target() : ticks(0), serialOut(nullptr) {
   }
@@ -46,7 +46,7 @@ class Target {
    *
    * @param cb
    */
-  void setSerialoutCallback(SerialCallback cb) {
+  void setSerialoutCallback(SerialOut cb) {
     serialOut = cb;
   }
 
@@ -92,7 +92,7 @@ class Target {
    *
    * @return number of characters written including the termiator
    */
-  int serialPrintf(Target::SerialCallback out, const char* format, ...) {
+  int serialPrintf(Target::SerialOut out, const char* format, ...) {
     if (!out) {
       return -1;  // Return error if no valid callback is provided
     }
@@ -244,9 +244,9 @@ class Manager {
   Target target;
   std::thread target_thread;
   const int OUTPUT_QUEUE_SIZE = 2048;
-  Queue<char>(2048) output_queue;  /// a serial output buffer for the target
-  std::mutex target_mutex;         /// we need a mutex just the target
-  std::mutex log_mutex;            /// and another for the logging queue
+  Queue<char> output_queue;  /// a serial output buffer for the target
+  std::mutex target_mutex;   /// we need a mutex just the target
+  std::mutex log_mutex;      /// and another for the logging queue
 };
 
 //////////////////////////////////////////////////////////////////////////////
