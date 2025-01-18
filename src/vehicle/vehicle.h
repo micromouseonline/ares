@@ -179,7 +179,7 @@ class Vehicle {
   }
 
   /// This is safe to call only from the behaviour (mouse) code
-  bool readButton(int btn) {
+  bool readButton(Button btn) {
     return ((m_state.buttons & btn) != 0);
   }
 
@@ -196,8 +196,7 @@ class Vehicle {
     if (m_sensor_callback) {
       m_inputs = m_sensor_callback(m_state);
       m_state.sensors = m_inputs.sensors;
-      setLed(0, m_inputs.buttons & BIT(0));
-      setLed(1, m_inputs.buttons & BIT(1));
+      m_state.buttons = m_inputs.buttons;
     }
   }
 

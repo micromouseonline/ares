@@ -221,13 +221,13 @@ class Application : public IEventObserver {
     if (PushButton("RESET", ImVec2(104, 24))) {
       m_vehicle_buttons |= (uint8_t)Button::BTN_RESET;
     } else {
-      m_vehicle_buttons &= !(uint8_t)Button::BTN_RESET;
+      m_vehicle_buttons &= ~(uint8_t)Button::BTN_RESET;
     }
     ImGui::SameLine();
     if (PushButton("GO", ImVec2(104, 24))) {
       m_vehicle_buttons |= (uint8_t)Button::BTN_GO;
     } else {
-      m_vehicle_buttons &= !(uint8_t)Button::BTN_GO;
+      m_vehicle_buttons &= ~(uint8_t)Button::BTN_GO;
     }
 
     drawSensorUpdateTime(m_process_time.asMicroseconds());
@@ -332,7 +332,6 @@ class Application : public IEventObserver {
     ImGui::PlotLines("angular_velocity", omega, IM_ARRAYSIZE(omega), index, "", -1000, 1000, ImVec2(330, 140));
     ImGui::PlotLines("RDS", rds, IM_ARRAYSIZE(rds), index, "", -1000, 1000, ImVec2(330, 140));
 
-    //    ImGui::PopFont();
     ImGui::End();
     /////  IMGUI ////////////////////////////////////////////////////////////////////////////
 

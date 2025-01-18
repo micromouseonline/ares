@@ -497,28 +497,39 @@ class Mouse {
     bool ticktock = true;
     /// loop
     while (m_running) {
-      uint8_t buttons = m_vehicle->getButtons();
-      if (buttons != 0) {
-        switch (m_activity) {
-          case ACT_TEST_SS90:
-            test_SS90(m_iterations);
-            break;
-          case ACT_TEST_SS180:
-            test_SS180(m_iterations);
-            break;
-          case ACT_TEST_CIRCUIT:
-            test_circuit_run(m_iterations * 4);
-            break;
-          case ACT_TEST_FOLLOW_TO:
-            followTo(Location(0, 0));
-            break;
-          case ACT_SEARCH: {
-            testSearch();
-            delay_ms(1);
-          } break;
-          default:  // do nothing
-            break;
+      if (m_vehicle->readButton(Button::BTN_GO)) {
+        while (m_vehicle->readButton(Button::BTN_GO)) {
+          delay_ms(1);
         }
+        m_activity = ACT_SEARCH;
+        m_logger.info("GO clicked");
+      }
+      if (m_vehicle->readButton(Button::BTN_RESET)) {
+        while (m_vehicle->readButton(Button::BTN_RESET)) {
+          delay_ms(1);
+        }
+        m_logger.info("RESET clicked");
+      }
+
+      switch (m_activity) {
+        case ACT_TEST_SS90:
+          test_SS90(m_iterations);
+          break;
+        case ACT_TEST_SS180:
+          test_SS180(m_iterations);
+          break;
+        case ACT_TEST_CIRCUIT:
+          test_circuit_run(m_iterations * 4);
+          break;
+        case ACT_TEST_FOLLOW_TO:
+          followTo(Location(0, 0));
+          break;
+        case ACT_SEARCH: {
+          testSearch();
+          delay_ms(1);
+        } break;
+        default:  // do nothing
+          break;
       }
 
       m_activity = ACT_NONE;
@@ -527,7 +538,6 @@ class Mouse {
         m_vehicle->setLed(3, ticktock);
         ticktock = !ticktock;
       }
-
       delay_ms(1);  /// make sure the regular tasks get updated
     }
   }
@@ -553,11 +563,17 @@ class Mouse {
       m_vehicle->updateInputs();
 
       m_vehicle->updateMotion(m_step_time);
-      VehicleState state = m_vehicle->getState();
-      m_vehicle->setLed(7, state.sensors.lfs_power > 18);
-      m_vehicle->setLed(6, state.sensors.lds_power > 40);
-      m_vehicle->setLed(5, state.sensors.rds_power > 40);
-      m_vehicle->setLed(4, state.sensors.rfs_power > 18);
+      VehicleState v_state = m_vehicle->getState();
+      m_vehicle->setLed(7, v_state.sensors.lfs_power > 18);
+      m_vehicle->setLed(6, v_state.sensors.lds_power > 40);
+      m_vehicle->setLed(5, v_state.sensors.rds_power > 40);
+      m_vehicle->setLed(4, v_state.sensors.rfs_power > 18);
+
+      if (v_state.buttons & 0x02) {
+        m_timeStamp = 0;
+      }
+      m_vehicle->setLed(1, (v_state.buttons & Button::BTN_RESET) != 0);
+      m_vehicle->setLed(0, (v_state.buttons & Button::BTN_GO) != 0);
     }
 
     m_timeStamp++;
