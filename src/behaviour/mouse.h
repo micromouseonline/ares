@@ -54,13 +54,11 @@ class Mouse {
   using BinaryOut = std::function<void(const uint8_t)>;
 
   // TODO: Never instantiate the mouse without a vehicle
-  Mouse(Vehicle& vehicle) : m_vehicle(vehicle), m_running(false), m_terminate(false), m_paused(false), m_timeStamp(0), m_reset(false), m_SerialOut(nullptr) {
-    //
-    std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
-    m_current_trajectory = std::move(idle);
-    m_vehicle.setPose(96, 96, 90);
-    m_maze.initialise();
-  };
+  Mouse(Vehicle& vehicle)
+      : m_vehicle(vehicle), m_running(false), m_terminate(false), m_paused(false), m_timeStamp(0), m_reset(false), m_SerialOut(nullptr), m_BinaryOut(nullptr) {
+          //
+          //    init();
+        };
 
   ~Mouse() {
     stopRunning();  //
@@ -71,6 +69,29 @@ class Mouse {
   }
   void setBinaryOut(BinaryOut out) {
     m_BinaryOut = out;
+  }
+
+  void init() {
+    serialPrintf(m_SerialOut, "Mouse - initialisation\n");
+    m_locked = true;
+    m_current_trajectory = std::make_unique<IdleTrajectory>();
+    m_vehicle.reset();
+    //    delay_ms(2);
+    m_maze.initialise();
+    m_vehicle.setPose(96, 96, 90);
+    m_heading = Direction::DIR_N;
+    m_location = {0, 0};
+    m_target = {7, 7};
+    m_paused = false;
+    m_terminate = false;
+    m_running = true;
+    //    m_reset = true;
+    m_timeStamp = 0;
+    m_ticks = 0;
+    //    m_reset = false;
+    m_activity = ACT_NONE;
+    m_speed_up = 1.0f;
+    m_locked = false;
   }
 
   void reset() {
@@ -732,20 +753,22 @@ class Mouse {
   }
 
   Vehicle& m_vehicle;
-  Direction m_heading;
-  Location m_location;
-  Location m_target;
-  bool m_leftWall;
-  bool m_frontWall;
-  bool m_rightWall;
+  Direction m_heading = Direction::DIR_N;
+  Location m_location = {0, 0};
+  Location m_target = {7, 7};
+  bool m_leftWall = false;
+  bool m_frontWall = false;
+  bool m_rightWall = false;
   float m_step_time = 0.001;
   bool m_first_run = true;
   bool m_event_log_detailed = false;
   bool m_continuous_search = true;
 
-  bool m_running;
-  bool m_terminate;
-  bool m_paused;
+  bool m_running = false;
+  bool m_terminate = false;
+  bool m_paused = false;
+  bool m_locked = false;
+  bool m_halt = false;
 
   std::atomic<long> m_timeStamp = 0;
   uint32_t m_ticks = 0;
@@ -755,7 +778,7 @@ class Mouse {
   std::atomic<int> m_iterations = 0;
   std::atomic<float> m_speed_up = 1.0f;
   MouseLog m_logger;
-  std::unique_ptr<Trajectory> m_current_trajectory = std::unique_ptr<IdleTrajectory>();
+  std::unique_ptr<Trajectory> m_current_trajectory = std::make_unique<IdleTrajectory>();
   SerialOut m_SerialOut;
   BinaryOut m_BinaryOut;
 };
