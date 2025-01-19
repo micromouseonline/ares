@@ -34,11 +34,7 @@
 class Application : public IEventObserver {
  public:
   Application()
-      : m_window(std::make_unique<Window>(conf::AppName, conf::WindowSize)),
-        m_vehicle_state(),
-        m_vehicle(),
-        m_mouse(),
-        m_robot_manager(m_mouse, m_vehicle) {  //
+      : m_window(std::make_unique<Window>(conf::AppName, conf::WindowSize)), m_vehicle_state(), m_vehicle(), m_mouse(m_vehicle), m_robot_manager(m_mouse) {  //
 
     ARES_INFO("APP: Initialising Application ...");
     m_elapsed = sf::Time::Zero;
@@ -52,7 +48,7 @@ class Application : public IEventObserver {
 
   ~Application() {
     ARES_TRACE("APP: Application Shutting Down ...");
-    m_robot_manager.stop();
+    //    m_robot_manager.stop();
     ARES_TRACE("APP:   .. Robot Manager Stopped");
     m_window.reset();  // destroys the window explicitly so that we can clean up
     ARES_TRACE("APP:   .. Window Closed");
@@ -62,7 +58,7 @@ class Application : public IEventObserver {
 
   void run() {
     ARES_TRACE("APP: Application running");
-    m_robot_manager.start();
+    //    m_robot_manager.start();
     while (!getWindow()->isDone()) {
       handleInput();
       update();
@@ -226,8 +222,7 @@ class Application : public IEventObserver {
         ACT_TEST_CIRCUIT, ACT_TEST_SS90E, ACT_TEST_SS90F, ACT_TEST_SS180, ACT_TEST_SD45, ACT_TEST_SD135, ACT_TEST_DS45, ACT_TEST_DS135, ACT_TEST_DD90,
     };
 
-    static int item_type = 1;
-    static bool item_disabled = false;
+    static int item_type = 2;
     ImGui::Combo("Item Type", &item_type, item_names, IM_ARRAYSIZE(item_names), IM_ARRAYSIZE(item_names));
 
     if (item_type >= ACT_TEST_CIRCUIT) {
@@ -251,11 +246,12 @@ class Application : public IEventObserver {
     }
     if (ImGui::Button("RESET", ImVec2(104, 24))) {
       m_vehicle_buttons |= (uint8_t)Button::BTN_RESET;
-      m_robot_manager.reset();
+      //      m_robot_manager.resetRobot();
       maze_changed = true;
     } else {
       m_vehicle_buttons &= ~(uint8_t)Button::BTN_RESET;
     }
+
     ImGui::SameLine();
     if (ImGui::Button("GO", ImVec2(104, 24))) {
       m_mouse.setActivity(activity[item_type]);
@@ -282,18 +278,16 @@ class Application : public IEventObserver {
     float b_wide = ImGui::CalcTextSize("       ").x;
     b_wide += ImGui::GetStyle().FramePadding.x * 2.0;
     if (ImGui::Button("START", ImVec2(b_wide, 0))) {
-      m_robot_manager.start();
+      //      m_robot_manager.start();
     }
     ImGui::SameLine();
     if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
       //      m_vehicle_state.buttons |= (Button::BTN_RESET);
-      m_robot_manager.reset();
+      //      m_robot_manager.resetRobot();
       maze_changed = true;
     }
 
-    ImGui::Text("Robot Manager State: %s", m_robot_manager.getState().c_str());
-
-    /// TOSO: the log level should be passed in through the vehicle state - like a button push or toggle
+    /// TODO: the log level should be passed in through the vehicle state - like a button push or toggle
     bool detailed_event_log = m_mouse.getEventLogDetailed();
     if (ImGui::Checkbox("Show Detailed Mouse Event Log", &detailed_event_log)) {
       m_mouse.setEventLogDetailed(detailed_event_log);

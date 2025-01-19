@@ -55,19 +55,16 @@ class Mouse {
   using BinaryOut = std::function<void(const uint8_t)>;
 
   // TODO: Never instantiate the mouse without a vehicle
-  Mouse() : m_vehicle(nullptr), m_running(false), m_terminate(false), m_timeStamp(0), m_reset(false), m_SerialOut(nullptr) {
+  Mouse(Vehicle& vehicle) : m_vehicle(vehicle), m_running(false), m_terminate(false), m_paused(false), m_timeStamp(0), m_reset(false), m_SerialOut(nullptr) {
     //
     std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
     m_current_trajectory = std::move(idle);
+    m_vehicle.setPose(96, 96, 90);
     m_maze.initialise();
   };
 
   ~Mouse() {
-    stop();  //
-  }
-
-  void setVehicle(Vehicle& vehicle) {
-    m_vehicle = &vehicle;  // can be freely accessed
+    stopRunning();  //
   }
 
   void setSerialOut(SerialOut out) {
@@ -80,18 +77,29 @@ class Mouse {
   void reset() {
     m_reset = true;
     m_activity = ACT_NONE;
-    stop();
+    m_vehicle.setPose(96, 96, 90);
     m_maze.initialise();
   }
 
   void startRunning() {
-    serialPrintf(m_SerialOut, "Hey - here we are\n");
+    serialPrintf(m_SerialOut, "Mouse - start running\n");
     m_running = true;
   }
 
-  void stop() {
-    requestTerminate();
+  void stopRunning() {
+    serialPrintf(m_SerialOut, "Mouse - stop running\n");
+    m_terminate = true;
     m_running = false;
+  }
+
+  void pauseRunning() {
+    serialPrintf(m_SerialOut, "Mouse - pause running\n");
+    m_paused = true;
+  }
+
+  void resumeRunning() {
+    serialPrintf(m_SerialOut, "Mouse - resume running\n");
+    m_paused = true;
   }
 
   bool isRunning() {
@@ -231,7 +239,7 @@ class Mouse {
   }
 
   void turnLeft() {
-    float speed = m_vehicle->getState().velocity;
+    float speed = m_vehicle.getState().velocity;
     doMove(20, speed, 700, 5000);
     doCubicTurn(115.6, 90, speed);
     doMove(20, speed, speed, 5000);
@@ -239,7 +247,7 @@ class Mouse {
   }
 
   void turnRight() {
-    float speed = m_vehicle->getState().velocity;
+    float speed = m_vehicle.getState().velocity;
     doMove(20, speed, 700, 5000);
     doCubicTurn(115.6, -90, speed);
     doMove(20, speed, speed, 5000);
@@ -247,7 +255,7 @@ class Mouse {
   }
 
   void turnBack() {
-    float speed = m_vehicle->getState().velocity;
+    float speed = m_vehicle.getState().velocity;
     doMove(90, speed, 0, 5000);
     doInPlaceTurn(180, 400, 0, 5000);
     doMove(90, speed, speed, 5000);
@@ -255,7 +263,7 @@ class Mouse {
   }
 
   void goForward() {
-    float speed = m_vehicle->getState().velocity;
+    float speed = m_vehicle.getState().velocity;
     doMove(180, speed, speed, 5000);
   }
 
@@ -264,15 +272,15 @@ class Mouse {
     /// assume we are centred in the start cell.
     setHeading(DIR_N);
     setLocation({0, 0});
-    m_vehicle->setPose(96.0f, 96.0f - 40.0f, 90.0f);
-    VehicleState robot_state = m_vehicle->getState();
+    m_vehicle.setPose(96.0f, 96.0f - 40.0f, 90.0f);
+    VehicleState robot_state = m_vehicle.getState();
     delay_ms(500);
     updateMap(robot_state);
     doMove(90 + 40.0f, 700, 700, 5000);
     while (!m_terminate && !m_reset) {
       setLocation(getLocation().neighbour(getHeading()));
       ARES_INFO("Entering {},{}", getLocation().x, getLocation().y);
-      robot_state = m_vehicle->getState();
+      robot_state = m_vehicle.getState();
       updateMap(robot_state);
       if (getLocation() == target) {
         break;
@@ -305,10 +313,10 @@ class Mouse {
       setHeading(DIR_N);
       setLocation({0, 0});
       m_target = Location(7, 7);
-      m_vehicle->reset();
-      m_vehicle->setPose(96.0f, 96.0f - 40.0f, 90.0f);
+      m_vehicle.reset();
+      m_vehicle.setPose(96.0f, 96.0f - 40.0f, 90.0f);
 
-      VehicleState robot_state = m_vehicle->getState();
+      VehicleState robot_state = m_vehicle.getState();
       delay_ms(500);
       updateMap(robot_state);
       doMove(90 + 40.0f, 700, 700, 5000);
@@ -443,7 +451,7 @@ class Mouse {
         return false;
       }
       setLocation(getLocation().neighbour(getHeading()));
-      VehicleState robot_state = m_vehicle->getState();
+      VehicleState robot_state = m_vehicle.getState();
       updateMap(robot_state);
       std::string msg;
       msg = "";
@@ -502,21 +510,23 @@ class Mouse {
    */
   void run() {
     /// setup
+    serialPrintf(m_SerialOut, "Hey - here we are\n");
+    m_running = true;
     std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
     m_current_trajectory = std::move(idle);
-    uint32_t interval = 500;
-    uint32_t last_update = m_ticks;
-    bool ticktock = true;
     /// loop
     while (m_running) {
-      if (m_vehicle->readButton(Button::BTN_GO)) {
-        while (m_vehicle->readButton(Button::BTN_GO)) {
+      if (m_paused) {
+        continue;
+      }
+      if (m_vehicle.readButton(Button::BTN_GO)) {
+        while (m_vehicle.readButton(Button::BTN_GO)) {
           delay_ms(1);
         }
         m_logger.info("GO clicked");
       }
-      if (m_vehicle->readButton(Button::BTN_RESET)) {
-        while (m_vehicle->readButton(Button::BTN_RESET)) {
+      if (m_vehicle.readButton(Button::BTN_RESET)) {
+        while (m_vehicle.readButton(Button::BTN_RESET)) {
           delay_ms(1);
         }
         m_logger.info("RESET clicked - and still not working!");
@@ -542,14 +552,8 @@ class Mouse {
         default:  // do nothing
           break;
       }
-
       m_activity = ACT_NONE;
-      if ((m_ticks - last_update) >= interval) {
-        last_update += interval;
-        m_vehicle->setLed(3, ticktock);
-        ticktock = !ticktock;
-      }
-      delay_ms(1);  /// make sure the regular tasks get updated
+      delay_ms(10);  /// make sure the regular tasks get updated
     }
   }
 
@@ -558,34 +562,32 @@ class Mouse {
   }
 
   void systick() {
-    if (m_vehicle) {
-      if (m_current_trajectory && !m_current_trajectory->isFinished()) {
-        m_current_trajectory->update();
-        float v = m_current_trajectory->getCurrentPose().getVelocity();
-        float w = m_current_trajectory->getCurrentPose().getOmega();
-        m_vehicle->setSpeeds(v, w);
-      } else {
-        if (m_current_trajectory->getType() != Trajectory::IDLE) {
-          std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
-          m_current_trajectory = std::move(idle);
-        }
+    if (m_current_trajectory && !m_current_trajectory->isFinished()) {
+      m_current_trajectory->update();
+      float v = m_current_trajectory->getCurrentPose().getVelocity();
+      float w = m_current_trajectory->getCurrentPose().getOmega();
+      m_vehicle.setSpeeds(v, w);
+    } else {
+      if (m_current_trajectory->getType() != Trajectory::IDLE) {
+        std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
+        m_current_trajectory = std::move(idle);
       }
-      m_vehicle->updateSensors();
-      m_vehicle->updateInputs();
-
-      m_vehicle->updateMotion(m_step_time);
-      VehicleState v_state = m_vehicle->getState();
-      m_vehicle->setLed(7, v_state.sensors.lfs_power > 18);
-      m_vehicle->setLed(6, v_state.sensors.lds_power > 40);
-      m_vehicle->setLed(5, v_state.sensors.rds_power > 40);
-      m_vehicle->setLed(4, v_state.sensors.rfs_power > 18);
-
-      if (v_state.buttons & 0x02) {
-        m_timeStamp = 0;
-      }
-      m_vehicle->setLed(1, (v_state.buttons & Button::BTN_RESET) != 0);
-      m_vehicle->setLed(0, (v_state.buttons & Button::BTN_GO) != 0);
     }
+    m_vehicle.updateSensors();
+    m_vehicle.updateInputs();
+
+    m_vehicle.updateMotion(m_step_time);
+    VehicleState v_state = m_vehicle.getState();
+    m_vehicle.setLed(7, v_state.sensors.lfs_power > 18);
+    m_vehicle.setLed(6, v_state.sensors.lds_power > 40);
+    m_vehicle.setLed(5, v_state.sensors.rds_power > 40);
+    m_vehicle.setLed(4, v_state.sensors.rfs_power > 18);
+
+    if (v_state.buttons & 0x02) {
+      m_timeStamp = 0;
+    }
+    m_vehicle.setLed(1, (v_state.buttons & Button::BTN_RESET) != 0);
+    m_vehicle.setLed(0, (v_state.buttons & Button::BTN_GO) != 0);
 
     m_timeStamp++;
     m_ticks++;
@@ -608,14 +610,13 @@ class Mouse {
     }
     Timer timer;
     while (ms > 0) {
+      if (m_terminate) {
+        return;
+      }
       systick();
       ms--;
       timer.wait_us(1000 * m_speed_up);
     }
-  }
-
-  void requestTerminate() {
-    m_terminate = true;
   }
 
   void setSpeedUp(float speed_up) {
@@ -661,7 +662,7 @@ class Mouse {
   }
 
   void startMove(float distance, float v_max, float v_end, float accel) {
-    float v_start = m_vehicle->getState().velocity;
+    float v_start = m_vehicle.getState().velocity;
     std::unique_ptr<Straight> trapezoid = std::make_unique<Straight>(distance, v_start, v_max, v_end, accel);
     m_current_trajectory = std::move(trapezoid);
     m_current_trajectory->init(Pose());
@@ -673,7 +674,7 @@ class Mouse {
   }
 
   void startTurn(float angle, float omega_Max, float omega_end, float alpha) {
-    float w_start = m_vehicle->getState().angular_velocity;
+    float w_start = m_vehicle.getState().angular_velocity;
     std::unique_ptr<Straight> trapezoid = std::make_unique<Straight>(angle, w_start, omega_Max, omega_end, alpha);
     m_current_trajectory = std::move(trapezoid);
     m_current_trajectory->init(Pose());
@@ -688,7 +689,7 @@ class Mouse {
   }
 
   void startInPlaceTurn(float angle, float omega_Max, float omega_end, float alpha) {
-    float w_start = m_vehicle->getState().angular_velocity;
+    float w_start = m_vehicle.getState().angular_velocity;
     std::unique_ptr<Spinturn> spinturn = std::make_unique<Spinturn>(angle, w_start, omega_Max, omega_end, alpha);
     m_current_trajectory = std::move(spinturn);
     m_current_trajectory->init(Pose());
@@ -742,7 +743,7 @@ class Mouse {
     return count;  // Return the number of characters written
   }
 
-  Vehicle* m_vehicle = nullptr;
+  Vehicle& m_vehicle;
   Direction m_heading;
   Location m_location;
   Location m_target;
@@ -751,11 +752,13 @@ class Mouse {
   bool m_rightWall;
   float m_step_time = 0.001;
   bool m_first_run = true;
-  std::thread m_thread;
   std::atomic<bool> m_event_log_detailed = false;
   std::atomic<bool> m_continuous_search = true;
-  std::atomic<bool> m_running;
-  std::atomic<bool> m_terminate;  /// shuts down the thread
+
+  bool m_running;
+  bool m_terminate;
+  bool m_paused;
+
   std::atomic<long> m_timeStamp = 0;
   uint32_t m_ticks = 0;
   volatile std::atomic<bool> m_reset = false;

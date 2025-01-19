@@ -68,88 +68,58 @@
 
 class RobotManager {
  public:
-  enum class RobotState { Stopped, Running, Paused, Resetting };
-
-  RobotManager(Mouse& mouse, Vehicle& vehicle)  //
-      : m_mouse(mouse), m_vehicle(vehicle), m_run_state(RobotState::Stopped), m_serial_output_queue(2048), m_binary_output_queue(1024 * 1024) {
-    //
-    /// the mouse and vehicle construcors should initialise their repective
-    /// instances
+  RobotManager(Mouse& robot)  //
+      : m_mouse(robot), m_robot_mutex(), m_serial_output_queue(2048), m_binary_output_queue(1024 * 1024) {
     ARES_INFO(" RM: Assign Vehicle to Mouse");
-    m_mouse.setVehicle(m_vehicle);
-    ARES_INFO(" RM: Assign Serial Callback");
+    ARES_INFO(" RM: Assign Robot Callbacks");
     m_mouse.setSerialOut([this](char c) { this->serialOutCallback(c); });
     m_mouse.setBinaryOut([this](uint8_t b) { this->binaryOutCallback(b); });
-    ARES_INFO(" RM: Start Mouse");
-    m_mouse.startRunning();
-    if (!m_thread.joinable()) {
-      ARES_INFO(" RM: Starting Robot Thread")
-      m_thread = std::thread(&RobotManager::run, this);
-    }
+    ARES_INFO(" RM: Start Robot");
+    startRobot();
     ARES_INFO(" RM: Initialised");
   }
 
   ~RobotManager() {
-    stop();
-    if (m_thread.joinable()) {
-      ARES_INFO(" RM: Stopping Robot Thread")
-      m_thread.join();
+    ARES_INFO(" RM: Destructor...")
+    stopRobot();
+    ARES_INFO(" RM: Join the Robot Thread")
+    if (m_robot_thread.joinable()) {
+      m_robot_thread.join();
       ARES_INFO(" RM: Joined Robot Thread")
     }
   }
 
-  void start() {
-    if (m_run_state == RobotState::Stopped || m_run_state == RobotState::Paused) {
-      ARES_INFO(" RM: Starting Robot")
-      m_run_state = RobotState::Running;
-      m_running = true;
-      m_mouse.startRunning();
-    }
+  void startRobot() {
+    ARES_INFO(" RM: Starting Robot")
+    m_robot_thread = std::thread([this]() { m_mouse.run(); });
   }
 
-  void stop() {
+  void stopRobot() {
     ARES_INFO(" RM: Stopping Robot")
-    m_run_state = RobotState::Stopped;
-    m_running = false;
-    m_mouse.stop();
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    m_mouse.stopRunning();
   }
 
-  void pause() {
+  void pauseRobot() {
     ARES_INFO(" RM: Pausing Robot")
-    if (m_run_state == RobotState::Running) {
-      m_run_state = RobotState::Paused;
-      m_running = false;
-    }
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    m_mouse.pauseRunning();
   }
 
-  void resume() {
-    ARES_INFO(" RM: Resuming Robot")
-    if (m_run_state == RobotState::Paused) {
-      m_run_state = RobotState::Running;
-      m_running = true;
-    }
+  void resumeRobot() {
+    ARES_INFO(" RM: Resuming Robot");
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    m_mouse.resumeRunning();
   }
 
-  void reset() {
+  void resetRobot() {
     ARES_INFO(" RM: Resetting Robot")
-    m_run_state = RobotState::Resetting;
-    m_vehicle.reset();
-    m_vehicle.setPose(96.0f, 96.0f, 90.0f);
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
     m_mouse.reset();
-    m_run_state = RobotState::Stopped;
-    start();
   }
 
   void setVehiclePose(float x, float y, float angle) {
     ARES_INFO(" RM: Set Robot Pose {},{} {}", x, y, angle);
-    m_vehicle.setPose(x, y, angle);
-  }
-
-  void setActivity(int activity, int count) {
-    (void)count;
-    if (m_mouse.getActivity() == ACT_NONE) {
-      m_mouse.setActivity(activity);
-    }
   }
 
   /***
@@ -215,47 +185,11 @@ class RobotManager {
     return count;
   }
 
-  std::string getState() {
-    switch (m_run_state) {
-      case RobotState::Stopped:
-        return "Stopped";
-        break;
-      case RobotState::Paused:
-        return "Paused";
-        break;
-      case RobotState::Resetting:
-        return "Resetting";
-        break;
-      case RobotState::Running:
-        return "Running";
-        break;
-      default:
-        return "UNKNOWN";
-        break;
-    }
-  }
-
  private:
-  void run() {
-    ARES_INFO(" RM: Entering thread");
-    while (m_running) {
-      if (m_mouse.isRunning()) {
-        ARES_INFO(" RM: Mouse.run");
-        m_mouse.run();  // only returns when reset
-      }
-    }
-    ARES_INFO(" RM: Leaving thread");
-    m_mouse.stop();
-    m_mouse.reset();
-    m_vehicle.reset();
-    ARES_INFO(" RM: Exited thread");
-  }
   Mouse& m_mouse;
-  Vehicle& m_vehicle;
-  std::thread m_thread;
-  std::thread m_mouse_thread;
-  std::atomic<bool> m_running;
-  RobotState m_run_state;
+  std::mutex m_robot_mutex;
+  std::thread m_robot_thread;
+
   std::mutex m_serial_out_mutex;
   Queue<char> m_serial_output_queue;
   std::mutex m_binary_out_mutex;
