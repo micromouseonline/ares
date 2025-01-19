@@ -118,6 +118,12 @@ class RobotManager {
     m_mouse.reset();
   }
 
+  void initRobot() {
+    ARES_INFO(" RM: Initialising Robot")
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    m_mouse.init();
+  }
+
   void setVehiclePose(float x, float y, float angle) {
     ARES_INFO(" RM: Set Robot Pose {},{} {}", x, y, angle);
   }
