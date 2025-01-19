@@ -273,7 +273,7 @@ class Application : public IEventObserver {
       m_vehicle_buttons &= ~(uint8_t)Button::BTN_GO;
     }
     static float speedup = 1.0f;
-    ImGui::SliderFloat("Speedup", &speedup, 0.25, 4.0, "%4.2f");
+    ImGui::SliderFloat("Speedup", &speedup, 0.1, 4.0, "%4.2f");
     m_mouse.setSpeedUp(speedup);
 
     drawSensorUpdateTime(m_process_time.asMicroseconds());

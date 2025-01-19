@@ -301,7 +301,7 @@ class Mouse {
   }
 
   bool testSearch() {
-    while (m_first_run) {
+    while (m_first_run || m_continuous_search) {
       m_first_run = false;
       m_logger.info("Searching the maze");
       setHeading(DIR_N);
@@ -740,8 +740,8 @@ class Mouse {
   bool m_rightWall;
   float m_step_time = 0.001;
   bool m_first_run = true;
-  std::atomic<bool> m_event_log_detailed = false;
-  std::atomic<bool> m_continuous_search = true;
+  bool m_event_log_detailed = false;
+  bool m_continuous_search = true;
 
   bool m_running;
   bool m_terminate;
