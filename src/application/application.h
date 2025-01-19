@@ -287,19 +287,6 @@ class Application : public IEventObserver {
       maze_changed = true;
     }
 
-    sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
-    float b_wide = ImGui::CalcTextSize("       ").x;
-    b_wide += ImGui::GetStyle().FramePadding.x * 2.0;
-    if (ImGui::Button("START", ImVec2(b_wide, 0))) {
-      //      m_robot_manager.start();
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("RESET", ImVec2(b_wide, 0))) {
-      //      m_vehicle_state.buttons |= (Button::BTN_RESET);
-      //      m_robot_manager.resetRobot();
-      maze_changed = true;
-    }
-
     /// TODO: the log level should be passed in through the vehicle state - like a button push or toggle
     bool detailed_event_log = m_mouse.getEventLogDetailed();
     if (ImGui::Checkbox("Show Detailed Mouse Event Log", &detailed_event_log)) {
@@ -347,7 +334,7 @@ class Application : public IEventObserver {
       maze_name += std::to_string(m_maze_index);
       maze_name += ")";
       m_txt_maze_name.setString(maze_name);
-      //      m_robot_manager.reset();
+      m_robot_manager.initRobot();
       maze_changed = false;
     }
   }
