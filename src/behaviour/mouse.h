@@ -99,7 +99,7 @@ class Mouse {
 
   void resumeRunning() {
     serialPrintf(m_SerialOut, "Mouse - resume running\n");
-    m_paused = true;
+    m_paused = false;
   }
 
   bool isRunning() {
@@ -610,8 +610,11 @@ class Mouse {
     }
     Timer timer;
     while (ms > 0) {
-      if (m_terminate) {
-        return;
+      while (m_paused) {
+        timer.wait_us(1000 * m_speed_up);  // do not hog the thread
+        if (m_terminate) {
+          return;
+        }
       }
       systick();
       ms--;

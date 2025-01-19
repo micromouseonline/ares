@@ -244,7 +244,7 @@ class Application : public IEventObserver {
       ImGui::SameLine();
       ImGui::Text("%d", counts);
     }
-    if (ImGui::Button("RESET", ImVec2(104, 24))) {
+    if (ImGui::Button("RESET", ImVec2(81, 24))) {
       m_vehicle_buttons |= (uint8_t)Button::BTN_RESET;
       //      m_robot_manager.resetRobot();
       maze_changed = true;
@@ -253,7 +253,20 @@ class Application : public IEventObserver {
     }
 
     ImGui::SameLine();
-    if (ImGui::Button("GO", ImVec2(104, 24))) {
+    static bool paused;
+    if (ImGui::Button(paused ? "RESUME" : "PAUSE", ImVec2(82, 24))) {
+      paused = !paused;
+      if (paused) {
+        m_robot_manager.pauseRobot();
+        //        manager.pauseCV.notify_all();  // Notify Manager to pause
+      } else {
+        m_robot_manager.resumeRobot();
+        //        manager.pauseCV.notify_all();  // Notify Manager to resume
+      }
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("GO", ImVec2(81, 24))) {
       m_mouse.setActivity(activity[item_type]);
       m_vehicle_buttons |= (uint8_t)Button::BTN_GO;
     } else {
