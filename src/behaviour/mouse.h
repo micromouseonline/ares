@@ -605,20 +605,13 @@ class Mouse {
    * robot updateMotion is not called it will be unresponsive.
    */
   void delay_ms(int ms) {
-    if (ms <= 0) {
-      return;
-    }
     Timer timer;
-    while (ms > 0) {
-      while (m_paused) {
-        timer.wait_us(1000 * m_speed_up);  // do not hog the thread
-        if (m_terminate) {
-          return;
-        }
+    while (ms > 0 && !m_terminate) {
+      if (!m_paused) {
+        systick();
+        ms--;
       }
-      systick();
-      ms--;
-      timer.wait_us(1000 * m_speed_up);
+      timer.wait_us(1000 * m_speed_up);  // Avoid hogging the thread
     }
   }
 
