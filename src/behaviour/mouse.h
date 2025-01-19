@@ -12,7 +12,6 @@
 #pragma once
 
 /// TODO: Mouse should know nothing about application
-#include "application/applog-manager.h"
 #include "application/timer.h"
 #include "common/pose.h"
 #include "common/printf/printf.h"
@@ -268,7 +267,6 @@ class Mouse {
   }
 
   void followTo(Location target) {
-    ARES_INFO("Begin following to {},{}", target.x, target.y);
     /// assume we are centred in the start cell.
     setHeading(DIR_N);
     setLocation({0, 0});
@@ -279,7 +277,6 @@ class Mouse {
     doMove(90 + 40.0f, 700, 700, 5000);
     while (!m_terminate && !m_reset) {
       setLocation(getLocation().neighbour(getHeading()));
-      ARES_INFO("Entering {},{}", getLocation().x, getLocation().y);
       robot_state = m_vehicle.getState();
       updateMap(robot_state);
       if (getLocation() == target) {
@@ -296,10 +293,7 @@ class Mouse {
         turnBack();
       }
     }
-    ARES_INFO("Complete at {},{}", getLocation().x, getLocation().y);
-    ARES_INFO("Come to a halt");
     doMove(90, 700, 0, 3000);
-    ARES_INFO("Finished following");
   }
 
   int manhattanDistance(Location a, Location b) {
@@ -447,7 +441,6 @@ class Mouse {
     //////////////////////////////////////////////////////////////////////////////////////TERMINATING CONDITION IS WRONG !
     while (!(getLocation() == target)) {
       if (m_terminate || m_reset) {  /// TODO: should m_terminate just set m_reset?
-        ARES_ERROR("Aborted search");
         return false;
       }
       setLocation(getLocation().neighbour(getHeading()));
@@ -485,7 +478,6 @@ class Mouse {
           turnLeft();
           break;
         default:
-          ARES_ERROR("UNKNOWN DIRECTION CHANGE IN SEARCH ({})", hdgChange);
           break;
       }
       if (m_event_log_detailed) {
