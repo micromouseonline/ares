@@ -246,7 +246,7 @@ class Application : public IEventObserver {
     }
     if (ImGui::Button("RESET", ImVec2(81, 24))) {
       m_vehicle_buttons |= (uint8_t)Button::BTN_RESET;
-      //      m_robot_manager.resetRobot();
+      m_robot_manager.initRobot();
       maze_changed = true;
     } else {
       m_vehicle_buttons &= ~(uint8_t)Button::BTN_RESET;
