@@ -55,7 +55,14 @@ class Mouse {
 
   // TODO: Never instantiate the mouse without a vehicle
   Mouse(Vehicle& vehicle)
-      : m_vehicle(vehicle), m_running(false), m_terminate(false), m_paused(false), m_timeStamp(0), m_reset(false), m_SerialOut(nullptr), m_BinaryOut(nullptr) {
+      : m_vehicle(vehicle),
+        m_thread_running(false),
+        m_terminate(false),
+        m_paused(false),
+        m_timeStamp(0),
+        m_reset(false),
+        m_SerialOut(nullptr),
+        m_BinaryOut(nullptr) {
           //
           //    init();
         };
@@ -84,11 +91,11 @@ class Mouse {
     m_target = {7, 7};
     m_paused = false;
     m_terminate = false;
-    m_running = true;
+    m_thread_running = true;
     //    m_reset = true;
     m_timeStamp = 0;
     m_ticks = 0;
-    //    m_reset = false;
+    m_reset = false;
     m_activity = ACT_NONE;
     m_speed_up = 1.0f;
     m_locked = false;
@@ -103,13 +110,13 @@ class Mouse {
 
   void startRunning() {
     serialPrintf(m_SerialOut, "Mouse - start running\n");
-    m_running = true;
+    m_thread_running = true;
   }
 
   void stopRunning() {
     serialPrintf(m_SerialOut, "Mouse - stop running\n");
     m_terminate = true;
-    m_running = false;
+    m_thread_running = false;
   }
 
   void pauseRunning() {
@@ -123,7 +130,7 @@ class Mouse {
   }
 
   bool isRunning() {
-    return m_running;
+    return m_thread_running;
   }
 
   void setFirstRunState(bool state) {
@@ -524,11 +531,11 @@ class Mouse {
   void run() {
     /// setup
     serialPrintf(m_SerialOut, "Hey - here we are\n");
-    m_running = true;
+    m_thread_running = true;
     std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
     m_current_trajectory = std::move(idle);
     /// loop
-    while (m_running) {
+    while (m_thread_running) {
       if (m_paused) {
         continue;
       }
@@ -619,7 +626,7 @@ class Mouse {
    */
   void delay_ms(int ms) {
     Timer timer;
-    while (ms > 0 && !m_terminate) {
+    while (ms > 0 && !m_terminate && !m_reset) {
       if (!m_paused) {
         systick();
         ms--;
@@ -664,7 +671,7 @@ class Mouse {
   Maze m_maze;
 
   bool waitForTrajectory() {
-    while (!trajectoryFinished() && !m_terminate) {
+    while (!trajectoryFinished() && !m_terminate & !m_reset) {
       delay_ms(1);
     }
     return !m_terminate;
@@ -764,15 +771,15 @@ class Mouse {
   bool m_event_log_detailed = false;
   bool m_continuous_search = true;
 
-  bool m_running = false;
+  bool m_thread_running = false;
   bool m_terminate = false;
+  bool m_reset = false;
   bool m_paused = false;
   bool m_locked = false;
   bool m_halt = false;
 
   std::atomic<long> m_timeStamp = 0;
   uint32_t m_ticks = 0;
-  volatile std::atomic<bool> m_reset = false;
 
   std::atomic<int> m_activity = ACT_NONE;
   std::atomic<int> m_iterations = 0;

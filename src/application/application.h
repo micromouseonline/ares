@@ -246,7 +246,8 @@ class Application : public IEventObserver {
     }
     if (ImGui::Button("RESET", ImVec2(81, 24))) {
       m_vehicle_buttons |= (uint8_t)Button::BTN_RESET;
-      m_robot_manager.initRobot();
+      //      m_robot_manager.initRobot();
+      m_mouse.reset();
       maze_changed = true;
     } else {
       m_vehicle_buttons &= ~(uint8_t)Button::BTN_RESET;
@@ -273,7 +274,7 @@ class Application : public IEventObserver {
       m_vehicle_buttons &= ~(uint8_t)Button::BTN_GO;
     }
     static float speedup = 1.0f;
-    ImGui::SliderFloat("Speedup", &speedup, 0.1, 4.0, "%4.2f");
+    ImGui::SliderFloat("Speedup", &speedup, 0.01, 10.0, "%4.2f");
     m_mouse.setSpeedUp(speedup);
 
     drawSensorUpdateTime(m_process_time.asMicroseconds());
@@ -284,6 +285,7 @@ class Application : public IEventObserver {
     ImGui::Begin("Mouse Control", nullptr);
     ImGui::Text("Select the Maze data:");
     if (ImGui::Combo("Maze", &m_maze_index, m_maze_names.data(), (int)m_maze_names.size())) {
+      m_mouse.reset();
       maze_changed = true;
     }
 
