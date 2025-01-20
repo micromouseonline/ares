@@ -125,11 +125,13 @@ using SensorDataCallback = std::function<VehicleInputs(VehicleState)>;
 
 class Vehicle {
  public:
-  Vehicle() : m_state() {
+  Vehicle()
+      : m_state() {
     reset();
   }
 
   ~Vehicle() {
+    // BLOCK INTENTIONALLY EMPTY
   }
 
   void reset() {

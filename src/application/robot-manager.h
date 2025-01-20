@@ -184,7 +184,7 @@ class RobotManager {
    *      the addition of characters does not interfere with the
    *      processing, by the application, of the contents of the queue.
    */
-  void binaryOutCallback(const char c) {
+  void binaryOutCallback(const uint8_t c) {
     std::lock_guard<std::mutex> lock(m_binary_out_mutex);
     m_binary_output_queue.push(c);
   }
@@ -210,7 +210,7 @@ class RobotManager {
   uint8_t getVehicleLeds() {
     return m_mouse.getVehicle().getState().leds;
   }
-  
+
   /////////////////////////////////////////////////////
   /// IO Processing
 

@@ -46,8 +46,13 @@ class Trajectory {
  public:
   enum Type { NONE, IDLE, TRAPEZOID, SPINTURN, CUBIC };
   Trajectory()
-      : m_start_pose(), m_current_pose(), m_delta_time(0.001f), m_total_time(0), m_current_step(0), m_finished(true) {
-          //
+      : m_start_pose(),
+        m_current_pose(),
+        m_delta_time(0.001f),
+        m_total_time(0),
+        m_current_step(0),
+        m_finished(true) {
+          // BLOCK INTENTIONALLY EMPTY
         };
 
   virtual ~Trajectory() = default;
@@ -160,7 +165,9 @@ class IdleTrajectory : public Trajectory {
 class TestTrajectory : public Trajectory {
   //
  public:
-  TestTrajectory(float v = 0, float w = 0) : m_v(v), m_w(w) {
+  TestTrajectory(float v = 0, float w = 0)
+      : m_v(v),
+        m_w(w) {
   }
 
   void update() {

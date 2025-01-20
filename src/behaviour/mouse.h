@@ -56,15 +56,14 @@ class Mouse {
   // TODO: Never instantiate the mouse without a vehicle
   Mouse(Vehicle& vehicle)
       : m_vehicle(vehicle),
+        m_timeStamp(0),
         m_thread_running(false),
         m_terminate(false),
-        m_paused(false),
-        m_timeStamp(0),
         m_reset(false),
+        m_paused(false),
         m_SerialOut(nullptr),
         m_BinaryOut(nullptr) {
-          //
-          //    init();
+          // BLOCK INTENTIONALLY EMPTY
         };
 
   ~Mouse() {
@@ -83,7 +82,6 @@ class Mouse {
     m_locked = true;
     m_current_trajectory = std::make_unique<IdleTrajectory>();
     m_vehicle.reset();
-    //    delay_ms(2);
     m_maze.initialise();
     m_vehicle.setPose(96, 96, 90);
     m_heading = Direction::DIR_N;
@@ -92,7 +90,6 @@ class Mouse {
     m_paused = false;
     m_terminate = false;
     m_thread_running = true;
-    //    m_reset = true;
     m_timeStamp = 0;
     m_ticks = 0;
     m_reset = false;
@@ -193,7 +190,6 @@ class Mouse {
     }
     doMove(5.0 * 180 - lead_out, v_max, 0, acc);
     doInPlaceTurn(-90, 318, 0, 50000);
-    //    doMove(75, v_max, 0, acc);  // normal sensing position
   }
 
   void test_SS180(int counts) {
@@ -582,7 +578,7 @@ class Mouse {
   }
 
   uint32_t getTimeStamp() {
-    return m_timeStamp.load();  //
+    return m_timeStamp;  //
   }
 
   void systick() {
@@ -775,14 +771,13 @@ class Mouse {
   bool m_event_log_detailed = false;
   bool m_continuous_search = true;
 
+  uint32_t m_timeStamp = 0;
   bool m_thread_running = false;
   bool m_terminate = false;
   bool m_reset = false;
   bool m_paused = false;
   bool m_locked = false;
-  bool m_halt = false;
 
-  std::atomic<long> m_timeStamp = 0;
   uint32_t m_ticks = 0;
 
   std::atomic<int> m_activity = ACT_NONE;
