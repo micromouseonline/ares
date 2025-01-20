@@ -34,8 +34,11 @@
 class Application : public IEventObserver {
  public:
   Application()
-      : m_window(std::make_unique<Window>(conf::AppName, conf::WindowSize)), m_vehicle_state(), m_vehicle(), m_mouse(m_vehicle), m_robot_manager(m_mouse) {  //
-
+      : m_window(std::make_unique<Window>(conf::AppName, conf::WindowSize)),
+        m_vehicle_state(),
+        m_vehicle(),
+        m_mouse(m_vehicle),
+        m_robot_manager(m_mouse) {
     ARES_INFO("APP: Initialising Application ...");
     m_elapsed = sf::Time::Zero;
     setupWindow();
@@ -247,7 +250,7 @@ class Application : public IEventObserver {
     if (ImGui::Button("RESET", ImVec2(81, 24))) {
       m_vehicle_buttons |= (uint8_t)Button::BTN_RESET;
       //      m_robot_manager.initRobot();
-      m_mouse.reset();
+      m_robot_manager.resetRobot();
       maze_changed = true;
     } else {
       m_vehicle_buttons &= ~(uint8_t)Button::BTN_RESET;
@@ -268,14 +271,14 @@ class Application : public IEventObserver {
 
     ImGui::SameLine();
     if (ImGui::Button("GO", ImVec2(81, 24))) {
-      m_mouse.setActivity(activity[item_type]);
+      m_robot_manager.setRobotActivity(activity[item_type]);
       m_vehicle_buttons |= (uint8_t)Button::BTN_GO;
     } else {
       m_vehicle_buttons &= ~(uint8_t)Button::BTN_GO;
     }
     static float speedup = 1.0f;
     ImGui::SliderFloat("Speedup", &speedup, 0.01, 10.0, "%4.2f");
-    m_mouse.setSpeedUp(speedup);
+    m_robot_manager.setRobotSpeedScale(speedup);
 
     drawSensorUpdateTime(m_process_time.asMicroseconds());
     ImGui::Text("%s", state_summary.str().c_str());
@@ -285,19 +288,19 @@ class Application : public IEventObserver {
     ImGui::Begin("Mouse Control", nullptr);
     ImGui::Text("Select the Maze data:");
     if (ImGui::Combo("Maze", &m_maze_index, m_maze_names.data(), (int)m_maze_names.size())) {
-      m_mouse.reset();
+      m_robot_manager.resetRobot();
       maze_changed = true;
     }
 
     /// TODO: the log level should be passed in through the vehicle state - like a button push or toggle
-    bool detailed_event_log = m_mouse.getEventLogDetailed();
-    if (ImGui::Checkbox("Show Detailed Mouse Event Log", &detailed_event_log)) {
-      m_mouse.setEventLogDetailed(detailed_event_log);
+    bool makes_detailed_event_log = m_robot_manager.isRobotEventLogDetailed();
+    if (ImGui::Checkbox("Show Detailed Mouse Event Log", &makes_detailed_event_log)) {
+      m_robot_manager.setRobotEventLogDetailed(makes_detailed_event_log);
     }
 
     static bool continuous_search = true;
     if (ImGui::Checkbox("Continuous Search", &continuous_search)) {
-      m_mouse.setContinuous(continuous_search);
+      m_robot_manager.setRobotContinuousMode(continuous_search);
     }
 
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "    time     X      Y   Theta     Vel   Omega");

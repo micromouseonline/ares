@@ -68,8 +68,11 @@
 
 class RobotManager {
  public:
-  RobotManager(Mouse& robot)  //
-      : m_mouse(robot), m_robot_mutex(), m_serial_output_queue(2048), m_binary_output_queue(1024 * 1024) {
+  RobotManager(Mouse& robot)
+      : m_mouse(robot),
+        m_robot_mutex(),
+        m_serial_output_queue(2048),
+        m_binary_output_queue(1024 * 1024) {
     ARES_INFO(" RM: Assign Vehicle to Mouse");
     ARES_INFO(" RM: Assign Robot Callbacks");
     m_mouse.setSerialOut([this](char c) { this->serialOutCallback(c); });
@@ -127,8 +130,27 @@ class RobotManager {
     m_mouse.reset();
   }
 
-  void setVehiclePose(float x, float y, float angle) {
-    ARES_INFO(" RM: Set Robot Pose {},{} {}", x, y, angle);
+  /////////////////////////////////////////////////////
+  /// Behaviour passthroughs
+
+  void setRobotActivity(Activity activity) {
+    m_mouse.setActivity(activity);
+  }
+
+  void setRobotSpeedScale(float scale) {
+    m_mouse.setSpeedUp(scale);
+  }
+
+  bool isRobotEventLogDetailed() {
+    return m_mouse.getEventLogDetailed();
+  }
+
+  void setRobotEventLogDetailed(bool state) {
+    m_mouse.setEventLogDetailed(state);
+  }
+
+  void setRobotContinuousMode(bool state) {
+    m_mouse.setContinuous(state);
   }
 
   /***
@@ -167,6 +189,15 @@ class RobotManager {
     m_binary_output_queue.push(c);
   }
 
+  /////////////////////////////////////////////////////
+  /// Vehicle passthroughs
+  void setVehiclePose(float x, float y, float angle) {
+    ARES_INFO(" RM: Set Robot Pose {},{} {}", x, y, angle);
+  }
+
+  /////////////////////////////////////////////////////
+  /// IO Processing
+
   /***
    * This method is called by the application. It extracts characters from
    * the a queue and adds them to a string. When the target emits a
@@ -198,7 +229,6 @@ class RobotManager {
   Mouse& m_mouse;
   std::mutex m_robot_mutex;
   std::thread m_robot_thread;
-
   std::mutex m_serial_out_mutex;
   Queue<char> m_serial_output_queue;
   std::mutex m_binary_out_mutex;
