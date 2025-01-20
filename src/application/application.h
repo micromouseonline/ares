@@ -75,7 +75,7 @@ class Application : public IEventObserver {
     for (int i = 0; i < mazeCount; i++) {
       m_maze_names.push_back(mazeList[i].title);
     }
-    m_maze_index = 48;  // Japan2007ef is 48
+    m_maze_index = 49;  // Japan2007ef is 49
 
     m_default_font.loadFromFile("assets/fonts/ubuntu-mono-r.ttf");
     m_txt_maze_name.setCharacterSize(16);
