@@ -248,12 +248,12 @@ class Application : public IEventObserver {
       ImGui::Text("%d", counts);
     }
     if (ImGui::Button("RESET", ImVec2(81, 24))) {
-      m_vehicle_buttons |= (uint8_t)Button::BTN_RESET;
+      m_robot_buttons |= (uint8_t)Button::BTN_RESET;
       //      m_robot_manager.initRobot();
       m_robot_manager.resetRobot();
       maze_changed = true;
     } else {
-      m_vehicle_buttons &= ~(uint8_t)Button::BTN_RESET;
+      m_robot_buttons &= ~(uint8_t)Button::BTN_RESET;
     }
 
     ImGui::SameLine();
@@ -272,9 +272,9 @@ class Application : public IEventObserver {
     ImGui::SameLine();
     if (ImGui::Button("GO", ImVec2(81, 24))) {
       m_robot_manager.setRobotActivity(activity[item_type]);
-      m_vehicle_buttons |= (uint8_t)Button::BTN_GO;
+      m_robot_buttons |= (uint8_t)Button::BTN_GO;
     } else {
-      m_vehicle_buttons &= ~(uint8_t)Button::BTN_GO;
+      m_robot_buttons &= ~(uint8_t)Button::BTN_GO;
     }
     static float speedup = 1.0f;
     ImGui::SliderFloat("Speedup", &speedup, 0.01, 10.0, "%4.2f");
@@ -416,7 +416,7 @@ class Application : public IEventObserver {
     m_vehicle_inputs.sensors.rds_distance = m_robot_body.getSensor(conf::RDS).getDistance();
     m_vehicle_inputs.sensors.rfs_distance = m_robot_body.getSensor(conf::RFS).getDistance();
 
-    m_vehicle_inputs.buttons = m_vehicle_buttons;
+    m_vehicle_inputs.buttons = m_robot_buttons;
     m_process_time = m_timer.getElapsedTime();
     /// the returned data is copied so there is no need for a lock
     return m_vehicle_inputs;
@@ -448,7 +448,7 @@ class Application : public IEventObserver {
   TextBox m_textbox;
   ImFont* m_guiFont = nullptr;
   std::mutex m_application_mutex;
-  uint8_t m_vehicle_buttons = 0;
+  uint8_t m_robot_buttons = 0;
 };
 
 #endif  // APPLICATION_H
