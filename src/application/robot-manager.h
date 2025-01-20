@@ -75,13 +75,16 @@ class RobotManager {
     m_mouse.setSerialOut([this](char c) { this->serialOutCallback(c); });
     m_mouse.setBinaryOut([this](uint8_t b) { this->binaryOutCallback(b); });
     ARES_INFO(" RM: Start Robot");
-    startRobot();
+    initRobot();
+    startRobotThread();
     ARES_INFO(" RM: Initialised");
   }
 
   ~RobotManager() {
     ARES_INFO(" RM: Destructor...")
-    stopRobot();
+    stopRobotThread();
+    Timer timer;
+    timer.wait_ms(100);
     ARES_INFO(" RM: Join the Robot Thread")
     if (m_robot_thread.joinable()) {
       m_robot_thread.join();
@@ -89,12 +92,18 @@ class RobotManager {
     }
   }
 
-  void startRobot() {
+  void initRobot() {
+    ARES_INFO(" RM: Initialising Robot")
+    std::lock_guard<std::mutex> lock(m_robot_mutex);
+    m_mouse.init();
+  }
+
+  void startRobotThread() {
     ARES_INFO(" RM: Starting Robot")
     m_robot_thread = std::thread([this]() { m_mouse.run(); });
   }
 
-  void stopRobot() {
+  void stopRobotThread() {
     ARES_INFO(" RM: Stopping Robot")
     std::lock_guard<std::mutex> lock(m_robot_mutex);
     m_mouse.stopRunning();
@@ -116,12 +125,6 @@ class RobotManager {
     ARES_INFO(" RM: Resetting Robot")
     std::lock_guard<std::mutex> lock(m_robot_mutex);
     m_mouse.reset();
-  }
-
-  void initRobot() {
-    ARES_INFO(" RM: Initialising Robot")
-    std::lock_guard<std::mutex> lock(m_robot_mutex);
-    m_mouse.init();
   }
 
   void setVehiclePose(float x, float y, float angle) {
