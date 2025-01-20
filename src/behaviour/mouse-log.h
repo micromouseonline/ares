@@ -7,10 +7,11 @@
 #include <queue>
 #include <string>
 #include "common/core.h"
-#include "fmt/format.h"
+#include "common/printf/printf.h"
 
 typedef enum {
   LOG_ALL = 0,
+  LOG_TRACE,
   LOG_INFO,
   LOG_WARN,
   LOG_ERROR,
@@ -29,16 +30,33 @@ class MouseLog {
     mLoggingLevel = severity;
   };
 
+  void log(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    vsnprintf_(logLineBuffer, LOG_LINE_LENGTH, format, args);
+    add(logLineBuffer);
+    va_end(args);
+  };
+
+  void trace(const char *format, ...) {
+    if (LOG_TRACE < mLoggingLevel) {
+      return;
+    }
+    va_list args;
+    va_start(args, format);
+    vsnprintf_(logLineBuffer, LOG_LINE_LENGTH, format, args);
+    add(logLineBuffer);
+    va_end(args);
+  };
+
   void info(const char *format, ...) {
     if (LOG_INFO < mLoggingLevel) {
       return;
     }
     va_list args;
     va_start(args, format);
-    vsnprintf(logLineBuffer, LOG_LINE_LENGTH, format, args);
-    //  logAddString(STR_INFO);
+    vsnprintf_(logLineBuffer, LOG_LINE_LENGTH, format, args);
     add(logLineBuffer);
-
     va_end(args);
   };
 
@@ -48,8 +66,7 @@ class MouseLog {
     }
     va_list args;
     va_start(args, format);
-    vsnprintf(logLineBuffer, LOG_LINE_LENGTH, format, args);
-    //  logAddString(STR_WARN);
+    vsnprintf_(logLineBuffer, LOG_LINE_LENGTH, format, args);
     add(logLineBuffer);
     va_end(args);
   };

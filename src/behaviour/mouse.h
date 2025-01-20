@@ -121,12 +121,10 @@ class Mouse {
   }
 
   void pauseRunning() {
-    serialPrintf(m_SerialOut, "Mouse - pause running\n");
     m_paused = true;
   }
 
   void resumeRunning() {
-    serialPrintf(m_SerialOut, "Mouse - resume running\n");
     m_paused = false;
   }
 
@@ -329,9 +327,11 @@ class Mouse {
   }
 
   bool testSearch() {
+    int run_number = 1;
     while (m_first_run || m_continuous_search) {
       m_first_run = false;
-      m_logger.info("Searching the maze");
+      m_logger.info("\nSearch Cycle: %d", run_number);
+      run_number++;
       setHeading(DIR_N);
       setLocation({0, 0});
       m_target = Location(7, 7);
@@ -342,16 +342,18 @@ class Mouse {
       delay_ms(500);
       updateMap(robot_state);
       doMove(90 + 40.0f, 700, 700, 5000);
-      m_logger.info("Searching starts");
+      uint32_t t = m_ticks;
+      float start_distance = robot_state.total_distance;
       searchTo(m_target);
-      m_logger.info("Searching stops");
+      robot_state = m_vehicle.getState();
+      float end_distance = robot_state.total_distance;
+      t = m_ticks - t;
+      m_logger.info("Arrived: %d mm in  %d ms", (int)(end_distance - start_distance), t);
       delay_ms(2000);
-      // return true;
       if (m_reset || m_terminate) {
         return false;
       }
       if (m_frontWall) {
-        m_logger.info("Turning around");
         if (!m_leftWall) {
           doInPlaceTurn(90, 900, 0, 5000);
           delay_ms(200);
@@ -365,16 +367,20 @@ class Mouse {
           delay_ms(200);
         }
       }
-      m_logger.info("Begin return to start");
-      doMove(90.04, 700, 700, 5000);
+      m_logger.info("Return to start");
+      start_distance = robot_state.total_distance;
+      doMove(90.0, 700, 700, 5000);
+      t = m_ticks;
       m_target = Location(0, 0);
       searchTo(m_target);
+      robot_state = m_vehicle.getState();
+      t = m_ticks - t;
+      end_distance = robot_state.total_distance;
+      m_logger.info("Arrived: %d mm in  %d ms", (int)(end_distance - start_distance), t);
+
       if (m_reset || m_terminate) {
         return false;
       }
-      //      doInPlaceTurn(180, 900, 0, 5000);
-      //      setHeading(behind_from(getHeading()));
-      m_logger.info("This round complete");
     }
     return true;
   }
@@ -448,23 +454,15 @@ class Mouse {
       m_logger.info("Already at target");
       return true;
     }
-    //    std::string msg;
-    //    msg = fmt::format("\n\n\nSearching from {},{} HDG = {} to {},{}", m_location.x, m_location.y, m_heading, target.x, target.y);
-    m_logger.info("Searching from %d,%d HDG=%d to %d,%d", m_location.x, m_location.y, m_heading, target.x, target.y);
 
     m_maze.set_mask(MASK_OPEN);
     m_maze.flood_manhattan(target);  /////////////////////////////////////////////////////////////////The flood can fail, leaving all cells with 65535
-                                     //    msg = fmt::format("Flooded the maze. cost = {}", m_maze.cost(m_location));
-    m_logger.info("Flooded the maze. cost = %d", m_maze.cost(m_location));
+
+    m_logger.info("Searching: %d,%d,%c to %d,%d Cost:%d",  //
+                  m_location.x, m_location.y,              //
+                  orthoDirChar[m_heading],                 //
+                  target.x, target.y, m_maze.cost(m_location));
     Direction newHeading = m_maze.direction_to_smallest(m_location, m_heading);
-    if (newHeading != m_heading) {
-      m_logger.info("Turning to face smallest neighbour at %d", newHeading);
-      //      Log::add(msg);
-      //      turnToHeading(newHeading);
-      //      m_heading = newHeading;
-    } else {
-      m_logger.info("good to go...");
-    }
 
     //////////////////////////////////////////////////////////////////////////////////////TERMINATING CONDITION IS WRONG !
     while (!(getLocation() == target)) {
@@ -474,47 +472,40 @@ class Mouse {
       setLocation(getLocation().neighbour(getHeading()));
       VehicleState robot_state = m_vehicle.getState();
       updateMap(robot_state);
-      std::string msg;
-      msg = "";
-      msg += fmt::format(" @ {:>5} ", (int)robot_state.total_distance);
-      msg += fmt::format("[{:>2},{:>2}], HDG {} ", getLocation().x, getLocation().y, getHeading());
       if (getLocation() == target) {
         break;
       }
       m_maze.flood_manhattan(target);  /////////////////////////////////////////////////////////////////The flood can fail, leaving all cells with 65535
       newHeading = m_maze.direction_to_smallest(getLocation(), getHeading());
-
       unsigned char hdgChange = (DIR_COUNT + newHeading - getHeading()) % DIR_COUNT;
+      if (m_event_log_detailed) {
+        m_logger.info("%5d [%2d,%2d] %c>%c %s",                              //
+                      (int)robot_state.total_distance,                       //
+                      getLocation().x, getLocation().y,                      //
+                      orthoDirChar[getHeading()], orthoDirChar[newHeading],  //
+                      moveNames[hdgChange]);
+      }
 
-      msg += fmt::format(">{} -> {} ", newHeading, hdgChange);
       switch (hdgChange) {
         /// all these finish with the robot moving and at the sensing point
         case 0:
-          msg += " FWD01";
           goForward();
           break;
         case 2:
-          msg += " SS90ER";
           turnRight();
           break;
         case 4:
-          msg += " SS180";
           turnBack();
           break;
         case 6:
-          msg += " SS90L";
           turnLeft();
           break;
         default:
           break;
       }
-      if (m_event_log_detailed) {
-        m_logger.info(msg.c_str());
-      }
     }
     /// come to a halt in the cell centre
     doMove(90, 700, 0, 3000);
-    m_logger.info(fmt::format("  - completed ").c_str());
     return true;
   }
 
@@ -530,7 +521,6 @@ class Mouse {
    */
   void run() {
     /// setup
-    serialPrintf(m_SerialOut, "Hey - here we are\n");
     m_thread_running = true;
     std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
     m_current_trajectory = std::move(idle);
@@ -543,13 +533,11 @@ class Mouse {
         while (m_vehicle.readButton(Button::BTN_GO)) {
           delay_ms(1);
         }
-        m_logger.info("GO clicked");
       }
       if (m_vehicle.readButton(Button::BTN_RESET)) {
         while (m_vehicle.readButton(Button::BTN_RESET)) {
           delay_ms(1);
         }
-        m_logger.info("RESET clicked - and still not working!");
       }
 
       switch (m_activity) {

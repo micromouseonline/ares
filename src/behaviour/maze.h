@@ -68,6 +68,10 @@ enum Direction {
 };
 
 const Direction ortho_directions[] = {DIR_N, DIR_E, DIR_S, DIR_W};
+const char orthoDirChar[] = "NnEeSsWw?";
+const char *moveNames[] = {
+    "FWD01", "-----", "SS90R", "-----", "IP180", "-----", "SS90E", "-----",
+};
 
 /***
  * Walls exist in the map in one of four states and so get recorded using
@@ -158,8 +162,12 @@ class Location {
   uint8_t x;
   uint8_t y;
 
-  Location() : x(0), y(0) {};
-  Location(uint8_t ix, uint8_t iy) : x(ix), y(iy) {};
+  Location()
+      : x(0),
+        y(0) {};
+  Location(uint8_t ix, uint8_t iy)
+      : x(ix),
+        y(iy) {};
 
   bool operator==(const Location &obj) const {
     return x == obj.x && y == obj.y;
@@ -231,7 +239,8 @@ class Location {
 class Maze {
  public:
   enum PrintStyle { PRINT_AS_CDECL, PRINT_WITH_COSTS, PRINT_WALLS_ONLY };
-  Maze() : m_goal(GOAL) {
+  Maze()
+      : m_goal(GOAL) {
     set_width(16);
   }
 
