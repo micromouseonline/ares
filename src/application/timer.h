@@ -24,7 +24,7 @@ class Timer {
   };
 
   // Note: this is used in a busy-wait that fully uses one core
-  bool hasElapsed(int microseconds) {
+  bool hasElapsed(uint32_t microseconds) {
 #ifdef _WIN32
     QueryPerformanceCounter(&end_time);
     LONGLONG elapsed = end_time.QuadPart - start_time.QuadPart;
@@ -36,7 +36,19 @@ class Timer {
 #endif
   };
 
-  void wait_us(int microseconds) {
+  void wait_us(uint32_t microseconds) {
+#ifdef _WIN32
+    start();
+    while (!hasElapsed(microseconds)) {
+      // busy-wait
+    }
+#else
+    std::this_thread::sleep_for(std::chrono::microseconds(microseconds));
+#endif
+  }
+
+  void wait_ms(uint32_t milliseconds) {
+    uint32_t microseconds = 1000UL * milliseconds;
 #ifdef _WIN32
     start();
     while (!hasElapsed(microseconds)) {
