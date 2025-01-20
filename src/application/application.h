@@ -257,16 +257,23 @@ class Application : public IEventObserver {
     }
 
     ImGui::SameLine();
-    static bool paused;
+    static bool paused = false;
+    bool is_paused = paused;
+    if (is_paused) {
+      ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));         // Red
+      ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));  // Lighter red when hovered
+      ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));   // Darker red when active
+    }
     if (ImGui::Button(paused ? "RESUME" : "PAUSE", ImVec2(82, 24))) {
       paused = !paused;
       if (paused) {
         m_robot_manager.pauseRobot();
-        //        manager.pauseCV.notify_all();  // Notify Manager to pause
       } else {
         m_robot_manager.resumeRobot();
-        //        manager.pauseCV.notify_all();  // Notify Manager to resume
       }
+    }
+    if (is_paused) {
+      ImGui::PopStyleColor(3);
     }
 
     ImGui::SameLine();
