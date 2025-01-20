@@ -101,6 +101,10 @@ class Mouse {
     m_locked = false;
   }
 
+  Vehicle& getVehicle() {
+    return m_vehicle;
+  }
+
   void reset() {
     m_reset = true;
     m_activity = ACT_NONE;

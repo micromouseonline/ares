@@ -195,6 +195,22 @@ class RobotManager {
     ARES_INFO(" RM: Set Robot Pose {},{} {}", x, y, angle);
   }
 
+  SensorData getVehicleSensors() {
+    return m_mouse.getVehicle().getState().sensors;
+  }
+
+  VehicleState getVehicleState() {
+    return m_mouse.getVehicle().getState();
+  }
+
+  uint8_t getVehicleButtons() {
+    return m_mouse.getVehicle().getState().buttons;
+  }
+
+  uint8_t getVehicleLeds() {
+    return m_mouse.getVehicle().getState().leds;
+  }
+  
   /////////////////////////////////////////////////////
   /// IO Processing
 
