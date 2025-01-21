@@ -13,6 +13,7 @@
 
 /// TODO: Mouse should know nothing about application
 #include "application/timer.h"
+#include "common/core.h"
 #include "common/pose.h"
 #include "common/printf/printf.h"
 #include "maze.h"
@@ -50,9 +51,6 @@ enum Activity {
 
 class Mouse {
  public:
-  using SerialOut = std::function<void(const char)>;
-  using BinaryOut = std::function<void(const uint8_t)>;
-
   // TODO: Never instantiate the mouse without a vehicle
   Mouse(Vehicle& vehicle)
       : m_vehicle(vehicle),
@@ -725,7 +723,7 @@ class Mouse {
    *
    * @return number of characters written including the termiator
    */
-  int serialPrintf(Mouse::SerialOut out, const char* format, ...) {
+  int serialPrintf(SerialOut out, const char* format, ...) {
     if (!out) {
       return -1;  // Return error if no valid callback is provided
     }

@@ -36,4 +36,7 @@ inline void logMessage(const std::string msg) {
   g_log_messages.push(msg);
 }
 
+using SerialOut = std::function<void(const char)>;
+using BinaryOut = std::function<void(const uint8_t)>;
+
 #endif  // CORE_H
