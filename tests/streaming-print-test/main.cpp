@@ -9,8 +9,10 @@
 
 #include "application/line-processor.h"
 #include "application/timer.h"
+#include "common/core.h"
 #include "common/printf/printf.h"
 #include "print.h"
+#include "usart.h"
 
 //////////////////////////////////////////////////////////////////////////////
 /// Target class /////////////////////////////////////////////////////////////
@@ -27,7 +29,6 @@ class Target {
   bool is_running = true;
   volatile uint32_t ticks;
 
-  using SerialOut = std::function<void(const char)>;
   SerialOut serialOut;
 
   Target()
@@ -95,7 +96,7 @@ class Target {
    *
    * @return number of characters written including the termiator
    */
-  int serialPrintf(Target::SerialOut out, const char* format, ...) {
+  int serialPrintf(SerialOut out, const char* format, ...) {
     if (!out) {
       return -1;  // Return error if no valid callback is provided
     }
