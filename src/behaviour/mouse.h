@@ -12,12 +12,12 @@
 #pragma once
 
 /// TODO: Mouse should know nothing about application
+#include "action-compiler.h"
 #include "application/timer.h"
 #include "common/core.h"
 #include "common/pose.h"
 #include "common/printf/printf.h"
 #include "maze.h"
-#include "motion-compiler.h"
 #include "mouse-log.h"
 #include "path-finder.h"
 #include "path-printer.h"

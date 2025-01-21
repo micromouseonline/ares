@@ -9,16 +9,15 @@
  *     https://opensource.org/licenses/MIT.                                   *
  ******************************************************************************/
 
-#ifndef MAZERUNNER32_OPERATION_H
-#define MAZERUNNER32_OPERATION_H
+#pragma once
 
 #include <stdint.h>
 #include "config.h"
 
-#define NUM_COMMANDS_MAX 256
+#define NUM_ACTIONS_MAX 256
 
 /*
- * mouse operation bit values:
+ * mouse action bit values:
  *
  * Straights:
  *  00LLLLLL
@@ -227,9 +226,10 @@ const bool is_ortho_in[]  = { true,  true,  true,  true,  true,  true,  true,  t
 const bool is_ortho_out[] = { true,  true,  true,  true,  true,  true, false, false, false, false,  true,  true,  true,  true, false, false, true, true};
 // clang-format on
 
-struct MotionCommand {
+struct Action {
   uint8_t op_code;
-  explicit MotionCommand(int c = OP_STOP) : op_code(c) {};
+  explicit Action(int c = OP_STOP)
+      : op_code(c) {};
 
   uint8_t direction() const {
     return op_code & 0x01;
@@ -285,5 +285,3 @@ struct MotionCommand {
     return op_code != v;
   }
 };
-
-#endif  // MAZERUNNER32_OPERATION_H

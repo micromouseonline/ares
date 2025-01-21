@@ -5,45 +5,45 @@
 #pragma once
 #include <stdio.h>
 
-#include "motion-commands.h"
+#include "actions.h"
 
-void print_operation(MotionCommand operation) {
-  if (operation == OP_END) {
+void print_action(Action action) {
+  if (action == OP_END) {
     printf("OP_END    ");
-  } else if (operation == OP_ERROR) {
+  } else if (action == OP_ERROR) {
     printf("OP_ERROR, ");
-  } else if (operation == OP_EXPLORE) {
+  } else if (action == OP_EXPLORE) {
     printf("OP_EXP    ");
-  } else if (operation == OP_STOP) {
+  } else if (action == OP_STOP) {
     printf("STOP   ");
-  } else if (operation == OP_BEGIN) {
+  } else if (action == OP_BEGIN) {
     printf("OP_BEG    ");
-  } else if (operation == OP_BEGIN_HS) {
+  } else if (action == OP_BEGIN_HS) {
     printf("OP_BEG_HS ");
-  } else if (operation.is_ortho_move()) {
-    printf("FWD%d, ", operation.op_code - OP_TYPE_ORTHO);
-  } else if (operation.is_diagonal_move()) {
-    printf("DIA%d, ", operation.op_code - OP_TYPE_DIAG);
-  } else if (operation.is_inplace_turn()) {
-    printf("%s, ", inPlaceTurnNames[operation.op_code - OP_TURN_INPLACE]);
-  } else if (operation.is_smooth_turn()) {
-    printf("%s, ", smoothTurnNames[operation.op_code - OP_TURN_SMOOTH]);
-  } else if (operation >= OP_ERR_BASE) {
-    printf("ERR_%02d, ", operation.op_code - OP_ERR_BASE);
+  } else if (action.is_ortho_move()) {
+    printf("FWD%d, ", action.op_code - OP_TYPE_ORTHO);
+  } else if (action.is_diagonal_move()) {
+    printf("DIA%d, ", action.op_code - OP_TYPE_DIAG);
+  } else if (action.is_inplace_turn()) {
+    printf("%s, ", inPlaceTurnNames[action.op_code - OP_TURN_INPLACE]);
+  } else if (action.is_smooth_turn()) {
+    printf("%s, ", smoothTurnNames[action.op_code - OP_TURN_SMOOTH]);
+  } else if (action >= OP_ERR_BASE) {
+    printf("ERR_%02d, ", action.op_code - OP_ERR_BASE);
   } else {
-    printf("%6d, ", operation.op_code);
-    //    printf("?? %02x, ", operation.op_code);
+    printf("%6d, ", action.op_code);
+    //    printf("?? %02x, ", action.op_code);
   }
 }
 
-void print_operations_list(MotionCommand *op_list) {
+void print_action_list(Action *action_list) {
   char done = 0;
   printf("\n");
   while (!done) {
-    print_operation(*op_list);
-    if (*op_list == OP_STOP) {
+    print_action(*action_list);
+    if (*action_list == OP_STOP) {
       done = true;
     }
-    op_list++;
+    action_list++;
   }
 }
