@@ -266,23 +266,9 @@ const bool is_ortho_out[] = { true,  true,  true,  true,  true,  true, false, fa
 
 struct Action {
   uint8_t op_code;
-  std::unique_ptr<Trajectory> trajectory;
 
   explicit Action(int c = OP_STOP, std::unique_ptr<Trajectory> traj = nullptr)
       : op_code(c) {
-    if (traj == nullptr) {
-      trajectory = std::make_unique<IdleTrajectory>();
-    } else {
-      trajectory = std::move(std::move(traj));
-    }
-  }
-
-  void setTrajectory(std::unique_ptr<Trajectory> traj) {
-    if (traj == nullptr) {
-      trajectory = std::make_unique<IdleTrajectory>();
-    } else {
-      trajectory = std::move(traj);
-    }
   }
 
   uint8_t direction() const {
@@ -368,13 +354,6 @@ struct Action {
 
   float spinTurnAngle() {
     return 45.0f * (1 + (get_spin_turn_type() / 2));
-  }
-
-  float getDuration() {
-    if (trajectory) {
-      return trajectory->get_duration();
-    }
-    return 0.0f;
   }
 
   bool operator==(const uint8_t v) const {
