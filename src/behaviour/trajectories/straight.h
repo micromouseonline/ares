@@ -56,7 +56,7 @@ class Straight : public Trajectory {
   // TODO what if Vmax < V1 or V2?
   void init(const Pose &p = Pose()) override {
     Trajectory::init(p);
-    if (m_s == 0.0f) {
+    if (fabsf(m_s) < 0.1f) {
       m_p1 = 0;
       m_p2 = 0;
       m_p3 = 0;

@@ -94,7 +94,7 @@ class MotionCompiler {
     assert(maxLength >= 2);
     while (!finished) {
       if (p >= maxLength) {
-        actions[0] = OP_ERROR;
+        actions[0] = ACT_ERROR;
         actions[1] = OP_STOP;
         break;
       }
@@ -110,7 +110,7 @@ class MotionCompiler {
           cmd++;
           runLength++;
           if (runLength >= 31) {  // MAGIC: maximum for hald-size maze
-            actions[p++] = OP_ERROR;
+            actions[p++] = ACT_ERROR;
             actions[p] = OP_STOP;
             finished = true;
           }
@@ -132,12 +132,12 @@ class MotionCompiler {
           break;
         case 'X':
           actions[p++] = cmd;
-          actions[p++] = OP_EXPLORE;
+          actions[p++] = ACT_EXPLORE;
           actions[p] = OP_STOP;
           finished = true;
           break;
         default:
-          actions[p++] = OP_ERROR;
+          actions[p++] = ACT_ERROR;
           actions[p] = OP_STOP;
           finished = true;
           break;
@@ -160,12 +160,12 @@ class MotionCompiler {
     pathgen_state_t state = PathInit;
     while (state != PathFinish) {
       if (runLength >= 31) {  // MAGIC: maximum for half-size maze
-        actions[p++] = OP_ERROR;
+        actions[p++] = ACT_ERROR;
         actions[p] = OP_STOP;
         break;
       }
       if (p >= NUM_ACTIONS_MAX) {
-        actions[0] = OP_ERROR;
+        actions[0] = ACT_ERROR;
         actions[1] = OP_STOP;
         break;
       }
@@ -177,7 +177,7 @@ class MotionCompiler {
             // actions[p++] = (OP_BEGIN);
             state = PathStart;
           } else {
-            actions[p++] = (OP_ERR_BEGIN);
+            actions[p++] = (ACT_ERR_BEGIN);
             state = PathStop;
           }
           break;
@@ -186,17 +186,17 @@ class MotionCompiler {
             runLength = 1;
             state = PathOrtho_F;
           } else if (c == 'R') {
-            actions[p++] = (OP_ERR_NOF);
+            actions[p++] = (ACT_ERR_NOF);
             state = PathStop;
           } else if (c == 'L') {
-            actions[p++] = (OP_ERR_NOF);
+            actions[p++] = (ACT_ERR_NOF);
             state = PathStop;
           } else if (c == 'X') {
             state = PathExit;
           } else if (c == 'S') {
             state = PathStop;
           } else {
-            actions[p++] = (OP_ERR_END);
+            actions[p++] = (ACT_ERR_END);
             state = PathStop;
           }
           break;
@@ -216,7 +216,7 @@ class MotionCompiler {
             actions[p++] = (FWD0 + runLength);
             state = PathStop;
           } else {
-            actions[p++] = (OP_ERR_END);
+            actions[p++] = (ACT_ERR_END);
             state = PathStop;
           }
           break;
@@ -242,7 +242,7 @@ class MotionCompiler {
             actions[p++] = (FWD1);
             state = PathStop;
           } else {
-            actions[p++] = (OP_ERR_END);
+            actions[p++] = (ACT_ERR_END);
             state = PathStop;
           }
           break;
@@ -268,7 +268,7 @@ class MotionCompiler {
             actions[p++] = (FWD1);
             state = PathStop;
           } else {
-            actions[p++] = (OP_ERR_END);
+            actions[p++] = (ACT_ERR_END);
             state = PathStop;
           }
           break;
@@ -277,12 +277,12 @@ class MotionCompiler {
           state = PathFinish;
           break;
         case PathExit:
-          actions[p++] = (OP_EXPLORE);
+          actions[p++] = (ACT_EXPLORE);
           actions[p] = (OP_STOP);  // make sure the action list gets terminated
           state = PathFinish;
           break;
         default:
-          actions[p++] = (OP_ERROR);
+          actions[p++] = (ACT_ERROR);
           state = PathFinish;
           break;
       }
@@ -295,12 +295,12 @@ class MotionCompiler {
     pathgen_state_t state = PathInit;
     while (state != PathFinish) {
       if (runLength > 63) {  // MAGIC: maximum for hald-size maze
-        actions[0] = OP_ERROR;
+        actions[0] = ACT_ERROR;
         actions[1] = OP_STOP;
         break;
       }
       if (p >= maxLength) {
-        actions[0] = OP_ERROR;
+        actions[0] = ACT_ERROR;
         actions[1] = OP_STOP;
         break;
       }
@@ -311,7 +311,7 @@ class MotionCompiler {
             // actions[p++] = (OP_BEGIN);
             state = PathStart;
           } else {
-            actions[p++] = (OP_ERR_BEGIN);
+            actions[p++] = (ACT_ERR_BEGIN);
             state = PathStop;
           }
           break;
@@ -320,17 +320,17 @@ class MotionCompiler {
             runLength = 1;
             state = PathOrtho_F;
           } else if (c == 'R') {
-            actions[p++] = (OP_ERR_NOF);
+            actions[p++] = (ACT_ERR_NOF);
             state = PathStop;
           } else if (c == 'L') {
-            actions[p++] = (OP_ERR_NOF);
+            actions[p++] = (ACT_ERR_NOF);
             state = PathStop;
           } else if (c == 'S') {
             state = PathStop;
           } else if (c == 'X') {
             state = PathExit;
           } else {
-            actions[p++] = (OP_ERR_END);
+            actions[p++] = (ACT_ERR_END);
             state = PathStop;
           }
           break;
@@ -350,7 +350,7 @@ class MotionCompiler {
             actions[p++] = (FWD0 + runLength);
             state = PathExit;
           } else {
-            actions[p++] = (OP_ERR_END);
+            actions[p++] = (ACT_ERR_END);
             state = PathStop;
           }
           break;
@@ -370,7 +370,7 @@ class MotionCompiler {
             actions[p++] = (FWD1);
             state = PathStop;
           } else {
-            actions[p++] = (OP_ERR_END);
+            actions[p++] = (ACT_ERR_END);
             state = PathStop;
           }
           break;
@@ -390,7 +390,7 @@ class MotionCompiler {
             actions[p++] = (FWD1);
             state = PathStop;
           } else {
-            actions[p++] = (OP_ERR_END);
+            actions[p++] = (ACT_ERR_END);
             state = PathStop;
           }
           break;
@@ -400,7 +400,7 @@ class MotionCompiler {
             runLength = 2;
             state = PathOrtho_F;
           } else if (c == 'R') {
-            actions[p++] = (OP_ERR_RRR);
+            actions[p++] = (ACT_ERR_RRR);
             state = PathStop;
           } else if (c == 'L') {
             actions[p++] = (SD135R);
@@ -411,7 +411,7 @@ class MotionCompiler {
             actions[p++] = (FWD1);
             state = PathStop;
           } else {
-            actions[p++] = (OP_ERR_END);
+            actions[p++] = (ACT_ERR_END);
             state = PathStop;
           }
           break;
@@ -437,7 +437,7 @@ class MotionCompiler {
             actions[p++] = (FWD1);
             state = PathExit;
           } else {
-            actions[p++] = (OP_ERR_END);
+            actions[p++] = (ACT_ERR_END);
             state = PathStop;
           }
           break;
@@ -463,7 +463,7 @@ class MotionCompiler {
             actions[p++] = (FWD1);
             state = PathExit;
           } else {
-            actions[p++] = (OP_ERR_END);
+            actions[p++] = (ACT_ERR_END);
             state = PathStop;
           }
           break;
@@ -477,14 +477,14 @@ class MotionCompiler {
             runLength = 2;
             state = PathDiag_LR;
           } else if (c == 'L') {
-            actions[p++] = (OP_ERR_LLL);
+            actions[p++] = (ACT_ERR_LLL);
             state = PathStop;
           } else if (c == 'S') {
             actions[p++] = (SS180L);
             actions[p++] = (FWD1);
             state = PathStop;
           } else {
-            actions[p++] = (OP_ERR_END);
+            actions[p++] = (ACT_ERR_END);
             state = PathStop;
           }
           break;
@@ -500,7 +500,7 @@ class MotionCompiler {
             runLength = 2;
             state = PathDiag_LR;
           } else if (c == 'L') {
-            actions[p++] = (OP_ERR_LLL);
+            actions[p++] = (ACT_ERR_LLL);
             state = PathStop;
           } else if (c == 'S') {
             actions[p++] = (DIA0 + runLength);
@@ -508,7 +508,7 @@ class MotionCompiler {
             actions[p++] = (FWD1);
             state = PathStop;
           } else {
-            actions[p++] = (OP_ERR_END);
+            actions[p++] = (ACT_ERR_END);
             state = PathStop;
           }
           break;
@@ -531,7 +531,7 @@ class MotionCompiler {
             actions[p++] = (FWD1);
             state = PathStop;
           } else {
-            actions[p++] = (OP_ERR_END);
+            actions[p++] = (ACT_ERR_END);
             state = PathStop;
           }
           break;
@@ -540,12 +540,12 @@ class MotionCompiler {
           state = PathFinish;
           break;
         case PathExit:
-          actions[p++] = (OP_EXPLORE);
+          actions[p++] = (ACT_EXPLORE);
           actions[p++] = (OP_STOP);  // make sure the action list gets terminated
           state = PathFinish;
           break;
         default:
-          actions[p++] = (OP_ERROR);
+          actions[p++] = (ACT_ERROR);
           state = PathFinish;
           break;
       }
