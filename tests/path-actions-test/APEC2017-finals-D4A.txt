@@ -1,0 +1,591 @@
+APEC 2017
+
+==========
+D5alpha.Japan.2016==========
+Log used: 30049 ( 61% )
+o---o---o---o---o---o---o---o---o---o---o---o---o---o---o---o---o
+| >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   v |
+o   o---o---o---o---o---o---o---o---o---o---o---o---o---o---o   o
+| ^ | v   <   <   <   <   <   <   <   <   <   <   >   >   v   < |
+o   o   o---o---o---o---o---o---o---o---o---o---o---o---o   o   o
+| ^ | >   >   >   v | >   v | >   >   >   v | v   <   < | v | ^ |
+o   o   o---o---o   o   o   o   o---o---o   o   o---o   o   o   o
+| ^ | ^ | v   <   < | ^ | >   ^ | v   < | v | >   v | ^ | v | ^ |
+o   o   o   o   o---o   o---o---o   o   o   o---o   o   o   o   o
+| ^ | ^ | v | ^ | >   ^ |   | v   < | ^ | v | v   < | ^ | v | ^ |
+o   o   o   o---o   o---o   o   o---o   o   o   o---o   o   o   o
+| ^ | ^ | v | >   ^ |         <   < | ^ | v | >   v | ^ | v | ^ |
+o   o   o   o   o---o   o   o---o   o   o   o---o   o   o   o   o
+| ^ | ^ | v | ^ |   | v   <   <   < | ^   < | >   v | ^ | v | ^ |
+o   o   o   o   o   o   o---o---o---o---o---o---o   o   o   o   o
+| ^ | ^ | >   ^ |     <   < | v   < |         v   < | ^ | v | ^ |
+o   o   o---o---o   o---o   o   o   o   o---o   o   o   o   o   o
+| ^ | ^ | v   <   <   <   < | ^   < |     v   < | ^ | ^ | v | ^ |
+o   o   o   o---o---o---o---o---o   o---o   o   o---o   o   o   o
+| ^ | ^ | >   v | >   >   >   >   ^ | v   < | ^ | >   ^ | v | ^ |
+o   o   o---o   o   o---o   o---o---o   o   o---o   o---o   o   o
+| ^ | ^ | v   < | ^   < | ^ | >   v   < | ^ | >   ^ | v | v | ^ |
+o   o   o   o---o   o   o---o---o   o   o---o   o---o   o   o   o
+| ^ | ^ | >   v | ^ | ^ | v | v   < | ^ | >   ^ | v   < | v | ^ |
+o   o   o---o   o   o---o   o   o---o---o   o---o   o   o   o   o
+| ^ | ^   v | >   ^ | v   < | >   v | >   ^ | v   < | ^ | v | ^ |
+o   o---o   o   o---o   o   o---o   o   o---o   o---o   o   o   o
+| ^   < | v | ^   <   < | ^   <   < | ^   <   < | >   ^ | v | ^ |
+o   o   o   o---o---o---o---o---o---o---o---o---o---o   o   o   o
+| ^ | v | >   >   >   >   >   >   >   >   >   >   >   ^   < | ^ |
+o   o   o---o---o---o---o---o---o---o---o---o---o---o---o---o   o
+| ^ | >   >   >   >   >   >   >   >   >   >   >   >   >   >   ^ |
+o---o---o---o---o---o---o---o---o---o---o---o---o---o---o---o---o
+o---o---o---o---o---o---o---o---o---o---o---o---o---o---o---o---o
+|880 876 872 868 863 858 853 848 843 837 831 824 816 807 791 772|
+o   o---o---o---o---o---o---o---o---o---o---o---o---o---o---o   o
+|889|687 706 722 731 739 746 752 758 763 768 773 781 765 756 765|
+o   o   o---o---o---o---o---o---o---o---o---o---o---o---o   o   o
+|905|678 669 653 634|467 460|425 416 400 391|403 422 438|752|784|
+o   o   o---o---o   o   o   o   o---o---o   o   o---o   o   o   o
+|914|687|600 609 625|486|441 434|282 286|383|396 377|447|747|800|
+o   o   o   o   o---o   o---o---o   o   o   o---o   o   o   o   o
+|922|703|592|628|511 502|269|274 278|305|374|351 370|463|742|809|
+o   o   o   o---o   o---o   o   o---o   o   o   o---o   o   o   o
+|929|712|583|524 518|264 262 269 282|321|358|344 335|472|737|817|
+o   o   o   o   o---o   o   o---o   o   o   o---o   o   o   o   o
+|935|720|567|529|261|255 259 266 271|330 339|342 323|480|732|824|
+o   o   o   o   o   o   o---o---o---o---o---o---o   o   o   o   o
+|941|727|548 539|245 251 263| 13  22|323 329 310 317|487|727|830|
+o   o   o---o---o   o---o   o   o   o   o---o   o   o   o   o   o
+|946|733|201 220 236 245 253|  0  13|316 297 304|336|493|721|836|
+o   o   o   o---o---o---o---o---o   o---o   o   o---o   o   o   o
+|951|739|194 175| 74  66  57  41  22|288 293|323|508 499|715|841|
+o   o   o---o   o   o---o   o---o---o   o   o---o   o---o   o   o
+|956|744|149 168| 83 102| 66|294 275 282|312|521 515|607|708|846|
+o   o   o   o---o   o   o---o---o   o   o---o   o---o   o   o   o
+|961|749|143 136| 99|109|181|249 268|301|530 526|598 603|700|851|
+o   o   o---o   o   o---o   o   o---o---o   o---o   o   o   o   o
+|966|754 753|117 108|168 175|242 223|538 534|585 592|622|691|856|
+o   o---o   o   o---o   o   o---o   o   o---o   o---o   o   o   o
+|970 979|737|124 143 159|194 201 214|541 560 576|647 638|675|861|
+o   o   o   o---o---o---o---o---o---o---o---o---o---o   o   o   o
+|974|972|728 723 718 713 708 702 696 689 681 672 656 647 656|865|
+o   o   o---o---o---o---o---o---o---o---o---o---o---o---o---o   o
+|978|963 959 955 950 945 940 935 930 924 918 911 903 894 878 869|
+o---o---o---o---o---o---o---o---o---o---o---o---o---o---o---o---o
+o---o---o---o---o---o---o---o---o---o---o---o---o---o---o---o---o
+| >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   v |
+o   o---o---o---o---o---o---o---o---o---o---o---o---o---o---o   o
+| ^ | v   <   <   <   <   <   <   <   <   <   <   <   >   v   < |
+o   o   o---o---o---o---o---o---o---o---o---o---o---o---o   o   o
+| ^ | >   >   >   v | >   v | >   >   >   v | v   <   < | v | ^ |
+o   o   o---o---o   o   o   o   o---o---o   o   o---o   o   o   o
+| ^ | ^ | v   <   < | ^ | >   ^ | v   < | v | >   v | ^ | v | ^ |
+o   o   o   o   o---o   o---o---o   o   o   o---o   o   o   o   o
+| ^ | ^ | v | ^ | >   ^ |   | v   < | ^ | v | v   < | ^ | v | ^ |
+o   o   o   o---o   o---o   o   o---o   o   o   o---o   o   o   o
+| ^ | ^ | v | >   ^ |         <   < | ^ | v | >   v | ^ | v | ^ |
+o   o   o   o   o---o   o   o---o   o   o   o---o   o   o   o   o
+| ^ | ^ | v | ^ |   | v   <   <   < | ^   < | >   v | ^ | v | ^ |
+o   o   o   o   o   o   o---o---o---o---o---o---o   o   o   o   o
+| ^ | ^ | >   ^ |     <   < | v   < |         v   < | ^ | v | ^ |
+o   o   o---o---o   o---o   o   o   o   o---o   o   o   o   o   o
+| ^ | ^ | v   <   <   <   < | ^   < |     v   < | ^ | ^ | v | ^ |
+o   o   o   o---o---o---o---o---o   o---o   o   o---o   o   o   o
+| ^ | ^ | >   v | >   >   >   >   ^ | v   < | ^ | >   ^ | v | ^ |
+o   o   o---o   o   o---o   o---o---o   o   o---o   o---o   o   o
+| ^ | ^ | v   < | ^   < | ^ | >   v   < | ^ | >   ^ | v | v | ^ |
+o   o   o   o---o   o   o---o---o   o   o---o   o---o   o   o   o
+| ^ | ^ | >   v | ^ | ^ | v | v   < | ^ | >   ^ | v   < | v | ^ |
+o   o   o---o   o   o---o   o   o---o---o   o---o   o   o   o   o
+| ^ | ^   v | >   ^ | v   < | >   v | >   ^ | v   < | ^ | v | ^ |
+o   o---o   o   o---o   o   o---o   o   o---o   o---o   o   o   o
+| ^   < | v | ^   <   < | ^   <   < | ^   <   < | >   ^ | v | ^ |
+o   o   o   o---o---o---o---o---o---o---o---o---o---o   o   o   o
+| ^ | v | >   >   >   >   >   >   >   >   >   >   >   ^   < | ^ |
+o   o   o---o---o---o---o---o---o---o---o---o---o---o---o---o   o
+| ^ | >   >   >   >   >   >   >   >   >   >   >   >   >   >   ^ |
+o---o---o---o---o---o---o---o---o---o---o---o---o---o---o---o---o
+o---o---o---o---o---o---o---o---o---o---o---o---o---o---o---o---o
+|880 876 872 868 863 858 853 848 843 837 831 824 816 807 791 772|
+o   o---o---o---o---o---o---o---o---o---o---o---o---o---o---o   o
+|889|678 697 713 722 730 737 743 749 754 759 764 769 765 756 765|
+o   o   o---o---o---o---o---o---o---o---o---o---o---o---o   o   o
+|905|669 660 644 625|458 451|416 407 391 382|403 422 438|752|784|
+o   o   o---o---o   o   o   o   o---o---o   o   o---o   o   o   o
+|914|678|591 600 616|477|432 425|275 277|374|396 377|447|747|800|
+o   o   o   o   o---o   o---o---o   o   o   o---o   o   o   o   o
+|922|694|583|619|502 493| x |270 273|296|365|351 370|463|742|809|
+o   o   o   o---o   o---o   o   o---o   o   o   o---o   o   o   o
+|929|703|574|515 509|267 264 267 274|312|349|344 335|472|737|817|
+o   o   o   o   o---o   o   o---o   o   o   o---o   o   o   o   o
+|935|711|558|520| x |257 261 270 275|321 330|342 323|480|732|824|
+o   o   o   o   o   o   o---o---o---o---o---o---o   o   o   o   o
+|941|718|539 530|245 252 265| 13  22| x  329 310 317|487|727|830|
+o   o   o---o---o   o---o   o   o   o   o---o   o   o   o   o   o
+|946|724|201 220 236 245 253|  0  13|316 297 304|336|493|721|836|
+o   o   o   o---o---o---o---o---o   o---o   o   o---o   o   o   o
+|951|730|194 175| 74  66  57  41  22|288 293|323|508 499|715|841|
+o   o   o---o   o   o---o   o---o---o   o   o---o   o---o   o   o
+|956|735|149 168| 83 102| 66|294 275 282|312|521 515|607|708|846|
+o   o   o   o---o   o   o---o---o   o   o---o   o---o   o   o   o
+|961|740|143 136| 99|109|181|249 268|301|530 526|598 603|700|851|
+o   o   o---o   o   o---o   o   o---o---o   o---o   o   o   o   o
+|966|745 753|117 108|168 175|242 223|538 534|585 592|622|691|856|
+o   o---o   o   o---o   o   o---o   o   o---o   o---o   o   o   o
+|970 979|737|124 143 159|194 201 214|541 560 576|647 638|675|861|
+o   o   o   o---o---o---o---o---o---o---o---o---o---o   o   o   o
+|974|972|728 723 718 713 708 702 696 689 681 672 656 647 656|865|
+o   o   o---o---o---o---o---o---o---o---o---o---o---o---o---o   o
+|978|963 959 955 950 945 940 935 930 924 918 911 903 894 878 869|
+o---o---o---o---o---o---o---o---o---o---o---o---o---o---o---o---o
+path: FFFFFFFFFFFFFFFRFFFFFFFFFFFFFFFRFRFLFFFFFFFFFFFFFRFRFFFLFLFRFLFRFFRFRFLFRFLFRFLFRFLFFFFFFFLFFLFLFRFRFLFLFRFFRFLFRFLFRFLFRFLFRFLFLFRFRFFRFLFLFRFFRFRFLFFFRFFFFLFLFS
+Syslog:
+----8<---
+
+
+System Start
+Initialising Parameters
+Power-on reset
+Initialising Mouse
+Initialising Menus
+Ready...
+Maze Goal is: 0x77
+
+
+System Start
+Initialising Parameters
+Pin reset
+reloading maze
+Initialising Mouse
+Initialising Menus
+Ready...
+Maze Goal is: 0x77
+
+STATUS CHANGE: Wait for start. Cost Difference 32662
+
+
+Run Mouse - Japan Rules - New Search
+Initialising Mouse
+Searching (Japan)
+
+STATUS CHANGE: Search for goal. Cost Difference 32662
+>searchTo [ 7,  7] SHORTEST_PATH from [ 0,  0, N], offset 137
+SEARCH [ 0,  1, A], v = 908, FX
+SEARCH [ 0,  2, A], v = 696, FX
+SEARCH [ 1,  2, R], v = 841, FX
+SEARCH [ 1,  1, B], v = 812, FX
+SEARCH [ 1,  0, B], v = 701, FX
+SEARCH [ 2,  0, R], v = 845, FX
+SEARCH [ 3,  0, R], v = 696, FX
+SEARCH [ 4,  0, R], v = 701, FX
+SEARCH [ 5,  0, R], v = 696, FX
+SEARCH [ 6,  0, R], v = 696, FX
+SEARCH [ 7,  0, R], v = 687, FX
+SEARCH [ 8,  0, R], v = 706, FX
+SEARCH [ 9,  0, R], v = 701, FX
+SEARCH [10,  0, R], v = 706, FX
+SEARCH [11,  0, R], v = 701, FX
+SEARCH [12,  0, R], v = 701, FX
+SEARCH [13,  0, R], v = 696, FX
+SEARCH [14,  0, R], v = 687, FX
+SEARCH [15,  0, R], v = 701, FX
+SEARCH [15,  1, A], v = 870, FX
+SEARCH [15,  2, A], v = 696, FX
+SEARCH [15,  3, A], v = 696, FX
+SEARCH [15,  4, A], v = 696, FX
+SEARCH [15,  5, A], v = 701, FX
+SEARCH [15,  6, A], v = 706, FX
+SEARCH [15,  7, A], v = 701, FX
+SEARCH [15,  8, A], v = 701, FX
+SEARCH [15,  9, A], v = 696, FX
+SEARCH [15, 10, A], v = 701, FX
+SEARCH [15, 11, A], v = 701, FX
+SEARCH [15, 12, A], v = 701, FX
+SEARCH [15, 13, A], v = 701, FX
+SEARCH [15, 14, A], v = 696, FX
+SEARCH [14, 14, L], v = 865, FX
+SEARCH [14, 13, B], v = 855, FX
+SEARCH [14, 12, B], v = 687, FX
+SEARCH [14, 11, B], v = 711, FX
+SEARCH [14, 10, B], v = 706, FX
+SEARCH [14,  9, B], v = 706, FX
+SEARCH [14,  8, B], v = 701, FX
+SEARCH [14,  7, B], v = 706, FX
+SEARCH [14,  6, B], v = 692, FX
+SEARCH [14,  5, B], v = 706, FX
+SEARCH [14,  4, B], v = 696, FX
+SEARCH [14,  3, B], v = 692, FX
+SEARCH [14,  2, B], v = 696, FX
+SEARCH [14,  1, B], v = 696, FX
+SEARCH [13,  1, L], v = 807, FX
+SEARCH [12,  1, L], v = 706, FX
+SEARCH [11,  1, L], v = 706, FX
+SEARCH [10,  1, L], v = 696, FX
+SEARCH [ 9,  1, L], v = 696, FX
+SEARCH [ 8,  1, L], v = 701, FX
+SEARCH [ 7,  1, L], v = 692, FX
+SEARCH [ 6,  1, L], v = 696, FX
+SEARCH [ 5,  1, L], v = 711, FX
+SEARCH [ 4,  1, L], v = 692, FX
+SEARCH [ 3,  1, L], v = 716, FX
+SEARCH [ 2,  1, L], v = 696, FX
+SEARCH [ 2,  2, A], v = 807, FX
+SEARCH [ 2,  3, A], v = 711, FX
+SEARCH [ 1,  3, L], v = 821, FX
+SEARCH [ 1,  4, A], v = 807, FX
+SEARCH [ 1,  5, A], v = 687, FX
+SEARCH [ 1,  6, A], v = 711, FX
+SEARCH [ 1,  7, A], v = 696, FX
+SEARCH [ 1,  8, A], v = 701, FX
+SEARCH [ 1,  9, A], v = 692, FX
+SEARCH [ 1, 10, A], v = 706, FX
+SEARCH [ 1, 11, A], v = 692, FX
+SEARCH [ 1, 12, A], v = 711, FX
+SEARCH [ 1, 13, A], v = 687, FX
+SEARCH [ 2, 13, R], v = 802, FX
+SEARCH [ 3, 13, R], v = 701, FX
+SEARCH [ 4, 13, R], v = 696, FX
+SEARCH [ 4, 12, B], v = 797, FX
+SEARCH [ 3, 12, L], v = 860, FX
+SEARCH [ 3, 11, B], v = 845, FLFX
+SEARCH [ 3, 12, A], v = 903, FX
+SEARCH [ 2, 12, L], v = 850, FX
+SEARCH [ 2, 11, B], v = 850, FX
+SEARCH [ 2, 10, B], v = 701, FX
+SEARCH [ 2,  9, B], v = 696, FX
+SEARCH [ 2,  8, B], v = 687, FX
+SEARCH [ 3,  8, R], v = 855, FX
+SEARCH [ 3,  9, A], v = 855, FX
+SEARCH [ 3, 10, A], v = 696, FX
+SEARCH [ 4, 10, R], v = 802, FX
+SEARCH [ 4, 11, A], v = 845, FX
+SEARCH [ 5, 11, R], v = 764, FX
+SEARCH [ 5, 12, A], v = 845, FX
+SEARCH [ 5, 13, A], v = 696, FX
+SEARCH [ 6, 13, R], v = 797, FX
+SEARCH [ 6, 12, B], v = 821, FX
+SEARCH [ 7, 12, R], v = 845, FX
+SEARCH [ 7, 13, A], v = 841, FX
+SEARCH [ 8, 13, R], v = 831, FX
+SEARCH [ 9, 13, R], v = 696, FX
+SEARCH [10, 13, R], v = 701, FX
+SEARCH [10, 12, B], v = 773, FX
+SEARCH [10, 11, B], v = 706, FX
+SEARCH [10, 10, B], v = 706, FX
+SEARCH [10,  9, B], v = 711, FX
+SEARCH [ 9,  9, L], v = 802, FX
+SEARCH [ 9, 10, A], v = 797, FX
+SEARCH [ 9, 11, A], v = 701, FX
+SEARCH [ 9, 12, A], v = 696, FX
+SEARCH [ 8, 12, L], v = 855, FX
+SEARCH [ 8, 11, B], v = 841, FX
+SEARCH [ 7, 11, L], v = 802, FX
+SEARCH [ 7, 10, B], v = 836, FX
+SEARCH [ 8, 10, R], v = 841, FX
+SEARCH [ 8,  9, B], v = 788, FX
+SEARCH [ 7,  9, L], v = 807, FX
+SEARCH [ 6,  9, L], v = 696, FX
+SEARCH [ 5,  9, L], v = 701, FX
+SEARCH [ 5,  8, B], v = 860, FX
+SEARCH [ 6,  8, R], v = 836, FX
+SEARCH [ 6,  7, B], v = 788, FX
+SEARCH [ 5,  7, L], v = 749, FX
+SEARCH [ 4,  7, L], v = 711, FX
+SEARCH [ 3,  7, L], v = 716, FX
+SEARCH [ 2,  7, L], v = 692, FX
+SEARCH [ 2,  6, B], v = 850, FX
+SEARCH [ 3,  6, R], v = 845, FX
+SEARCH [ 3,  5, B], v = 754, FX
+SEARCH [ 2,  5, L], v = 769, FX
+SEARCH [ 2,  4, B], v = 845, FX
+SEARCH [ 3,  4, R], v = 850, FX
+SEARCH [ 3,  3, B], v = 754, FX
+SEARCH [ 4,  3, R], v = 807, FX
+SEARCH [ 4,  4, A], v = 831, FX
+SEARCH [ 4,  5, A], v = 696, FX
+SEARCH [ 5,  5, R], v = 826, FX
+SEARCH [ 5,  4, B], v = 759, FLFRFX
+SEARCH [ 5,  5, A], v = 913, FRFX
+SEARCH [ 4,  5, L], v = 860, FX
+SEARCH [ 4,  6, A], v = 778, FX
+SEARCH [ 5,  6, R], v = 778, FX
+SEARCH [ 6,  6, R], v = 706, FX
+SEARCH [ 7,  6, R], v = 706, FX
+SEARCH [ 8,  6, R], v = 706, FX
+SEARCH [ 8,  7, A], v = 826, FS
+SEARCH [ 7,  7, L], v = 812, FX
+ - SEARCH FINISHED AT [ 7,  7, W]
+Goal found - searching back first blocking cell at 0x03
+>searchTo [ 0,  3] SHORTEST_PATH from [ 7,  7, N], offset 137
+SEARCH [ 7,  8, A], v = 874, FX
+SEARCH [ 8,  8, R], v = 860, FFRFFLFX
+SEARCH [ 8,  7, B], v = 788, FRFFLFX
+SEARCH [ 8,  6, B], v = 711, FFLFX
+SEARCH [ 7,  6, L], v = 773, FLFX
+SEARCH [ 6,  6, L], v = 692, FX
+SEARCH [ 6,  5, B], v = 836, FLFFLFFFRFLFX
+SEARCH [ 6,  6, A], v = 913, FFLFFFRFLFX
+SEARCH [ 5,  6, L], v = 836, FLFFFRFLFX
+SEARCH [ 4,  6, L], v = 687, FFFRFLFX
+SEARCH [ 4,  5, B], v = 836, FFRFLFX
+SEARCH [ 4,  4, B], v = 898, FRFLFX
+SEARCH [ 4,  3, B], v = 706, FLFX
+SEARCH [ 3,  3, L], v = 817, FX
+SEARCH [ 3,  2, B], v = 836, FX
+SEARCH [ 4,  2, R], v = 821, FX
+SEARCH [ 5,  2, R], v = 701, FX
+SEARCH [ 5,  3, A], v = 841, FX
+SEARCH [ 6,  3, R], v = 764, FX
+SEARCH [ 6,  4, A], v = 817, FFX
+SEARCH [ 6,  3, B], v = 913, FX
+SEARCH [ 6,  2, B], v = 701, FX
+SEARCH [ 7,  2, R], v = 836, FX
+SEARCH [ 8,  2, R], v = 711, FX
+SEARCH [ 8,  3, A], v = 850, FX
+SEARCH [ 7,  3, L], v = 836, FX
+SEARCH [ 7,  4, A], v = 783, FX
+SEARCH [ 8,  4, R], v = 769, FX
+SEARCH [ 8,  5, A], v = 850, FX
+SEARCH [ 9,  5, R], v = 778, FX
+SEARCH [ 9,  6, A], v = 826, FX
+SEARCH [10,  6, R], v = 749, FX
+SEARCH [10,  7, A], v = 812, FX
+SEARCH [11,  7, R], v = 797, FX
+SEARCH [11,  8, A], v = 826, FX
+SEARCH [12,  8, R], v = 826, FX
+SEARCH [12,  9, A], v = 812, FX
+SEARCH [12, 10, A], v = 692, FX
+SEARCH [11, 10, L], v = 831, FX
+SEARCH [11, 11, A], v = 826, FX
+SEARCH [12, 11, R], v = 793, FX
+SEARCH [12, 12, A], v = 850, FX
+SEARCH [11, 12, L], v = 836, FX
+SEARCH [11, 13, A], v = 807, FX
+SEARCH [12, 13, R], v = 754, FX
+SEARCH [13, 13, R], v = 706, FX
+SEARCH [13, 12, B], v = 778, FX
+SEARCH [13, 11, B], v = 687, FX
+SEARCH [13, 10, B], v = 696, FX
+SEARCH [13,  9, B], v = 706, FX
+SEARCH [13,  8, B], v = 701, FX
+SEARCH [13,  7, B], v = 696, FX
+SEARCH [13,  6, B], v = 696, FX
+SEARCH [12,  6, L], v = 773, FX
+SEARCH [12,  5, B], v = 807, FX
+SEARCH [11,  5, L], v = 788, FX
+SEARCH [11,  4, B], v = 845, FX
+SEARCH [10,  4, L], v = 802, FX
+SEARCH [10,  3, B], v = 817, FX
+SEARCH [ 9,  3, L], v = 773, FX
+SEARCH [ 9,  2, B], v = 860, FX
+SEARCH [10,  2, R], v = 831, FX
+SEARCH [11,  2, R], v = 696, FX
+SEARCH [11,  3, A], v = 836, FX
+SEARCH [12,  3, R], v = 769, FX
+SEARCH [12,  4, A], v = 821, FX
+SEARCH [13,  4, R], v = 817, FX
+SEARCH [13,  3, B], v = 773, FX
+SEARCH [13,  2, B], v = 706, FLFLFFFFFFFFFFFFFLFX
+SEARCH [13,  1, B], v = 706, FLFFFFFFFFFFFFFLFX
+SEARCH [14,  1, R], v = 817, FFFFFFFFFFFFFLFX
+SEARCH [14,  2, A], v = 817, FFFFFFFFFFFFLFX
+SEARCH [14,  3, A], v = 1297, FFFFFFFFFFFLFX
+SEARCH [14,  4, A], v = 1860, FFFFFFFFFFLFX
+SEARCH [14,  5, A], v = 1908, FFFFFFFFFLFX
+SEARCH [14,  6, A], v = 1889, FFFFFFFFLFX
+SEARCH [14,  7, A], v = 1903, FFFFFFFLFX
+SEARCH [14,  8, A], v = 1884, FFFFFFLFX
+SEARCH [14,  9, A], v = 1889, FFFFFLFX
+SEARCH [14, 10, A], v = 1898, FFFFLFX
+SEARCH [14, 11, A], v = 1884, FFFLFX
+SEARCH [14, 12, A], v = 1908, FFLFX
+SEARCH [14, 13, A], v = 1192, FLFX
+SEARCH [14, 14, A], v = 735, FX
+SEARCH [13, 14, L], v = 826, FX
+SEARCH [12, 14, L], v = 696, FX
+SEARCH [11, 14, L], v = 696, FX
+SEARCH [10, 14, L], v = 716, FX
+SEARCH [ 9, 14, L], v = 711, FX
+SEARCH [ 8, 14, L], v = 696, FX
+SEARCH [ 7, 14, L], v = 701, FX
+SEARCH [ 6, 14, L], v = 696, FX
+SEARCH [ 5, 14, L], v = 692, FX
+SEARCH [ 4, 14, L], v = 692, FX
+SEARCH [ 3, 14, L], v = 701, FX
+SEARCH [ 2, 14, L], v = 701, FX
+SEARCH [ 1, 14, L], v = 706, FFFFFFFFFFFFFFLFX
+SEARCH [ 2, 14, R], v = 913, FFFFFFFFFFFFFLFX
+SEARCH [ 3, 14, R], v = 1331, FFFFFFFFFFFFLFX
+SEARCH [ 4, 14, R], v = 1831, FFFFFFFFFFFLFX
+SEARCH [ 5, 14, R], v = 1903, FFFFFFFFFFLFX
+SEARCH [ 6, 14, R], v = 1879, FFFFFFFFFLFX
+SEARCH [ 7, 14, R], v = 1913, FFFFFFFFLFX
+SEARCH [ 8, 14, R], v = 1898, FFFFFFFLFX
+SEARCH [ 9, 14, R], v = 1903, FFFFFFLFX
+SEARCH [10, 14, R], v = 1913, FFFFFLFX
+SEARCH [11, 14, R], v = 1884, FFFFLFX
+SEARCH [12, 14, R], v = 1889, FFFLFX
+SEARCH [13, 14, R], v = 1884, FFLFX
+SEARCH [14, 14, R], v = 1148, FLFX
+SEARCH [15, 14, R], v = 711, FX
+SEARCH [15, 15, A], v = 821, FX
+SEARCH [14, 15, L], v = 836, FX
+SEARCH [13, 15, L], v = 701, FX
+SEARCH [12, 15, L], v = 701, FX
+SEARCH [11, 15, L], v = 706, FX
+SEARCH [10, 15, L], v = 711, FX
+SEARCH [ 9, 15, L], v = 696, FX
+SEARCH [ 8, 15, L], v = 706, FX
+SEARCH [ 7, 15, L], v = 692, FX
+SEARCH [ 6, 15, L], v = 706, FX
+SEARCH [ 5, 15, L], v = 706, FX
+SEARCH [ 4, 15, L], v = 682, FX
+SEARCH [ 3, 15, L], v = 706, FX
+SEARCH [ 2, 15, L], v = 687, FX
+SEARCH [ 1, 15, L], v = 696, FX
+SEARCH [ 0, 15, L], v = 701, FX
+SEARCH [ 0, 14, B], v = 841, FX
+SEARCH [ 0, 13, B], v = 696, FX
+SEARCH [ 0, 12, B], v = 696, FX
+SEARCH [ 0, 11, B], v = 692, FX
+SEARCH [ 0, 10, B], v = 706, FX
+SEARCH [ 0,  9, B], v = 706, FX
+SEARCH [ 0,  8, B], v = 701, FX
+SEARCH [ 0,  7, B], v = 706, FX
+SEARCH [ 0,  6, B], v = 696, FX
+SEARCH [ 0,  5, B], v = 692, FX
+SEARCH [ 0,  4, B], v = 696, FS
+SEARCH [ 0,  3, B], v = 711, FAFS
+ - SEARCH FINISHED AT [ 0,  3, S]
+at first blocking cell - testing for solution
+
+STATUS CHANGE: Return for speedrun. At (0,3, SOUTH) Cost Difference 0
+Maze Goal is: 0x77
+State: RETURN_FOR_SPEEDRUN after 0 passes
+
+STATUS CHANGE: Wait for speedrun start. Cost Difference 0
+Maze Goal is: 0x77
+
+SPEEDRUN: battery = 7.86 V
+moving the goal from 0x88 to 0x88
+PATH: FFFFFFFFFFFFFFFRFFFFFFFFFFFFFFFRFRFLFFFFFFFFFFFFFRFRFFFLFLFRFLFRFFRFRFLFRFLFRFLFRFLFFFFFFFLFFLFLFRFRFLFLFRFFRFLFRFLFRFLFRFLFRFLFLFRFRFFRFLFLFRFFRFRFLFFF
+RUN 14 (14) starts from offset 13
+7 in cell 0, heading NORTH, distance 972
+FWD15  -  2543 mm, @    0, spd:    0 mm/s, acc: 14000, in:   0, out 200, vmax: 5194,  t 865 ms
+SS90FR -   110 mm, @ 2546, spd: 1240 mm/s, acc: 14000, off: 163, edge@  2626 (offs:   243)turn@  2648 exitOffset   315 t: 282 ms
+FWD15  -  2365 mm, @ 2894, spd: 1240 mm/s, acc: 14000, in: 135, out 200, vmax: 5034,  t 770 ms
+SD135R -    80 mm, @ 5262, spd: 1058 mm/s, acc: 14000, off: 162, edge@  5317 (offs:   217) turn@  5356 exitOffset   280 t: 337 ms
+DIA02  -     1 mm, @ 5618, spd: 1058 mm/s, acc: 14000, in: 100, out 155, vmax: 1072,  t   2 ms
+DS45L  -   110 mm, @ 5619, spd: 1072 mm/s, acc: 14000, off: 154, edge@  5649 (offs:    57) turn@  5706 exitOffset   350 t: 177 ms
+FWD13  -  1970 mm, @ 5837, spd: 1240 mm/s, acc: 14000, in: 170, out 200, vmax: 4628,  t 686 ms
+SS180R -    83 mm, @ 7810, spd: 1077 mm/s, acc: 14000, off: 163, edge@  7894 (offs:   247)turn@  7924 exitOffset   330 t: 443 ms
+FWD03  -   190 mm, @ 8287, spd: 1077 mm/s, acc: 14000, in: 150, out 200, vmax: 1763,  t 136 ms
+SD135L -    80 mm, @ 8479, spd: 1058 mm/s, acc: 14000, off: 162, edge@  8510 (offs:   193) turn@  8547 exitOffset   280 t: 311 ms
+DIA04  -   254 mm, @ 8807, spd: 1058 mm/s, acc: 14000, in: 100, out 155, vmax: 1996,  t 162 ms
+DS45R  -   110 mm, @ 9063, spd: 1240 mm/s, acc: 14000, off:  27, edge@  9074 (offs:    37) turn@  9131 exitOffset   360 t: 161 ms
+FWD02  -     1 mm, @ 9262, spd: 1240 mm/s, acc: 14000, in: 180, out 200, vmax: 1240,  t   2 ms
+SD135R -    80 mm, @ 9264, spd: 1226 mm/s, acc: 14000, off: 182, edge@  9292 (offs:   209) turn@  9331 exitOffset   280 t: 309 ms
+DIA08  -   763 mm, @ 9592, spd: 1058 mm/s, acc: 14000, in: 100, out 155, vmax: 3000,  t 365 ms
+DS45L  -   110 mm, @-10285, spd: 1240 mm/s, acc: 14000, off:  28, edge@ -10253 (offs:    60) turn@ -10196 exitOffset   350 t: 178 ms
+FWD07  -   890 mm, @-10066, spd: 1240 mm/s, acc: 14000, in: 170, out 200, vmax: 3256,  t 398 ms
+SS90FL -   110 mm, @-9172, spd: 1240 mm/s, acc: 14000, off: 163, edge@ -9113 (offs:   222)turn@ -9088 exitOffset   320 t: 265 ms
+FWD02  -    20 mm, @-8844, spd: 1240 mm/s, acc: 14000, in: 140, out 200, vmax: 1240,  t  19 ms
+SD135L -    80 mm, @-8822, spd: 1058 mm/s, acc: 14000, off: 161, edge@ -8819 (offs:   164) turn@ -8782 exitOffset   280 t: 284 ms
+DIA02  -     1 mm, @-8523, spd: 1058 mm/s, acc: 14000, in: 100, out 155, vmax: 1058,  t   2 ms
+DD90R  -    70 mm, @-8521, spd: 1044 mm/s, acc: 14000, off: 154, edge@ -8506 (offs:    42) turn@ -8474 exitOffset   270 t: 218 ms
+DIA02  -     9 mm, @-8306, spd:  989 mm/s, acc: 14000, in:  90, out 155, vmax: 1045,  t  10 ms
+DD90L  -    70 mm, @-8296, spd:  989 mm/s, acc: 14000, off:  25, edge@ -8289 (offs:    33) turn@ -8252 exitOffset   270 t: 215 ms
+DIA02  -     9 mm, @-8084, spd:  989 mm/s, acc: 14000, in:  90, out 155, vmax: 1115,  t  10 ms
+DS45R  -   110 mm, @-8074, spd: 1115 mm/s, acc: 14000, off:  26, edge@ -8064 (offs:    35) turn@ -8007 exitOffset   360 t: 162 ms
+FWD02  -     1 mm, @-7874, spd: 1240 mm/s, acc: 14000, in: 180, out 200, vmax: 1240,  t   2 ms
+SD45R  -   100 mm, @-7872, spd: 1226 mm/s, acc: 14000, off: 182, edge@ -7850 (offs:   204) turn@ -7830 exitOffset   238 t: 140 ms
+DIA10  -  1059 mm, @-7708, spd: 1183 mm/s, acc: 14000, in:  58, out 155, vmax: 3000,  t 479 ms
+DD90L  -    70 mm, @-6645, spd:  989 mm/s, acc: 14000, off:  27, edge@ -6613 (offs:    59) turn@ -6576 exitOffset   270 t: 240 ms
+DIA02  -     9 mm, @-6409, spd:  989 mm/s, acc: 14000, in:  90, out 155, vmax: 1087,  t  10 ms
+DS135R -    80 mm, @-6398, spd: 1058 mm/s, acc: 14000, off:  26, edge@ -6375 (offs:    49) turn@ -6352 exitOffset   325 t: 286 ms
+FWD02  -    15 mm, @-6097, spd: 1058 mm/s, acc: 14000, in: 145, out 200, vmax: 1212,  t  14 ms
+SD45R  -   100 mm, @-6080, spd: 1183 mm/s, acc: 14000, off: 161, edge@ -6051 (offs:   190) turn@ -6031 exitOffset   238 t: 146 ms
+DIA02  -    41 mm, @-5908, spd: 1183 mm/s, acc: 14000, in:  58, out 155, vmax: 1253,  t  38 ms
+DD90L  -    70 mm, @-5866, spd:  989 mm/s, acc: 14000, off:  25, edge@ -5861 (offs:    30) turn@ -5824 exitOffset   270 t: 212 ms
+DIA02  -     9 mm, @-5657, spd:  989 mm/s, acc: 14000, in:  90, out 155, vmax: 1115,  t  10 ms
+DS45R  -   110 mm, @-5646, spd: 1115 mm/s, acc: 14000, off:  26, edge@ -5635 (offs:    37) turn@ -5578 exitOffset   360 t: 163 ms
+FWD02  -     1 mm, @-5445, spd: 1240 mm/s, acc: 14000, in: 180, out 200, vmax: 1240,  t   2 ms
+SD135R -    80 mm, @-5443, spd: 1226 mm/s, acc: 14000, off: 182, edge@ -5411 (offs:   214) turn@ -5372 exitOffset   280 t: 314 ms
+DIA02  -     1 mm, @-5111, spd: 1058 mm/s, acc: 14000, in: 100, out 155, vmax: 1072,  t   2 ms
+DS45L  -   110 mm, @-5109, spd: 1072 mm/s, acc: 14000, off: 154, edge@ -5079 (offs:    57) turn@ -5022 exitOffset   350 t: 177 ms
+FWD03  -   170 mm, @-4892, spd: 1240 mm/s, acc: 14000, in: 170, out 200, vmax: 1814,  t 122 ms
+SS90FR -   110 mm, @-4706, spd: 1240 mm/s, acc: 14000, off: 162, edge@ -4707 (offs:   161)turn@ -4685 exitOffset   315 t: 215 ms
+FWD04  -   385 mm, @-4440, spd: 1240 mm/s, acc: 14000, in: 135, out 200, vmax: 2346,  t 216 ms
+SS90FL -   110 mm, @-4052, spd: 1240 mm/s, acc: 14000, off: 163, edge@ -4017 (offs:   198)turn@ -3992 exitOffset   320 t: 246 ms
+FWD02  -   220 mm, @-3748, spd: 1240 mm/s, acc:  8000, in: 140, out   0, vmax: 1592,  t 234 ms
+END    - cell: 0x 0, heading: 0
+completed after 10.037 seconds and  -3528 millimeters that is -351 mm/s average
+Location [8, 8, N]
+
+STATUS CHANGE: Run to Home.
+completed after 12.565 seconds and  -3629 millimeters that is -288 mm/s average
+speedRun finished - battery = 7.72 V
+
+STATUS CHANGE: Wait for speedrun start. Cost Difference 0
+Maze Goal is: 0x88
+
+
+SPEEDRUN: battery = 7.80 V
+moving the goal from 0x88 to 0x88
+PATH: FFFFFFFFFFFFFFFRFFFFFFFFFFFFFFFRFRFLFFFFFFFFFFFFFRFRFFFLFLFRFLFRFFRFRFLFRFLFRFLFRFLFFFFFFFLFFLFLFRFRFLFLFRFFRFLFRFLFRFLFRFLFRFLFLFRFRFFRFLFLFRFFRFRFLFFF
+RUN 16 (16) starts from offset 13
+7 in cell 0, heading NORTH, distance 972
+FWD15  -  2543 mm, @    0, spd:    0 mm/s, acc: 14000, in:   0, out 200, vmax: 5200,  t 857 ms
+SS90FR -   110 mm, @ 2545, spd: 1326 mm/s, acc: 16000, off: 162, edge@  2625 (offs:   242)turn@  2645 exitOffset   315 t: 262 ms
+FWD15  -  2365 mm, @ 2892, spd: 1326 mm/s, acc: 14000, in: 135, out 200, vmax: 5064,  t 757 ms
+SD135R -    80 mm, @ 5259, spd: 1131 mm/s, acc: 16000, off: 162, edge@  5321 (offs:   224) turn@  5352 exitOffset   280 t: 315 ms
+DIA02  -     1 mm, @ 5614, spd: 1131 mm/s, acc: 14000, in: 100, out 155, vmax: 1145,  t   2 ms
+DS45L  -   110 mm, @ 5616, spd: 1145 mm/s, acc: 16000, off: 154, edge@  5644 (offs:    55) turn@  5697 exitOffset   350 t: 163 ms
+FWD13  -  1970 mm, @ 5830, spd: 1326 mm/s, acc: 14000, in: 170, out 200, vmax: 4644,  t 675 ms
+SS180R -    83 mm, @ 7803, spd: 1152 mm/s, acc: 15999, off: 163, edge@  7874 (offs:   234)turn@  7904 exitOffset   330 t: 404 ms
+FWD03  -   190 mm, @ 8268, spd: 1152 mm/s, acc: 14000, in: 150, out 200, vmax: 1810,  t 130 ms
+SD135L -    80 mm, @ 8459, spd: 1131 mm/s, acc: 16000, off: 161, edge@  8492 (offs:   194) turn@  8521 exitOffset   280 t: 285 ms
+DIA04  -   254 mm, @ 8780, spd: 1131 mm/s, acc: 14000, in: 100, out 155, vmax: 2041,  t 156 ms
+DS45R  -   110 mm, @ 9037, spd: 1326 mm/s, acc: 16000, off:  27, edge@  9045 (offs:    35) turn@  9098 exitOffset   360 t: 146 ms
+FWD02  -     1 mm, @ 9229, spd: 1326 mm/s, acc: 14000, in: 180, out 200, vmax: 1326,  t   2 ms
+SD135R -    80 mm, @ 9231, spd: 1312 mm/s, acc: 16000, off: 182, edge@  9269 (offs:   219) turn@  9300 exitOffset   280 t: 292 ms
+DIA08  -   763 mm, @ 9561, spd: 1131 mm/s, acc: 14000, in: 100, out 155, vmax: 3000,  t 356 ms
+DS45L  -   110 mm, @-10315, spd: 1326 mm/s, acc: 16000, off:  28, edge@ -10278 (offs:    65) turn@ -10225 exitOffset   350 t: 168 ms
+FWD07  -   890 mm, @-10094, spd: 1326 mm/s, acc: 14000, in: 170, out 200, vmax: 3300,  t 387 ms
+SS90FL -   110 mm, @-9200, spd: 1326 mm/s, acc: 16000, off: 163, edge@ -9134 (offs:   229)turn@ -9111 exitOffset   320 t: 253 ms
+FWD02  -    20 mm, @-8866, spd: 1326 mm/s, acc: 14000, in: 140, out 200, vmax: 1326,  t  18 ms
+SD135L -    80 mm, @-8844, spd: 1131 mm/s, acc: 16000, off: 161, edge@ -8840 (offs:   165) turn@ -8811 exitOffset   280 t: 259 ms
+DIA02  -     1 mm, @-8553, spd: 1131 mm/s, acc: 14000, in: 100, out 155, vmax: 1131,  t   2 ms
+DD90R  -    70 mm, @-8551, spd: 1117 mm/s, acc: 16000, off: 154, edge@ -8533 (offs:    45) turn@ -8503 exitOffset   270 t: 205 ms
+DIA02  -     9 mm, @-8335, spd: 1058 mm/s, acc: 14000, in:  90, out 155, vmax: 1114,  t  10 ms
+DD90L  -    70 mm, @-8325, spd: 1058 mm/s, acc: 16000, off:  25, edge@ -8314 (offs:    37) turn@ -8277 exitOffset   270 t: 206 ms
+DIA02  -     9 mm, @-8108, spd: 1058 mm/s, acc: 14000, in:  90, out 155, vmax: 1170,  t   9 ms
+DS45R  -   110 mm, @-8097, spd: 1170 mm/s, acc: 16000, off:  26, edge@ -8081 (offs:    42) turn@ -8028 exitOffset   360 t: 154 ms
+FWD02  -     1 mm, @-7895, spd: 1326 mm/s, acc: 14000, in: 180, out 200, vmax: 1326,  t   2 ms
+SD45R  -   100 mm, @-7893, spd: 1312 mm/s, acc: 15999, off: 182, edge@ -7868 (offs:   207) turn@ -7853 exitOffset   238 t: 130 ms
+DIA10  -  1059 mm, @-7729, spd: 1264 mm/s, acc: 14000, in:  58, out 155, vmax: 3000,  t 462 ms
+DD90L  -    70 mm, @-6682, spd: 1058 mm/s, acc: 16000, off:  27, edge@ -6619 (offs:    90) turn@ -6582 exitOffset   270 t: 255 ms
+DIA02  -     9 mm, @-6414, spd: 1058 mm/s, acc: 14000, in:  90, out 155, vmax: 1156,  t   9 ms
+DS135R -    80 mm, @-6404, spd: 1142 mm/s, acc: 16000, off:  26, edge@ -6382 (offs:    47) turn@ -6362 exitOffset   325 t: 263 ms
+FWD02  -    15 mm, @-6107, spd: 1131 mm/s, acc: 14000, in: 145, out 200, vmax: 1285,  t  14 ms
+SD45R  -   100 mm, @-6090, spd: 1264 mm/s, acc: 15999, off: 162, edge@ -6069 (offs:   183) turn@ -6054 exitOffset   238 t: 127 ms
+DIA02  -    41 mm, @-5930, spd: 1264 mm/s, acc: 14000, in:  58, out 155, vmax: 1320,  t  36 ms
+DD90L  -    70 mm, @-5888, spd: 1058 mm/s, acc: 16000, off:  25, edge@ -5868 (offs:    46) turn@ -5831 exitOffset   270 t: 214 ms
+DIA02  -     9 mm, @-5664, spd: 1058 mm/s, acc: 14000, in:  90, out 155, vmax: 1170,  t   9 ms
+DS45R  -   110 mm, @-5653, spd: 1170 mm/s, acc: 16000, off:  26, edge@ -5643 (offs:    35) turn@ -5590 exitOffset   360 t: 149 ms
+FWD02  -     1 mm, @-5458, spd: 1326 mm/s, acc: 14000, in: 180, out 200, vmax: 1326,  t   2 ms
+SD135R -    80 mm, @-5455, spd: 1312 mm/s, acc: 16000, off: 182, edge@ -5410 (offs:   227) turn@ -5379 exitOffset   280 t: 299 ms
+DIA02  -     1 mm, @-5117, spd: 1131 mm/s, acc: 14000, in: 100, out 155, vmax: 1145,  t   2 ms
+DS45L  -   110 mm, @-5115, spd: 1145 mm/s, acc: 16000, off: 154, edge@ -5107 (offs:    34) turn@ -5054 exitOffset   350 t: 147 ms
+FWD03  -   170 mm, @-4923, spd: 1326 mm/s, acc: 14000, in: 170, out 200, vmax: 1872,  t 108 ms
+SS90FR -   110 mm, @-4751, spd: 1326 mm/s, acc: 16000, off: 161, edge@ -4693 (offs:   220)turn@ -4673 exitOffset   315 t: 245 ms
+FWD04  -   385 mm, @-4428, spd: 1326 mm/s, acc: 14000, in: 135, out 200, vmax: 2418,  t 214 ms
+SS90FL -   110 mm, @-4027, spd: 1326 mm/s, acc: 16000, off: 163, edge@ -4021 (offs:   169)turn@ -3998 exitOffset   320 t: 207 ms
+FWD02  -   220 mm, @-3754, spd: 1326 mm/s, acc:  8000, in: 140, out   0, vmax: 1630,  t 361 ms
+END    - cell: 0x 0, heading: 0
+completed after  9.728 seconds and  -3528 millimeters that is -362 mm/s average
+Location [8, 8, N]
+
+STATUS CHANGE: Run to Home.
+completed after 12.495 seconds and  -3642 millimeters that is -291 mm/s average
+speedRun finished - battery = 7.65 V
+
+----8<---
+ready...
