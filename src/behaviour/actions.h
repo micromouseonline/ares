@@ -63,7 +63,7 @@ const char* lookupString(uint8_t value) {
 /*
  * mouse action bit values:
  *
- * Straights:
+ * Straights: 0-31 used
  *  00LLLLLL
  *  ||||||||
  *  ||``````-- Run Length in Cells (0-63)
@@ -73,7 +73,7 @@ const char* lookupString(uint8_t value) {
  * Since there should never be a zero length orthogonal straight
  * it is convenient to use the command value 0x00 as an end marker
  *
- * Diagonals:
+ * Diagonals: 64-127 used
  *  01LLLLLL
  *  ||||||||
  *  ||``````-- Run Length in Cells (0-63)
@@ -82,7 +82,7 @@ const char* lookupString(uint8_t value) {
  *
  * Turns use 6 bits in two groups of 32
  *
- * Turns - In Place
+ * Turns - In Place 128-
  *  10000TTD
  *  ||||||||
  *  |||||||`--  0 => Turn Right
@@ -97,7 +97,7 @@ const char* lookupString(uint8_t value) {
  *  `````----- 1000 => Turn In Place
  *
  *
- * Turns - Smooth - there is scope for 16 different turns
+ * Turns - Smooth (160-191)- there is scope for 16 different turns
  *  101TTTTD
  *  ||||||||
  *  |||||||`--  0 => Turn Right
@@ -138,44 +138,6 @@ const char* lookupString(uint8_t value) {
  */
 
 // clang-format off
-const char* inPlaceTurnNames[] = {
-    "IP45R ", "IP45L ",
-    "IP90R ", "IP90L ",
-    "IP135R", "IP135L",
-    "IP180R", "IP180L",
-    "IP??08", "IP??09",
-    "IP??10", "IP??11",
-    "IP??12", "IP??13",
-    "IP??14", "IP??15",
-    "IP??16", "IP??17",
-    "IP??18", "IP??19",
-    "IP??20", "IP??21",
-    "IP??22", "IP??23",
-    "IP??24", "IP??25",
-    "IP??26", "IP??27",
-    "IP??28", "IP??29",
-    "IP??30", "IP??31",
-};
-
-const char* smoothTurnNames[] = {
-    "SS90SR", "SS90SL",
-    "SS90FR", "SS90FL",
-    "SS180R", "SS180L",
-    "SD45R ", "SD45L ",
-    "SD135R", "SD135L",
-    "DS45R ", "DS45L ",
-    "DS135R", "DS135L",
-    "DD90R ", "DD90L ",
-    "SS90ER", "SS90EL",
-
-    "ST??18", "ST??19",
-    "ST??20", "ST??21",
-    "ST??22", "ST??23",
-    "ST??24", "ST??25",
-    "ST??26", "ST??27",
-    "ST??28", "ST??29",
-    "ST??30", "ST??31",
-};
 // clang-format on
 
 // clang-format off
@@ -190,6 +152,7 @@ const uint8_t  OP_MASK_MSG_INDEX   =  (0b00001111);
 
 
 
+const uint8_t  OP_DIR_LEFT      =   1;
 const uint8_t  OP_TYPE_ORTHO    =   0; // 0b00000000
 const uint8_t  OP_TYPE_DIAG     =  64; // 0b01000000
 const uint8_t  OP_TYPE_TURN     = 128; // 0b10000000
@@ -200,28 +163,15 @@ const uint8_t  OP_MSG_ERR       = 240; // 0b11110000
 const uint8_t  OP_TURN_INPLACE  = 128; // 0b10000000
 const uint8_t  OP_TURN_SMOOTH   = 160; // 0b10100000
 
-const uint8_t  OP_DIR_LEFT =       1;
-const uint8_t  OP_BEGIN    =     192;
-const uint8_t  OP_BEGIN_HS =     193;
-const uint8_t  OP_EXPLORE  =     194;
-const uint8_t  OP_END      =     195;
-
-const uint8_t  OP_ERR_BASE =     240;
-const uint8_t  OP_ERR_NOF  =     240;
-const uint8_t  OP_ERR_RRR  =     241;
-const uint8_t  OP_ERR_LLL  =     242;
-const uint8_t  OP_ERR_BEGIN=     243;
-const uint8_t  OP_ERR_END  =     244;
-const uint8_t  OP_ERROR    =     255;
-
-
 const uint8_t  OP_STOP       =0x00;
-enum {
+
+enum : uint8_t{
   FWD0 = OP_TYPE_ORTHO,
   FWD1,   FWD2,   FWD3,   FWD4,   FWD5,   FWD6,   FWD7,
   FWD8,   FWD9,   FWD10,  FWD11,  FWD12,  FWD13,  FWD14,  FWD15,
   FWD16,  FWD17,  FWD18,  FWD19,  FWD20,  FWD21,  FWD22,  FWD23,
   FWD24,  FWD25,  FWD26,  FWD27,  FWD28,  FWD29,  FWD30,  FWD31,
+
   DIA0 = OP_TYPE_DIAG,
   DIA1,   DIA2,   DIA3,   DIA4,   DIA5,   DIA6,   DIA7,
   DIA8,   DIA9,   DIA10,  DIA11,  DIA12,  DIA13,  DIA14,  DIA15,
@@ -231,40 +181,36 @@ enum {
   DIA40,  DIA41,  DIA42,  DIA43,  DIA44,  DIA45,  DIA46,  DIA47,
   DIA48,  DIA49,  DIA50,  DIA51,  DIA52,  DIA53,  DIA54,  DIA55,
   DIA56,  DIA57,  DIA58,  DIA59,  DIA60,  DIA61,  DIA62,  DIA63,
-};
 
-enum {
-   IP45R = OP_TURN_INPLACE,
-   IP45L,
-   IP90R,
-   IP90L,
-   IP135R,
-   IP135L,
-   IP180R,
-   IP180L,
-   IP_END
-};
+  IP45R = OP_TURN_INPLACE,   IP45L,
+  IP90R,                     IP90L,
+  IP135R,                    IP135L,
+  IP180R,                    IP180L,
+  IP_END,
 
-enum {
-   SS90SR = OP_TURN_SMOOTH,
-   SS90SL,
-   SS90FR,
-   SS90FL,
-   SS180R,
-   SS180L,
-   SD45R,
-   SD45L,
-   SD135R,
-   SD135L,
-   DS45R,
-   DS45L,
-   DS135R,
-   DS135L,
-   DD90R,
-   DD90L,
-   SS90ER,
-   SS90EL,
-   SMOOTH_END
+  SS90SR = OP_TURN_SMOOTH,   SS90SL,
+  SS90FR,                    SS90FL,
+  SS180R,                    SS180L,
+  SD45R,                     SD45L,
+  SD135R,                    SD135L,
+  DS45R,                     DS45L,
+  DS135R,                    DS135L,
+  DD90R,                     DD90L,
+  SS90ER,                    SS90EL,
+  SMOOTH_END,
+
+  ACT_BEGIN    =  192,
+  ACT_BEGIN_HS =  193,
+  ACT_EXPLORE  =  194,
+  ACT_END      =  195,
+
+  ACT_ERR_BASE  = 240,
+  ACT_ERR_NOF   = 240,
+  ACT_ERR_RRR   = 241,
+  ACT_ERR_LLL   = 242,
+  ACT_ERR_BEGIN = 243,
+  ACT_ERR_END   = 244,
+  ACT_ERROR     = 255,
 };
 
 constexpr const char* actionNames[256] = {
@@ -274,6 +220,8 @@ constexpr const char* actionNames[256] = {
     "FWD8  ", "FWD9  ", "FWD10 ", "FWD11 ", "FWD12 ", "FWD13 ", "FWD14 ", "FWD15 ",
     "FWD16 ", "FWD17 ", "FWD18 ", "FWD19 ", "FWD20 ", "FWD21 ", "FWD22 ", "FWD23 ",
     "FWD24 ", "FWD25 ", "FWD26 ", "FWD27 ", "FWD28 ", "FWD29 ", "FWD30 ", "FWD31 ",
+    "------", "------", "------", "------", "------", "------", "------", "------",
+    "------", "------", "------", "------", "------", "------", "------", "------",
     "------", "------", "------", "------", "------", "------", "------", "------",
     "------", "------", "------", "------", "------", "------", "------", "------",
     /// TODO: and what aboud DIA0
@@ -305,8 +253,6 @@ constexpr const char* actionNames[256] = {
     "ERR24 ", "ERR25 ", "ERR26 ", "ERR27 ", "ERR28 ", "ERR29 ", "ERR30 ", "ERR31 ",
     "------", "------", "------", "------", "------", "------", "------", "------",
     "------", "------", "------", "------", "------", "------", "------", "------",
-    "------", "------", "------", "------", "------", "------", "------", "------",
-    "------", "------", "------", "------", "------", "------", "------", "------",
 };
 
 inline const char* getActionName(uint8_t op_code) {
@@ -335,12 +281,12 @@ struct Action {
     if (traj == nullptr) {
       trajectory = std::make_unique<IdleTrajectory>();
     } else {
-      trajectory = std::move(std::move(traj));
+      trajectory = std::move(traj);
     }
   }
 
   uint8_t direction() const {
-    return op_code & 0x01;
+    return op_code & OP_MASK_TURN_DIR;
   }
   uint8_t length() const {
     return op_code & OP_MASK_SQUARES;
@@ -354,20 +300,34 @@ struct Action {
     return op_code - OP_TURN_SMOOTH;
   }
 
-  int ip_type() const {
+  int get_spin_turn_type() const {
     return op_code - OP_TURN_INPLACE;
   }
 
   bool is_left_turn() const {
-    return (op_code & OP_MASK_TURN_DIR) == OP_DIR_LEFT;
+    return direction() == OP_DIR_LEFT;
   }
 
-  bool is_ortho_move() const {
-    return (op_code & OP_MASK_OP_TYPE) == OP_TYPE_ORTHO;
+  bool is_ortho_straight() const {
+    return ((op_code >= FWD0) && (op_code <= FWD31));
+  }
+
+  bool is_diagonal_straight() const {
+    return ((op_code >= DIA0) && (op_code <= DIA63));
+  }
+
+  bool is_straight_move() {
+    return is_ortho_straight() || is_diagonal_straight();
   }
 
   bool is_ortho_entry() {
-    if (is_ortho_move()) {
+    if (is_ortho_straight()) {
+      return true;
+    }
+    if (is_diagonal_straight()) {
+      return false;
+    }
+    if (is_spin_turn()) {
       return true;
     }
     if (is_smooth_turn()) {
@@ -378,7 +338,13 @@ struct Action {
   }
 
   bool is_ortho_exit() {
-    if (is_ortho_move()) {
+    if (is_ortho_straight()) {
+      return true;
+    }
+    if (is_diagonal_straight()) {
+      return false;
+    }
+    if (is_spin_turn()) {
       return true;
     }
     if (is_smooth_turn()) {
@@ -388,20 +354,20 @@ struct Action {
     return false;
   }
 
-  bool is_diagonal_move() const {
-    return (op_code & OP_MASK_OP_TYPE) == OP_TYPE_DIAG;
-  }
-
   bool is_turn_move() const {
-    return (op_code & OP_MASK_OP_TYPE) == OP_TYPE_TURN;
+    return (is_spin_turn() || is_smooth_turn());
   }
 
   bool is_smooth_turn() const {
-    return (op_code & OP_MASK_TURN_TYPE) == OP_TURN_SMOOTH;
+    return (op_code >= OP_TURN_SMOOTH && op_code < SMOOTH_END);
   }
 
-  bool is_inplace_turn() const {
-    return (op_code & OP_MASK_TURN_TYPE) == OP_TURN_INPLACE;
+  bool is_spin_turn() const {
+    return (op_code >= OP_TURN_INPLACE && op_code < IP_END);
+  }
+
+  float spinTurnAngle() {
+    return 45.0f * (1 + (get_spin_turn_type() / 2));
   }
 
   float getDuration() {
