@@ -26,7 +26,7 @@ inline void print_action_list(Action* action_list) {
   }
 }
 
-inline float printActionWithCost(Action& act, Pose& start_pose, Pose& end_pose) {
+inline float printActionWithCost(Action& act, Action* previous, Action* next, Pose& start_pose, Pose& end_pose) {
   float vMax = 5000;
   float acc = 14000;
   float duration = 0;
@@ -36,7 +36,20 @@ inline float printActionWithCost(Action& act, Pose& start_pose, Pose& end_pose) 
       one_cell = 180.0f * 0.7071;
     }
     float dist = act.length() * one_cell;
-    std::unique_ptr<Straight> traj = std::make_unique<Straight>(dist, 0, vMax, 0, acc);
+    float start_speed = 0;
+    float end_speed = 0;
+    if (previous) {
+      int p_type = previous->get_smooth_turn_type();
+      dist -= cubic_params[p_type].out_offset;
+      start_speed = cubic_params[p_type].speed_max;
+    }
+    if (next) {
+      int p_type = next->get_smooth_turn_type();
+      dist -= cubic_params[p_type].in_offset;
+      end_speed = cubic_params[p_type].speed_max;
+    }
+    dist = std::max(1.0f, dist);
+    std::unique_ptr<Straight> traj = std::make_unique<Straight>(dist, start_speed, vMax, end_speed, acc);
     traj->init(Pose());
     act.setTrajectory(std::make_unique<Straight>(dist, 0, vMax, 0, acc));
     duration = act.getDuration();
@@ -72,9 +85,20 @@ inline void printActionListWithCost(const uint8_t* path) {
   Pose end;
   float duration = 0.0f;
   float distance = 0;
+
   for (int i = 0; i < test_count; i++) {
     Action act(path[i]);
-    duration += printActionWithCost(act, start, end);
+
+    Action prev(0);
+    Action next(0);
+    if (i > 0 && act.is_straight_move()) {
+      prev = Action(path[i - 1]);
+    }
+    if (i < test_count - 1) {
+      next = Action(path[i + 1]);
+    }
+
+    duration += printActionWithCost(act, &prev, &next, start, end);
     distance += end.getDistance();
     start = end;
   }
