@@ -131,3 +131,5 @@ class Straight : public Trajectory {
   int m_p2;     // Steps in constant velocity phase
   int m_p3;     // Steps in deceleration phase
 };
+
+inline Straight straightTraj(0, 0, 0, 0, 0);  // Placeholder for Straight

@@ -156,6 +156,8 @@ class IdleTrajectory : public Trajectory {
     m_finished = true;
   }
 };
+inline IdleTrajectory idleTraj;  // Placeholder for IdleTrajectory
+
 /***
  * This descendant of Trajectory is for testing. It sets a linear velocity
  * and runs over a fixed distance. You wuld not use it in an actual
@@ -184,3 +186,4 @@ class TestTrajectory : public Trajectory {
   float m_v;
   float m_w;
 };
+inline TestTrajectory testTrajectory;

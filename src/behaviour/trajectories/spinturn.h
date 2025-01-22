@@ -132,5 +132,6 @@ class Spinturn : public Trajectory {
   int m_p2;     // Steps in constant velocity phase
   int m_p3;     // Steps in deceleration phase
 };
+inline Spinturn spinTurnTraj(0, 0, 0, 0, 0);  // Placeholder for SpinTurn
 
 #endif /* CONTROLLER_TRAPEZOID_H_ */

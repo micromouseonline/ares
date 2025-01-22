@@ -32,7 +32,10 @@
 
 class Cubic : public Trajectory {
  public:
-  Cubic() : m_length(0), m_angle(0), m_velocity(0) {
+  Cubic()
+      : m_length(0),
+        m_angle(0),
+        m_velocity(0) {
     m_type = CUBIC;
   }
 
@@ -84,5 +87,6 @@ class Cubic : public Trajectory {
   float m_cubic_constant = 0;
   float m_distance = 0;
 };
+inline Cubic cubicTraj(0, 0, 0);  // Placeholder for Cubic
 
 #endif /* BEHAVIOUR_CUBIC_H */
