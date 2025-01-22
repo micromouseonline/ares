@@ -11,8 +11,6 @@
 #include "trajectories/spinturn.h"
 #include "trajectories/straight.h"
 #include "trajectory.h"
-/// Don't move this - there will be more features later
-/// for example, print with durations
 
 inline void print_action_list(Action* action_list) {
   char done = 0;
@@ -61,7 +59,6 @@ inline float printActionWithCost(Action& act, Action* previous, Action* next, Po
       end_speed = 0;
     }
     dist = std::max(1.0f, dist);
-    //    traj = std::make_unique<Straight>(dist, start_speed, vMax, end_speed, acc);
     straightTraj = Straight(dist, start_speed, vMax, end_speed, acc);
     traj = &straightTraj;
 
@@ -72,20 +69,17 @@ inline float printActionWithCost(Action& act, Action* previous, Action* next, Po
     float length = cubic_params[type].length;
     float angle = cubic_params[type].angle;
     float speed = cubic_params[type].speed_max;
-    //    traj = std::make_unique<Cubic>(length, angle, speed);
     cubicTraj = Cubic(length, angle, speed);
     traj = &cubicTraj;
     traj->init(Pose());
     duration = traj->get_duration();
   } else if (act.is_spin_turn()) {
     float angle = act.spinTurnAngle();
-    //    traj = std::make_unique<Spinturn>(angle, 0, 600, 0, 40000);
     spinTurnTraj = Spinturn(angle, 0, 600, 0, 40000);
     traj = &spinTurnTraj;
     traj->init(start_pose);
     duration = traj->get_duration();
   } else {
-    //    traj = std::make_unique<IdleTrajectory>();
     traj = &idleTraj;
     traj->init(start_pose);
     duration = traj->get_duration();
@@ -136,14 +130,16 @@ inline void listActionsWithCosts() {
     float acc = 10000;
     float duration = 0;
     float dist = 0;
-    std::unique_ptr<Trajectory> traj;
+    Trajectory* traj;
     if (act.is_straight_move()) {
       float one_cell = 180.0f;
       if (act.is_diagonal_straight()) {
         one_cell = 180.0f * 0.7071;
       }
       dist = act.length() * one_cell;
-      traj = std::make_unique<Straight>(dist, 0, vMax, 0, acc);
+      straightTraj = Straight(dist, 0, vMax, 0, acc);
+      traj = &straightTraj;
+
       traj->init(Pose());
       duration = traj->get_duration();
     } else if (act.is_smooth_turn()) {
@@ -151,12 +147,14 @@ inline void listActionsWithCosts() {
       float length = cubic_params[type].length;
       float angle = cubic_params[type].angle;
       float speed = cubic_params[type].speed_max;
-      traj = std::make_unique<Cubic>(length, angle, speed);
+      cubicTraj = Cubic(length, angle, speed);
+      traj = &cubicTraj;
       traj->init(Pose());
       duration = traj->get_duration();
     } else if (act.is_spin_turn()) {
       float angle = act.spinTurnAngle();
-      traj = std::make_unique<Spinturn>(angle, 0, 600, 0, 40000);
+      spinTurnTraj = Spinturn(angle, 0, 600, 0, 40000);
+      traj = &spinTurnTraj;
       traj->init(Pose());
       duration = traj->get_duration();
     } else {

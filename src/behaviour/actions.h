@@ -12,7 +12,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <memory>
 #include "config.h"
 #include "trajectory.h"
 /***
@@ -267,7 +266,7 @@ const bool is_ortho_out[] = { true,  true,  true,  true,  true,  true, false, fa
 struct Action {
   uint8_t op_code;
 
-  explicit Action(int c = OP_STOP, std::unique_ptr<Trajectory> traj = nullptr)
+  explicit Action(int c = OP_STOP)
       : op_code(c) {
   }
 
