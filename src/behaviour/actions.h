@@ -16,7 +16,7 @@
 
 /***
  * TODO - there are 256 different possible actions. Many of these are not
- *        used yet all of hose that are used should have a string name.
+ *        used yet all of those that are used should have a string name.
  *        This can be accomplished with an array of std::pair and a function
  *        that retrieves the name.
  *        OR SO YOU MAY THINK
@@ -266,6 +266,51 @@ enum {
    SMOOTH_END
 };
 
+constexpr const char* actionNames[256] = {
+    /* 0x00 - 0x3F: Orthogonal Moves */
+    "FWD0  ", "FWD1  ", "FWD2  ", "FWD3  ", "FWD4  ", "FWD5  ", "FWD6  ", "FWD7  ",
+    "FWD8  ", "FWD9  ", "FWD10 ", "FWD11 ", "FWD12 ", "FWD13 ", "FWD14 ", "FWD15 ",
+    "FWD16 ", "FWD17 ", "FWD18 ", "FWD19 ", "FWD20 ", "FWD21 ", "FWD22 ", "FWD23 ",
+    "FWD24 ", "FWD25 ", "FWD26 ", "FWD27 ", "FWD28 ", "FWD29 ", "FWD30 ", "FWD31 ",
+    "------", "------", "------", "------", "------", "------", "------", "------",
+    "------", "------", "------", "------", "------", "------", "------", "------",
+    /* 0x40 - 0x7F: Diagonal Moves */
+    "DIA0  ", "DIA1  ", "DIA2  ", "DIA3  ", "DIA4  ", "DIA5  ", "DIA6  ", "DIA7  ",
+    "DIA8  ", "DIA9  ", "DIA10 ", "DIA11 ", "DIA12 ", "DIA13 ", "DIA14 ", "DIA15 ",
+    "DIA16 ", "DIA17 ", "DIA18 ", "DIA19 ", "DIA20 ", "DIA21 ", "DIA22 ", "DIA23 ",
+    "DIA24 ", "DIA25 ", "DIA26 ", "DIA27 ", "DIA28 ", "DIA29 ", "DIA30 ", "DIA31 ",
+    "DIA32 ", "DIA33 ", "DIA34 ", "DIA35 ", "DIA36 ", "DIA37 ", "DIA38 ", "DIA39 ",
+    "DIA40 ", "DIA41 ", "DIA42 ", "DIA43 ", "DIA44 ", "DIA45 ", "DIA46 ", "DIA47 ",
+    "DIA48 ", "DIA49 ", "DIA50 ", "DIA51 ", "DIA52 ", "DIA53 ", "DIA54 ", "DIA55 ",
+    "DIA56 ", "DIA57 ", "DIA58 ", "DIA59 ", "DIA60 ", "DIA61 ", "DIA62 ", "DIA63 ",
+    /* 0x80 - 0x9F: In-Place Turns */
+    "IP45R ", "IP45L ", "IP90R ", "IP90L ", "IP135R", "IP135L", "IP180R", "IP180L",
+    "------", "------", "------", "------", "------", "------", "------", "------",
+    "------", "------", "------", "------", "------", "------", "------", "------",
+    "------", "------", "------", "------", "------", "------", "------", "------",
+    /* 0xA0 - 0xBF: Smooth Turns */
+    "SS90SR", "SS90SL", "SS90FR", "SS90FL", "SS180R", "SS180L", "SD45R ", "SD45L ",
+    "SD135R", "SD135L", "DS45R ", "DS45L ", "DS135R", "DS135L", "DD90R ", "DD90L ",
+    "SS90ER", "SS90EL", "------", "------", "------", "------", "------", "------",
+    "------", "------", "------", "------", "------", "------", "------", "------",
+    /* 0xC0 - 0xFF: Messages */
+    "Start ", "Stop  ", "Explor", "End   ", "Handst", "------", "------", "------",
+    "------", "------", "------", "------", "------", "------", "------", "------",
+    "ERR00 ", "ERR01 ", "ERR02 ", "ERR03 ", "ERR04 ", "ERR05 ", "ERR06 ", "ERR07 ",
+    "ERR08 ", "ERR09 ", "ERR10 ", "ERR11 ", "ERR12 ", "ERR13 ", "ERR14 ", "ERR15 ",
+    "ERR16 ", "ERR17 ", "ERR18 ", "ERR19 ", "ERR20 ", "ERR21 ", "ERR22 ", "ERR23 ",
+    "ERR24 ", "ERR25 ", "ERR26 ", "ERR27 ", "ERR28 ", "ERR29 ", "ERR30 ", "ERR31 ",
+    "------", "------", "------", "------", "------", "------", "------", "------",
+    "------", "------", "------", "------", "------", "------", "------", "------",
+    "------", "------", "------", "------", "------", "------", "------", "------",
+    "------", "------", "------", "------", "------", "------", "------", "------",
+};
+
+inline const char* getActionName(uint8_t op_code) {
+    return actionNames[op_code];
+}
+
+
 const bool is_ortho_in[]  = { true,  true,  true,  true,  true,  true,  true,  true,  true,  true, false, false, false, false, false, false, true, true};
 const bool is_ortho_out[] = { true,  true,  true,  true,  true,  true, false, false, false, false,  true,  true,  true,  true, false, false, true, true};
 // clang-format on
@@ -329,3 +374,5 @@ struct Action {
     return op_code != v;
   }
 };
+
+///////////////////////////////////////////////////////////////////
