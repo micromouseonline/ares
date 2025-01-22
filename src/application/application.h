@@ -28,6 +28,7 @@
 #include "widgets.h"
 
 #include "behaviour/mouse.h"
+#include "behaviour/path-printer.h"
 #include "robot-body.h"
 #include "vehicle/vehicle.h"
 
@@ -47,6 +48,7 @@ class Application : public IEventObserver {
     ARES_TRACE("APP:   .. ImGui Ready");
     setupVehicle();
     ARES_TRACE("APP:   .. Robot Ready");
+    printActionListWithCost(test_path);
   }
 
   ~Application() {
