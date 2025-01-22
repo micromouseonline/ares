@@ -14,6 +14,49 @@
 #include <stdint.h>
 #include "config.h"
 
+/***
+ * TODO - there are 256 different possible actions. Many of these are not
+ *        used yet all of hose that are used should have a string name.
+ *        This can be accomplished with an array of std::pair and a function
+ *        that retrieves the name.
+ *        OR SO YOU MAY THINK
+ *        Be aware that the compiler, if set to O3, might store multiple
+ *        copies of the strings in a misquided attempt to 'unroll' the access.
+ *        At least, according to Godbolt:
+ *        https://godbolt.org/z/fMTfq6xbT
+ *
+ *        If using O2 or O2, the compiler may not do this unrolling
+ *        and this code may be good.
+
+#include <array>
+#include <cstdint>
+#include <utility>
+#include <cstddef>
+
+constexpr std::array<std::pair<uint8_t, const char*>,6> valueStringMap = {{
+    {1, "One"},
+    {3, "Three"},
+    {5, "Five"},
+    {7, "Seven"},
+    {9, "Nine"},
+    {19, "Nineteen"},
+}};
+
+const char* lookupString(uint8_t value) {
+  for (const auto& pair : valueStringMap) {
+    if (pair.first == value) {
+      return pair.second;
+    }
+  }
+  return nullptr; // Return nullptr if not found
+}
+
+   If you do see the unrolling, just use an array and live with the large number
+   of empty strings. It will be smaller and faster.
+
+   I thnk that, on the STM32, O2 is the better optimisation setting
+ */
+
 #define NUM_ACTIONS_MAX 256
 
 /*
@@ -80,6 +123,7 @@
  *  ||         000001 => Stop
  *  ||         000010 => Explore
  *  ||         000011 => End
+ *  ||         000100 => Handstart
  *  ||         01xxxx => unused
  *  ||         10xxxx => unused
  *  ||         11xxxx => Error Codes
