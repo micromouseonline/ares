@@ -12,8 +12,9 @@
 #pragma once
 
 #include <stdint.h>
+#include <memory>
 #include "config.h"
-
+#include "trajectory.h"
 /***
  * TODO - there are 256 different possible actions. Many of these are not
  *        used yet all of those that are used should have a string name.
@@ -267,6 +268,7 @@ enum {
 };
 
 constexpr const char* actionNames[256] = {
+    /// TODO: should FWD0 be a stop?
     /* 0x00 - 0x3F: Orthogonal Moves */
     "FWD0  ", "FWD1  ", "FWD2  ", "FWD3  ", "FWD4  ", "FWD5  ", "FWD6  ", "FWD7  ",
     "FWD8  ", "FWD9  ", "FWD10 ", "FWD11 ", "FWD12 ", "FWD13 ", "FWD14 ", "FWD15 ",
@@ -274,6 +276,7 @@ constexpr const char* actionNames[256] = {
     "FWD24 ", "FWD25 ", "FWD26 ", "FWD27 ", "FWD28 ", "FWD29 ", "FWD30 ", "FWD31 ",
     "------", "------", "------", "------", "------", "------", "------", "------",
     "------", "------", "------", "------", "------", "------", "------", "------",
+    /// TODO: and what aboud DIA0
     /* 0x40 - 0x7F: Diagonal Moves */
     "DIA0  ", "DIA1  ", "DIA2  ", "DIA3  ", "DIA4  ", "DIA5  ", "DIA6  ", "DIA7  ",
     "DIA8  ", "DIA9  ", "DIA10 ", "DIA11 ", "DIA12 ", "DIA13 ", "DIA14 ", "DIA15 ",
@@ -294,7 +297,7 @@ constexpr const char* actionNames[256] = {
     "SS90ER", "SS90EL", "------", "------", "------", "------", "------", "------",
     "------", "------", "------", "------", "------", "------", "------", "------",
     /* 0xC0 - 0xFF: Messages */
-    "Start ", "Stop  ", "Explor", "End   ", "Handst", "------", "------", "------",
+    "BEG_FS", "BEG_HS", "EXPLOR", "END   ", "------", "------", "------", "------",
     "------", "------", "------", "------", "------", "------", "------", "------",
     "ERR00 ", "ERR01 ", "ERR02 ", "ERR03 ", "ERR04 ", "ERR05 ", "ERR06 ", "ERR07 ",
     "ERR08 ", "ERR09 ", "ERR10 ", "ERR11 ", "ERR12 ", "ERR13 ", "ERR14 ", "ERR15 ",
@@ -317,14 +320,34 @@ const bool is_ortho_out[] = { true,  true,  true,  true,  true,  true, false, fa
 
 struct Action {
   uint8_t op_code;
-  explicit Action(int c = OP_STOP)
-      : op_code(c) {};
+  std::unique_ptr<Trajectory> trajectory;
+
+  explicit Action(int c = OP_STOP, std::unique_ptr<Trajectory> traj = nullptr)
+      : op_code(c) {
+    if (traj == nullptr) {
+      trajectory = std::make_unique<IdleTrajectory>();
+    } else {
+      trajectory = std::move(std::move(traj));
+    }
+  }
+
+  void setTrajectory(std::unique_ptr<Trajectory> traj) {
+    if (traj == nullptr) {
+      trajectory = std::make_unique<IdleTrajectory>();
+    } else {
+      trajectory = std::move(std::move(traj));
+    }
+  }
 
   uint8_t direction() const {
     return op_code & 0x01;
   }
   uint8_t length() const {
     return op_code & OP_MASK_SQUARES;
+  }
+
+  const char* name() {
+    return actionNames[op_code];
   }
 
   int get_smooth_turn_type() const {
@@ -343,6 +366,28 @@ struct Action {
     return (op_code & OP_MASK_OP_TYPE) == OP_TYPE_ORTHO;
   }
 
+  bool is_ortho_entry() {
+    if (is_ortho_move()) {
+      return true;
+    }
+    if (is_smooth_turn()) {
+      int index = get_smooth_turn_type();
+      return is_ortho_in[index];
+    }
+    return false;
+  }
+
+  bool is_ortho_exit() {
+    if (is_ortho_move()) {
+      return true;
+    }
+    if (is_smooth_turn()) {
+      int index = get_smooth_turn_type();
+      return is_ortho_out[index];
+    }
+    return false;
+  }
+
   bool is_diagonal_move() const {
     return (op_code & OP_MASK_OP_TYPE) == OP_TYPE_DIAG;
   }
@@ -352,13 +397,18 @@ struct Action {
   }
 
   bool is_smooth_turn() const {
-    return (op_code >= OP_TURN_SMOOTH && op_code < SMOOTH_END);
     return (op_code & OP_MASK_TURN_TYPE) == OP_TURN_SMOOTH;
   }
 
   bool is_inplace_turn() const {
-    return (op_code >= OP_TURN_INPLACE && op_code < IP_END);
     return (op_code & OP_MASK_TURN_TYPE) == OP_TURN_INPLACE;
+  }
+
+  float getDuration() {
+    if (trajectory) {
+      return trajectory->get_duration();
+    }
+    return 0.0f;
   }
 
   bool operator==(const uint8_t v) const {
@@ -374,5 +424,3 @@ struct Action {
     return op_code != v;
   }
 };
-
-///////////////////////////////////////////////////////////////////
