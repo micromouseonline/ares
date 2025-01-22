@@ -47,14 +47,20 @@ class Straight : public Trajectory {
         m_dir(SIGN(dist))            // Direction of motion (+1 or -1)
   {
     setDeltaTime(dt);
+    init();
   }
 
   ~Straight() override = default;
 
   // Initialize the motion profile
   // TODO what if Vmax < V1 or V2?
-  void init(const Pose &p) override {
+  void init(const Pose &p = Pose()) override {
     Trajectory::init(p);
+    if (m_s == 0.0f) {
+      m_p1 = 0;
+      m_p2 = 0;
+      m_p3 = 0;
+    }
     // Calculate the steps required for acceleration and deceleration phases (p1 and p3)
     m_p1 = static_cast<int>(-(2 * m_v1 - std::sqrt(2 * m_v1 * m_v1 + 2 * m_v2 * m_v2 + 4 * m_s * m_a)) / (2 * m_a * m_delta_time));
     m_p3 = static_cast<int>(-(2 * m_v2 - std::sqrt(2 * m_v1 * m_v1 + 2 * m_v2 * m_v2 + 4 * m_s * m_a)) / (2 * m_a * m_delta_time));
