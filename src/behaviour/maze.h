@@ -67,9 +67,9 @@ enum Direction {
   DIR_BLOCKED
 };
 
-const Direction ortho_directions[] = {DIR_N, DIR_E, DIR_S, DIR_W};
-const char orthoDirChar[] = "NnEeSsWw?";
-const char *moveNames[] = {
+inline const Direction ortho_directions[] = {DIR_N, DIR_E, DIR_S, DIR_W};
+inline const char orthoDirChar[] = "NnEeSsWw?";
+inline const char *moveNames[] = {
     "FWD01", "-----", "SS90R", "-----", "IP180", "-----", "SS90E", "-----",
 };
 
