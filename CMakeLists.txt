@@ -161,7 +161,7 @@ target_sources(${APP} PRIVATE
 # Add a new target for tests
 enable_testing()
 
-add_executable(test_mouse_simulator
+add_executable(google_test_mouse_simulator
         google-tests/test_main.cpp
         google-tests/test_set_mask.cpp
         google-tests/test_maze_class.cpp
@@ -170,11 +170,10 @@ add_executable(test_mouse_simulator
         google-tests/test_trapezoid.cpp
         google-tests/text_Spinturn.cpp
         google-tests/test_cubic.cpp
-        google-tests/test_queue.cpp
 )
 
 # Link GoogleTest and your project to the test executable
-target_link_libraries(test_mouse_simulator
+target_link_libraries(google_test_mouse_simulator
         PUBLIC
         GTest::gtest
         GTest::gtest_main
@@ -184,7 +183,7 @@ target_link_libraries(test_mouse_simulator
         spdlog::spdlog
 )
 
-target_include_directories(test_mouse_simulator
+target_include_directories(google_test_mouse_simulator
         PUBLIC
         ${CMAKE_SOURCE_DIR}/src
         ${GTEST_INCLUDE_DIRS}
@@ -193,7 +192,7 @@ target_include_directories(test_mouse_simulator
 
 
 # Run tests after building
-add_test(NAME test_mouse_simulator COMMAND test_mouse_simulator)
+add_test(NAME google_test_mouse_simulator COMMAND google_test_mouse_simulator)
 
 ############################################################
 # other mini-test projects
