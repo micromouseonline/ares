@@ -2,6 +2,7 @@
 // Created by peter on 04/01/25.
 //
 #include <gtest/gtest.h>
+#include "behaviour/path-printer.h"
 #include "behaviour/trajectory.h"
 #include "common/pose.h"
 

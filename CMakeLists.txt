@@ -167,6 +167,7 @@ add_executable(google_test_mouse_simulator
         google-tests/test_maze_class.cpp
         google-tests/test_pose.cpp
         google-tests/test_trajectory.cpp
+        google-tests/test_trajectory_path.cpp
         google-tests/test_trapezoid.cpp
         google-tests/text_Spinturn.cpp
         google-tests/test_cubic.cpp

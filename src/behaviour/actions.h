@@ -201,7 +201,9 @@ enum : uint8_t{
   ACT_BEGIN    =  192,
   ACT_BEGIN_HS =  193,
   ACT_EXPLORE  =  194,
-  ACT_END      =  195,
+  ACT_END      =  0,
+  ACT_NONE = 0,
+
 
   ACT_ERR_BASE  = 240,
   ACT_ERR_NOF   = 240,
@@ -213,9 +215,8 @@ enum : uint8_t{
 };
 
 constexpr const char* actionNames[256] = {
-    /// TODO: should FWD0 be a stop?
     /* 0x00 - 0x3F: Orthogonal Moves */
-    "FWD0  ", "FWD1  ", "FWD2  ", "FWD3  ", "FWD4  ", "FWD5  ", "FWD6  ", "FWD7  ",
+    "END   ", "FWD1  ", "FWD2  ", "FWD3  ", "FWD4  ", "FWD5  ", "FWD6  ", "FWD7  ",
     "FWD8  ", "FWD9  ", "FWD10 ", "FWD11 ", "FWD12 ", "FWD13 ", "FWD14 ", "FWD15 ",
     "FWD16 ", "FWD17 ", "FWD18 ", "FWD19 ", "FWD20 ", "FWD21 ", "FWD22 ", "FWD23 ",
     "FWD24 ", "FWD25 ", "FWD26 ", "FWD27 ", "FWD28 ", "FWD29 ", "FWD30 ", "FWD31 ",
@@ -301,7 +302,7 @@ struct Action {
     return ((op_code >= DIA0) && (op_code <= DIA63));
   }
 
-  bool is_straight_move() {
+  bool is_straight_move() const {
     return is_ortho_straight() || is_diagonal_straight();
   }
 

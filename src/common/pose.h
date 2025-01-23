@@ -10,10 +10,22 @@
 class Pose {
  public:
   // Default constructor
-  Pose() : m_x(0), m_y(0), m_velocity(0), m_omega(0), m_distance(0), m_theta(0) {
+  Pose()
+      : m_x(0),
+        m_y(0),
+        m_velocity(0),
+        m_omega(0),
+        m_distance(0),
+        m_theta(0) {
   }
 
-  Pose(float x, float y, float theta) : m_x(x), m_y(y), m_velocity(0), m_omega(0), m_distance(0), m_theta(theta) {};
+  Pose(float x, float y, float theta)
+      : m_x(x),
+        m_y(y),
+        m_velocity(0),
+        m_omega(0),
+        m_distance(0),
+        m_theta(theta) {};
 
   // Getters for the pose components
   float getX() const {
@@ -93,4 +105,5 @@ class Pose {
   float m_omega;
   float m_distance;
   float m_theta;
+  float m_elapsed_time = 0;
 };

@@ -29,65 +29,6 @@ inline float cubic_calculate_speed(const CubicTurnParameters& params, float acce
   return speed;
 }
 
-inline float printActionWithCost(Action& act, Action* previous, Action* next, Pose& start_pose, Pose& end_pose) {
-  float vMax = 5000;
-  float acc = 14000;
-  float duration = 0;
-  //  std::unique_ptr<Trajectory> traj;
-  Trajectory* traj;
-  if (act.is_straight_move()) {
-    float one_cell = 180.0f;
-    if (act.is_diagonal_straight()) {
-      one_cell = 180.0f * 0.7071;
-    }
-    float dist = act.length() * one_cell;
-    float start_speed = start_pose.getVelocity();
-    float end_speed = 0;
-    if (previous && previous->is_smooth_turn()) {
-      int p_type = previous->get_smooth_turn_type();
-      dist -= cubic_params[p_type].out_offset;
-    }
-    if (next && next->is_smooth_turn()) {
-      int p_type = next->get_smooth_turn_type();
-      CubicTurnParameters params = cubic_params[p_type];
-      dist -= params.in_offset;
-      float speed = cubic_calculate_speed(params, acc);
-      // but do not exceed the maximum permitted for this turn.
-      end_speed = speed;
-    }
-    if (next->op_code == ACT_END) {
-      end_speed = 0;
-    }
-    dist = std::max(1.0f, dist);
-    straightTraj = Straight(dist, start_speed, vMax, end_speed, acc);
-    traj = &straightTraj;
-
-    traj->init(start_pose);
-    duration = traj->getDuration();
-  } else if (act.is_smooth_turn()) {
-    int type = act.get_smooth_turn_type();
-    float length = cubic_params[type].length;
-    float angle = cubic_params[type].angle;
-    float speed = cubic_params[type].speed_max;
-    cubicTraj = Cubic(length, angle, speed);
-    traj = &cubicTraj;
-    traj->init(Pose());
-    duration = traj->getDuration();
-  } else if (act.is_spin_turn()) {
-    float angle = act.spinTurnAngle();
-    spinTurnTraj = Spinturn(angle, 0, 600, 0, 40000);
-    traj = &spinTurnTraj;
-    traj->init(start_pose);
-    duration = traj->getDuration();
-  } else {
-    traj = &idleTraj;
-    traj->init(start_pose);
-    duration = traj->getDuration();
-  }
-  end_pose = traj->getCurrentPose();
-  printf("%3d %s %8.1f mm %6.3f s\n", act.op_code, act.name(), end_pose.getDistance(), traj->getDuration());
-  return duration;
-}
 //
 // const uint8_t test_path[] = {FWD15, SS90FR, FWD15, SD135R, DIA2, DS45L, FWD13, SS180R, FWD3, SD135L, DIA4, DS45R,  FWD2,  SD135R, DIA8, DS45L,
 //                             FWD7,  SS90FL, FWD2,  SD135L, DIA2, DD90R, DIA2,  DD90L,  DIA2, DS45R,  FWD2, SD45R,  DIA10, DD90L,  DIA2, DS135R,
@@ -116,7 +57,7 @@ inline void printActionListWithCost(const uint8_t* path) {
       end = Pose();
     }
 
-    duration += printActionWithCost(act, &prev, &next, start, end);
+    //    duration += printActionWithCost(act, &prev, &next, start, end);
     distance += end.getDistance();
     start = end;
   }
