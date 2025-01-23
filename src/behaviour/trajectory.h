@@ -96,12 +96,12 @@ class Trajectory {
   /***
    * Calculates the time needed for this profile.
    * You should not call this while the profile is active.
-   * If you dou, it will simply return 0;
+   * If you do, it will simply return 0;
    * @return time in seconds
    *
    * QUERY: does this ever really need to be overridden?
    */
-  virtual float get_duration() {
+  virtual float getDuration() {
     if (!m_finished) {
       return 0.0f;
     }

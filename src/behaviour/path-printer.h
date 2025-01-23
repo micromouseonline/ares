@@ -63,7 +63,7 @@ inline float printActionWithCost(Action& act, Action* previous, Action* next, Po
     traj = &straightTraj;
 
     traj->init(start_pose);
-    duration = traj->get_duration();
+    duration = traj->getDuration();
   } else if (act.is_smooth_turn()) {
     int type = act.get_smooth_turn_type();
     float length = cubic_params[type].length;
@@ -72,20 +72,20 @@ inline float printActionWithCost(Action& act, Action* previous, Action* next, Po
     cubicTraj = Cubic(length, angle, speed);
     traj = &cubicTraj;
     traj->init(Pose());
-    duration = traj->get_duration();
+    duration = traj->getDuration();
   } else if (act.is_spin_turn()) {
     float angle = act.spinTurnAngle();
     spinTurnTraj = Spinturn(angle, 0, 600, 0, 40000);
     traj = &spinTurnTraj;
     traj->init(start_pose);
-    duration = traj->get_duration();
+    duration = traj->getDuration();
   } else {
     traj = &idleTraj;
     traj->init(start_pose);
-    duration = traj->get_duration();
+    duration = traj->getDuration();
   }
   end_pose = traj->getCurrentPose();
-  printf("%3d %s %8.1f mm %6.3f s\n", act.op_code, act.name(), end_pose.getDistance(), traj->get_duration());
+  printf("%3d %s %8.1f mm %6.3f s\n", act.op_code, act.name(), end_pose.getDistance(), traj->getDuration());
   return duration;
 }
 //
@@ -141,7 +141,7 @@ inline void listActionsWithCosts() {
       traj = &straightTraj;
 
       traj->init(Pose());
-      duration = traj->get_duration();
+      duration = traj->getDuration();
     } else if (act.is_smooth_turn()) {
       int type = act.get_smooth_turn_type();
       float length = cubic_params[type].length;
@@ -150,13 +150,13 @@ inline void listActionsWithCosts() {
       cubicTraj = Cubic(length, angle, speed);
       traj = &cubicTraj;
       traj->init(Pose());
-      duration = traj->get_duration();
+      duration = traj->getDuration();
     } else if (act.is_spin_turn()) {
       float angle = act.spinTurnAngle();
       spinTurnTraj = Spinturn(angle, 0, 600, 0, 40000);
       traj = &spinTurnTraj;
       traj->init(Pose());
-      duration = traj->get_duration();
+      duration = traj->getDuration();
     } else {
       duration = 0.0f;
     }
