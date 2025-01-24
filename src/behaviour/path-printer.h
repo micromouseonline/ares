@@ -93,7 +93,7 @@ inline void listActionsWithCosts() {
       traj->init(Pose());
       duration = traj->getDuration();
     } else if (act.is_spin_turn()) {
-      float angle = act.spinTurnAngle();
+      float angle = act.getSpinTurnAngle();
       spinTurnTraj = Spinturn(angle, 0, 600, 0, 40000);
       traj = &spinTurnTraj;
       traj->init(Pose());

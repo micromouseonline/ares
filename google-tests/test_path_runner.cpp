@@ -54,14 +54,50 @@ TEST_F(TrajectoryPathTest, 005_single_straight) {
   EXPECT_NEAR(exit_pose.getElapsedTime(), 2.0f, 0.05f);
 }
 
-TEST_F(TrajectoryPathTest, 006_BSRSE) {
+TEST_F(TrajectoryPathTest, 036_BSRSE) {
+  const uint8_t path_actions[] = {ACT_BEGIN, FWD10, IP180R, FWD10, ACT_END};
+  Pose start_pose;
+  Pose exit_pose = pathRunner.executeActionList(path_actions, start_pose);
+  EXPECT_NEAR(exit_pose.getX(), 0.0f, 1.0f);
+  EXPECT_NEAR(exit_pose.getY(), 0.0f, 1.0f);
+  EXPECT_NEAR(exit_pose.getDistance(), 3600.0f, 1.0f);
+  EXPECT_NEAR(exit_pose.getAngle(), 180.0f, 0.1f);
+  EXPECT_NEAR(exit_pose.getVelocity(), 0.0f, 0.1f);
+  EXPECT_NEAR(exit_pose.getOmega(), 0.0f, 0.1f);
+}
+
+TEST_F(TrajectoryPathTest, 036_BSRSRE) {
+  const uint8_t path_actions[] = {ACT_BEGIN, FWD10, IP180R, FWD10, IP180L, ACT_END};
+  Pose start_pose;
+  Pose exit_pose = pathRunner.executeActionList(path_actions, start_pose);
+  EXPECT_NEAR(exit_pose.getX(), 0.0f, 1.0f);
+  EXPECT_NEAR(exit_pose.getY(), 0.0f, 1.0f);
+  EXPECT_NEAR(exit_pose.getDistance(), 3600.0f, 1.0f);
+  EXPECT_NEAR(exit_pose.getAngle(), 360.0f, 0.1f);
+  EXPECT_NEAR(exit_pose.getVelocity(), 0.0f, 0.1f);
+  EXPECT_NEAR(exit_pose.getOmega(), 0.0f, 0.1f);
+}
+
+TEST_F(TrajectoryPathTest, 0106_BSRSE) {
   const uint8_t path_actions[] = {ACT_BEGIN, FWD10, SS90FL, FWD10, ACT_END};
   Pose start_pose;
   Pose exit_pose = pathRunner.executeActionList(path_actions, start_pose);
   EXPECT_NEAR(exit_pose.getX(), 1800.0f, 1.0f);
   EXPECT_NEAR(exit_pose.getY(), 1800.0f, 1.0f);
-  EXPECT_NEAR(exit_pose.getDistance(), 3557.0f, 1.0f);
+  EXPECT_NEAR(exit_pose.getDistance(), 3559.0f, 1.0f);
   EXPECT_NEAR(exit_pose.getAngle(), 90.0f, 0.1f);
+  EXPECT_NEAR(exit_pose.getVelocity(), 0.0f, 0.1f);
+  EXPECT_NEAR(exit_pose.getOmega(), 0.0f, 0.1f);
+}
+
+TEST_F(TrajectoryPathTest, 0156_BSRSUSLSE) {
+  const uint8_t path_actions[] = {ACT_BEGIN, FWD10, SS90FL, FWD10, IP180L, FWD10, SS90FR, FWD10, ACT_END};
+  Pose start_pose;
+  Pose exit_pose = pathRunner.executeActionList(path_actions, start_pose);
+  EXPECT_NEAR(exit_pose.getX(), 0.0f, 1.0f);
+  EXPECT_NEAR(exit_pose.getY(), 0.0f, 1.0f);
+  EXPECT_NEAR(exit_pose.getDistance(), 2 * 3559.0f, 1.0f);
+  EXPECT_NEAR(exit_pose.getAngle(), 180.0f, 0.1f);
   EXPECT_NEAR(exit_pose.getVelocity(), 0.0f, 0.1f);
   EXPECT_NEAR(exit_pose.getOmega(), 0.0f, 0.1f);
 }

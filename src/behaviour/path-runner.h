@@ -51,9 +51,7 @@ class PathRunner {
     setAlpha(w_dot);
   }
 
-  /// TODO: what we need is to just get the trajectory
-  ///       Then it can be made current or dry run.
-
+  /////////////////////////////////////////////////
   Trajectory* makeStraightTrajectory(const Action& action, const Action& previous, const Action& next, const Pose& start_pose) {
     float one_cell = 180.0f;
     if (action.is_diagonal_straight()) {
@@ -90,9 +88,23 @@ class PathRunner {
     return end_pose;
   }
 
-  Pose executeSpinTurn(const Action& action, const Action& previous, const Action& next, const Pose& start_pose) {
-    return start_pose;
+  /////////////////////////////////////////////////
+
+  Trajectory* makeSpinturnTrajectory(const Action& action, const Action& previous, const Action& next, const Pose& start_pose) {
+    int p_type = action.get_spin_turn_type();
+    float angle = action.getSpinTurnAngle();
+    spinTurnTraj = Spinturn(angle, 0, m_max_omega, 0, m_alpha);
+    return &spinTurnTraj;
   }
+
+  Pose executeSpinTurn(const Action& action, const Action& previous, const Action& next, const Pose& start_pose) {
+    Trajectory* trajectory = makeSpinturnTrajectory(action, previous, next, start_pose);
+    trajectory->init(start_pose);
+    trajectory->getDuration();
+    Pose end_pose = trajectory->getCurrentPose();
+    return end_pose;
+  }
+  /////////////////////////////////////////////////
 
   Trajectory* makeCubicTrajectory(const Action& action, const Action& previous, const Action& next, const Pose& start_pose) {
     int p_type = action.get_smooth_turn_type();
@@ -118,6 +130,8 @@ class PathRunner {
       result = executeStraight(action, previous, next, start_pose);
     } else if (action.is_smooth_turn()) {
       result = executeSmoothTurn(action, previous, next, start_pose);
+    } else if (action.is_spin_turn()) {
+      result = executeSpinTurn(action, previous, next, start_pose);
     }
     result.print();
     return result;
@@ -160,7 +174,7 @@ class PathRunner {
       traj->init(Pose());
       duration = traj->getDuration();
     } else if (act.is_spin_turn()) {
-      float angle = act.spinTurnAngle();
+      float angle = act.getSpinTurnAngle();
       spinTurnTraj = Spinturn(angle, 0, 600, 0, 40000);
       traj = &spinTurnTraj;
       traj->init(start_pose);

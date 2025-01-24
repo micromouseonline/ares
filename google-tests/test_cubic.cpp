@@ -3,6 +3,7 @@
 //
 #include <gtest/gtest.h>
 #include "behaviour/actions.h"
+#include "behaviour/path-printer.h"
 #include "behaviour/trajectories/cubic.h"
 #include "behaviour/trajectories/cubic_parameters.h"
 #include "behaviour/trajectory.h"
@@ -111,11 +112,11 @@ TEST(CubicTrajectoryTest, 040_Reset) {
   EXPECT_FLOAT_EQ(pose.getAngle(), 30.0f);
 }
 
-TEST(CubicTrajectoryTest, 100_SS90FR) {
-  int id = SS90FR - OP_TURN_SMOOTH;
+TEST(CubicTrajectoryTest, 100_SS90FL) {
+  int id = SS90FL - OP_TURN_SMOOTH;
   CubicTurnParameters params = test_cubic_params[id];
   float length = params.length;
-  float speed = params.speed_max;
+  float speed = cubic_calculate_speed(params, 5000.0f);
   float angle = params.angle;
   Cubic cubic(length, angle, speed);
   Pose pose(0, 0, 0);
@@ -125,13 +126,13 @@ TEST(CubicTrajectoryTest, 100_SS90FR) {
     cubic.update();
   }
   Pose current_pose = cubic.getCurrentPose();
-  EXPECT_NEAR(current_pose.getX(), 118.0f, 0.1);
-  EXPECT_NEAR(current_pose.getY(), -118.0f, 0.1);
-  EXPECT_NEAR(current_pose.getAngle(), 360.0 - 90.0f, 0.05);
+  EXPECT_NEAR(current_pose.getX(), params.in_offset, 0.25);
+  EXPECT_NEAR(current_pose.getY(), params.out_offset, 0.25);
+  EXPECT_NEAR(current_pose.getAngle(), params.angle, 0.05);
   EXPECT_NEAR(current_pose.getVelocity(), speed, 0.005);
   EXPECT_NEAR(current_pose.getOmega(), 0.0f, 0.005);
-  EXPECT_NEAR(current_pose.getDistance(), 195.0f, 0.005);
-  EXPECT_NEAR(current_pose.getElapsedTime(), 0.195f, 0.005);
+  EXPECT_NEAR(current_pose.getDistance(), params.length, 0.05);
+  EXPECT_NEAR(current_pose.getElapsedTime(), params.length / speed, 0.005);
 }
 
 TEST(CubicTrajectoryTest, 100_SS180L) {

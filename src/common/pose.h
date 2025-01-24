@@ -74,7 +74,7 @@ class Pose {
     m_theta = theta;
   }
   void print() {
-    printf(" %6.1f, %6.1f, %6.1f, %6.1f, %6.1f, %6.3f\n", m_x, m_y, m_distance, m_theta, m_velocity, m_omega, m_elapsed_time);
+    printf(" %6.1f, %6.1f, %6.1f, %6.1f, %6.1f, %6.3f, %6.3f\n", m_x, m_y, m_distance, m_theta, m_velocity, m_omega, m_elapsed_time);
   }
 
   /***

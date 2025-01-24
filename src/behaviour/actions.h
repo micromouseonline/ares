@@ -352,7 +352,7 @@ struct Action {
     return (op_code >= OP_TURN_INPLACE && op_code < IP_END);
   }
 
-  float spinTurnAngle() {
+  float getSpinTurnAngle() const {
     return 45.0f * (1 + (get_spin_turn_type() / 2));
   }
 
