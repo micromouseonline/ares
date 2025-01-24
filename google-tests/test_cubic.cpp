@@ -133,3 +133,72 @@ TEST(CubicTrajectoryTest, 100_SS90ER) {
   EXPECT_NEAR(current_pose.getDistance(), 195.0f, 0.005);
   EXPECT_NEAR(current_pose.getElapsedTime(), 0.195f, 0.005);
 }
+
+TEST(CubicTrajectoryTest, 100_SS180L) {
+  int id = SS180L - OP_TURN_SMOOTH;
+  CubicTurnParameters params = test_cubic_params[id];
+  float length = params.length;
+  float speed = params.speed_max;
+  float angle = params.angle;
+  Cubic cubic(length, angle, speed);
+  Pose pose(0, 0, 0);
+  cubic.init(pose);
+  cubic.begin();
+  while (!cubic.isFinished()) {
+    cubic.update();
+  }
+  Pose current_pose = cubic.getCurrentPose();
+  EXPECT_NEAR(current_pose.getX(), 0.0f, 0.5);
+  EXPECT_NEAR(current_pose.getY(), 180.0f, 0.5);
+  EXPECT_NEAR(current_pose.getAngle(), angle, 0.05);
+  EXPECT_NEAR(current_pose.getVelocity(), speed, 0.005);
+  EXPECT_NEAR(current_pose.getOmega(), 0.0f, 0.005);
+  EXPECT_NEAR(current_pose.getDistance(), length, 0.005);
+  EXPECT_NEAR(current_pose.getElapsedTime(), length / speed, 0.005);
+}
+
+TEST(CubicTrajectoryTest, 100_DD90L) {
+  int id = DD90L - OP_TURN_SMOOTH;
+  CubicTurnParameters params = test_cubic_params[id];
+  float length = params.length;
+  float speed = params.speed_max;
+  float angle = params.angle;
+  Cubic cubic(length, angle, speed);
+  Pose pose(0, 0, 0);
+  cubic.init(pose);
+  cubic.begin();
+  while (!cubic.isFinished()) {
+    cubic.update();
+  }
+  Pose current_pose = cubic.getCurrentPose();
+  EXPECT_NEAR(current_pose.getX(), 75.6f, 0.5);
+  EXPECT_NEAR(current_pose.getY(), 75.6f, 0.5);
+  EXPECT_NEAR(current_pose.getAngle(), angle, 0.05);
+  EXPECT_NEAR(current_pose.getVelocity(), speed, 0.005);
+  EXPECT_NEAR(current_pose.getOmega(), 0.0f, 0.005);
+  EXPECT_NEAR(current_pose.getDistance(), length, 0.005);
+  EXPECT_NEAR(current_pose.getElapsedTime(), length / speed, 0.005);
+}
+
+TEST(CubicTrajectoryTest, 100_SS90EL) {
+  int id = SS90EL - OP_TURN_SMOOTH;
+  CubicTurnParameters params = test_cubic_params[id];
+  float length = params.length;
+  float speed = params.speed_max;
+  float angle = params.angle;
+  Cubic cubic(length, angle, speed);
+  Pose pose(0, 0, 0);
+  cubic.init(pose);
+  cubic.begin();
+  while (!cubic.isFinished()) {
+    cubic.update();
+  }
+  Pose current_pose = cubic.getCurrentPose();
+  EXPECT_NEAR(current_pose.getX(), 70.0f, 0.5);
+  EXPECT_NEAR(current_pose.getY(), 70.0f, 0.5);
+  EXPECT_NEAR(current_pose.getAngle(), angle, 0.05);
+  EXPECT_NEAR(current_pose.getVelocity(), speed, 0.005);
+  EXPECT_NEAR(current_pose.getOmega(), 0.0f, 0.005);
+  EXPECT_NEAR(current_pose.getDistance(), length, 0.005);
+  EXPECT_NEAR(current_pose.getElapsedTime(), length / speed, 0.005);
+}
