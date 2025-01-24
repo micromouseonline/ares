@@ -72,11 +72,12 @@ class Cubic : public Trajectory {
     float t = m_distance * remaining;
     float omega = m_velocity * m_cubic_constant * t * DEGREES;
     if (remaining <= 0) {
+      m_current_pose.setOmega(0);
       m_finished = true;
-      omega = 0;
+    } else {
+      m_current_pose.advance(m_velocity, omega, m_delta_time);
+      m_current_step++;
     }
-    m_current_pose.advance(m_velocity, omega, m_delta_time);
-    m_current_step++;
   }
 
  private:
