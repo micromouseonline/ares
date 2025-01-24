@@ -104,3 +104,31 @@ TEST(TrapezoidTest, 040_Reset) {
   EXPECT_FLOAT_EQ(pose.getY(), 2.0f);
   EXPECT_FLOAT_EQ(pose.getAngle(), 30.0f);
 }
+
+TEST(TrapezoidTest, 100_FWD10) {
+  Straight straight(180.0 * 10, 0.0f, 100.0f, 0.0f, 1000.0f);
+  Pose startPose(0.0f, 0.0f, 0.0f);
+  straight.init(startPose);
+  straight.getDuration();
+  Pose pose = straight.getCurrentPose();
+  EXPECT_NEAR(pose.getX(), 1800.0f, 0.5f);
+  EXPECT_NEAR(pose.getY(), 0.0f, 0.5f);
+  EXPECT_NEAR(pose.getDistance(), 1800.0f, 0.5f);
+  EXPECT_NEAR(pose.getAngle(), 0.0f, 0.5f);
+  EXPECT_NEAR(pose.getElapsedTime(), 18.1f, 0.05f);
+}
+
+TEST(TrapezoidTest, 100_FWD10_END_MOVING) {
+  Straight straight(180.0 * 10, 0.0f, 1000.0f, 280.0f, 5000.0f);
+  Pose startPose(0.0f, 0.0f, 0.0f);
+  straight.init(startPose);
+  straight.getDuration();
+  Pose pose = straight.getCurrentPose();
+  EXPECT_NEAR(pose.getX(), 1800.0f, 0.5f);
+  EXPECT_NEAR(pose.getX(), 1800.0f, 0.5f);
+  EXPECT_NEAR(pose.getVelocity(), 280.0f, 0.1f);
+  EXPECT_NEAR(pose.getOmega(), 0.0f, 0.5f);
+  EXPECT_NEAR(pose.getDistance(), 1800.0f, 0.5f);
+  EXPECT_NEAR(pose.getAngle(), 0.0f, 0.5f);
+  EXPECT_NEAR(pose.getElapsedTime(), 1.95f, 0.05f);
+}

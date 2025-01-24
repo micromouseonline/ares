@@ -51,60 +51,69 @@ class PathRunner {
     setAlpha(w_dot);
   }
 
-  Pose executeAction(const Action& action, const Action& previous, const Action& next, const Pose& start_pose) {
-    if (action.op_code == ACT_END) {
-      return start_pose;
-    } else if (action.op_code == ACT_BEGIN) {
-      return start_pose;
-    } else if (action.is_straight_move()) {
-      float one_cell = 180.0f;
-      if (action.is_diagonal_straight()) {
-        one_cell = 180.0f * 0.7071;
-      }
-      float dist = action.length() * one_cell;
-      float v_start = start_pose.getVelocity();
-      float v_end = start_pose.getVelocity();
-      float start_speed = start_pose.getVelocity();
-      float end_speed = 0;
-      if (previous.op_code != ACT_BEGIN && previous.is_smooth_turn()) {
-        int p_type = previous.get_smooth_turn_type();
-        dist -= cubic_params[p_type].out_offset;
-      }
-      if (next.op_code != ACT_END && next.is_smooth_turn()) {
-        int p_type = next.get_smooth_turn_type();
-        CubicTurnParameters params = cubic_params[p_type];
-        dist -= params.in_offset;
-        float speed = cubic_calculate_speed(params, m_accel);
-        // but do not exceed the maximum permitted for this turn.
-        end_speed = speed;
-      }
-      if (next.op_code == ACT_END) {
-        end_speed = 0;
-      }
-      dist = std::max(1.0f, dist);
-      straightTraj = Straight(dist, start_speed, m_max_velocity, end_speed, m_accel);
-      Trajectory* trajectory = &straightTraj;
-
-      trajectory->init(start_pose);
-      float duration = trajectory->getDuration();
-      return trajectory->getCurrentPose();
+  Pose executeStraight(const Action& action, const Action& previous, const Action& next, const Pose& start_pose) {
+    float one_cell = 180.0f;
+    if (action.is_diagonal_straight()) {
+      one_cell = 180.0f * 0.7071;
     }
-    /// Deliberately return an invalid pose to signale an error
-    /// Tacky - I know.
-    Pose bad_pose;
-    bad_pose.setDistance(-INT16_MAX);
-    return bad_pose;
+    float dist = action.length() * one_cell;
+    float v_start = start_pose.getVelocity();
+    float v_end = start_pose.getVelocity();
+    float start_speed = start_pose.getVelocity();
+    float end_speed = 0;
+    if (previous.op_code != ACT_BEGIN && previous.is_smooth_turn()) {
+      int p_type = previous.get_smooth_turn_type();
+      dist -= cubic_params[p_type].out_offset;
+    }
+    if (next.op_code != ACT_END && next.is_smooth_turn()) {
+      int p_type = next.get_smooth_turn_type();
+      CubicTurnParameters params = cubic_params[p_type];
+      dist -= params.in_offset;
+      float speed = cubic_calculate_speed(params, m_accel);
+      // but do not exceed the maximum permitted for this turn.
+      end_speed = speed;
+    }
+    if (next.op_code == ACT_END) {
+      end_speed = 0;
+    }
+    dist = std::max(1.0f, dist);
+    straightTraj = Straight(dist, start_speed, m_max_velocity, end_speed, m_accel);
+    Trajectory* trajectory = &straightTraj;
+
+    trajectory->init(start_pose);
+    trajectory->getDuration();
+    Pose end_pose = trajectory->getCurrentPose();
+    return end_pose;
+  }
+
+  Pose executeSpinTurn(const Action& action, const Action& previous, const Action& next, const Pose& start_pose) {
+    return start_pose;
+  }
+
+  Pose executeSmoothTurn(const Action& action, const Action& previous, const Action& next, const Pose& start_pose) {
+    return start_pose;
+  }
+
+  Pose executeAction(const Action& action, const Action& previous, const Action& next, const Pose& start_pose) {
+    if (action.is_straight_move()) {
+      return executeStraight(action, previous, next, start_pose);
+    }
+    return Pose(-999, -999, -999);
   }
 
   inline Pose executeActionList(const uint8_t* actions, const Pose& start_pose) {
     int length = strlen((char*)actions);
-    Trajectory* trajectory;
+    /// TODO: probably there should be a better way to detect an invalid path
+    if (length == 0) {
+      return Pose(-999, -999, -999);
+    }
+    if (length == 1 && actions[0] != ACT_BEGIN) {
+      return Pose(-999, -999, -999);
+    }
     Pose current_pose = start_pose;
-    for (int i = 0; i < length; i++) {
-      Action prev = Action(ACT_END);
-      if (i > 0) {
-        prev = Action(actions[i - 1]);
-      }
+    for (int i = 1; i < length; i++) {
+      /// We checked earlier so these should always be safe
+      Action prev = Action(actions[i - 1]);
       Action next = Action(actions[i + 1]);
       current_pose = executeAction(Action(actions[i]), prev, next, current_pose);
     }

@@ -2,7 +2,9 @@
 // Created by peter on 04/01/25.
 //
 #include <gtest/gtest.h>
+#include "behaviour/actions.h"
 #include "behaviour/trajectories/cubic.h"
+#include "behaviour/trajectories/cubic_parameters.h"
 #include "behaviour/trajectory.h"
 #include "common/pose.h"
 
@@ -61,14 +63,14 @@ TEST(CubicTrajectoryTest, 010_Update) {
   while (!cubic.isFinished()) {
     cubic.update();
   }
-  EXPECT_EQ(1 + int(length / (speed * cubic.getDeltaTime())), cubic.getCurrentStep());
+  EXPECT_EQ(int(length / (speed * cubic.getDeltaTime())), cubic.getCurrentStep());
   current_pose = cubic.getCurrentPose();
   EXPECT_NEAR(current_pose.getX(), 70.0f, 0.1);
   EXPECT_NEAR(current_pose.getY(), 70.0f, 0.1);
   EXPECT_NEAR(current_pose.getAngle(), 90.0f, 0.005);
   EXPECT_NEAR(current_pose.getVelocity(), speed, 0.005);
   EXPECT_NEAR(current_pose.getOmega(), 0.0f, 0.005);
-  EXPECT_NEAR(current_pose.getDistance(), 115.7f, 0.005);
+  EXPECT_NEAR(current_pose.getDistance(), 115.6f, 0.005);
 }
 
 TEST(CubicTrajectoryTest, 010_Update_Negative) {
@@ -84,14 +86,14 @@ TEST(CubicTrajectoryTest, 010_Update_Negative) {
   while (!cubic.isFinished()) {
     cubic.update();
   }
-  EXPECT_EQ(1 + int(length / (speed * cubic.getDeltaTime())), cubic.getCurrentStep());
+  EXPECT_EQ(int(length / (speed * cubic.getDeltaTime())), cubic.getCurrentStep());
   current_pose = cubic.getCurrentPose();
   EXPECT_NEAR(current_pose.getX(), 70.0f, 0.1);
   EXPECT_NEAR(current_pose.getY(), -70.0f, 0.1);
   EXPECT_NEAR(current_pose.getAngle(), 270.0f, 0.005);
   EXPECT_NEAR(current_pose.getVelocity(), 100.0f, 0.005);
   EXPECT_NEAR(current_pose.getOmega(), 0.0f, 0.005);
-  EXPECT_NEAR(current_pose.getDistance(), 115.7f, 0.005);
+  EXPECT_NEAR(current_pose.getDistance(), 115.6f, 0.005);
 }
 
 TEST(CubicTrajectoryTest, 040_Reset) {
@@ -107,4 +109,27 @@ TEST(CubicTrajectoryTest, 040_Reset) {
   EXPECT_FLOAT_EQ(pose.getX(), 1.0f);
   EXPECT_FLOAT_EQ(pose.getY(), 2.0f);
   EXPECT_FLOAT_EQ(pose.getAngle(), 30.0f);
+}
+
+TEST(CubicTrajectoryTest, 100_SS90ER) {
+  int id = SS90FR - OP_TURN_SMOOTH;
+  CubicTurnParameters params = test_cubic_params[id];
+  float length = params.length;
+  float speed = params.speed_max;
+  float angle = params.angle;
+  Cubic cubic(length, angle, speed);
+  Pose pose(0, 0, 0);
+  cubic.init(pose);
+  cubic.begin();
+  while (!cubic.isFinished()) {
+    cubic.update();
+  }
+  Pose current_pose = cubic.getCurrentPose();
+  EXPECT_NEAR(current_pose.getX(), 118.0f, 0.1);
+  EXPECT_NEAR(current_pose.getY(), -118.0f, 0.1);
+  EXPECT_NEAR(current_pose.getAngle(), 360.0 - 90.0f, 0.05);
+  EXPECT_NEAR(current_pose.getVelocity(), speed, 0.005);
+  EXPECT_NEAR(current_pose.getOmega(), 0.0f, 0.005);
+  EXPECT_NEAR(current_pose.getDistance(), 195.0f, 0.005);
+  EXPECT_NEAR(current_pose.getElapsedTime(), 0.195f, 0.005);
 }

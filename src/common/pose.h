@@ -16,7 +16,8 @@ class Pose {
         m_velocity(0),
         m_omega(0),
         m_distance(0),
-        m_theta(0) {
+        m_theta(0),
+        m_elapsed_time(0) {
   }
 
   Pose(float x, float y, float theta)
@@ -25,7 +26,8 @@ class Pose {
         m_velocity(0),
         m_omega(0),
         m_distance(0),
-        m_theta(theta) {};
+        m_theta(theta),
+        m_elapsed_time(0) {};
 
   // Getters for the pose components
   float getX() const {
@@ -90,12 +92,17 @@ class Pose {
     m_theta = std::fmod(m_theta + 360.0f, 360.0f);
     m_x += distance_change * std::cos(m_theta * RADIANS);
     m_y += distance_change * std::sin(m_theta * RADIANS);
+    m_elapsed_time += delta_time;
   }
 
   void advance(float velocity, float omega, float delta_time) {
     m_velocity = velocity;
     m_omega = omega;
     advance(delta_time);
+  }
+
+  float getElapsedTime() {
+    return m_elapsed_time;
   }
 
  private:
