@@ -119,16 +119,18 @@ TEST(TrapezoidTest, 100_FWD10) {
 }
 
 TEST(TrapezoidTest, 100_FWD10_END_MOVING) {
-  Straight straight(180.0 * 10, 0.0f, 1000.0f, 280.0f, 5000.0f);
+  float dist = 10 * 180.0f - 118.0f;
+  float end_speed = 287.68f;
+  Straight straight(dist, 0.0f, 1000.0f, end_speed, 1000.0f);
   Pose startPose(0.0f, 0.0f, 0.0f);
   straight.init(startPose);
   straight.getDuration();
   Pose pose = straight.getCurrentPose();
-  EXPECT_NEAR(pose.getX(), 1800.0f, 0.5f);
-  EXPECT_NEAR(pose.getX(), 1800.0f, 0.5f);
-  EXPECT_NEAR(pose.getVelocity(), 280.0f, 0.1f);
+  EXPECT_NEAR(pose.getX(), dist, 0.5f);
+  EXPECT_NEAR(pose.getY(), 0.0f, 0.5f);
+  EXPECT_NEAR(pose.getVelocity(), end_speed, 0.1f);
   EXPECT_NEAR(pose.getOmega(), 0.0f, 0.5f);
-  EXPECT_NEAR(pose.getDistance(), 1800.0f, 0.5f);
+  EXPECT_NEAR(pose.getDistance(), dist, 0.5f);
   EXPECT_NEAR(pose.getAngle(), 0.0f, 0.5f);
-  EXPECT_NEAR(pose.getElapsedTime(), 1.95f, 0.05f);
+  EXPECT_NEAR(pose.getElapsedTime(), 2.44f, 0.05f);
 }

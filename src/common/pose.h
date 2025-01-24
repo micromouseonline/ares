@@ -73,6 +73,9 @@ class Pose {
   void setAngle(float theta) {
     m_theta = theta;
   }
+  void print() {
+    printf(" %6.1f, %6.1f, %6.1f, %6.1f, %6.1f, %6.3f\n", m_x, m_y, m_distance, m_theta, m_velocity, m_omega, m_elapsed_time);
+  }
 
   /***
    * Pose is advanced by one time step of motion.

@@ -24,10 +24,10 @@
  */
 class PathRunner {
  public:
-  float m_max_velocity = 100;
-  float m_max_omega = 100;
-  float m_accel = 1000;
-  float m_alpha = 1000;
+  float m_max_velocity = 1000;
+  float m_max_omega = 600;
+  float m_accel = 5000;
+  float m_alpha = 10000;
 
   void setMaximumVelocity(float v_max) {
     m_max_velocity = v_max;
@@ -51,23 +51,24 @@ class PathRunner {
     setAlpha(w_dot);
   }
 
-  Pose executeStraight(const Action& action, const Action& previous, const Action& next, const Pose& start_pose) {
+  /// TODO: what we need is to just get the trajectory
+  ///       Then it can be made current or dry run.
+
+  Trajectory* makeStraightTrajectory(const Action& action, const Action& previous, const Action& next, const Pose& start_pose) {
     float one_cell = 180.0f;
     if (action.is_diagonal_straight()) {
       one_cell = 180.0f * 0.7071;
     }
     float dist = action.length() * one_cell;
-    float v_start = start_pose.getVelocity();
-    float v_end = start_pose.getVelocity();
     float start_speed = start_pose.getVelocity();
     float end_speed = 0;
     if (previous.op_code != ACT_BEGIN && previous.is_smooth_turn()) {
       int p_type = previous.get_smooth_turn_type();
-      dist -= cubic_params[p_type].out_offset;
+      dist -= test_cubic_params[p_type].out_offset;
     }
     if (next.op_code != ACT_END && next.is_smooth_turn()) {
       int p_type = next.get_smooth_turn_type();
-      CubicTurnParameters params = cubic_params[p_type];
+      CubicTurnParameters params = test_cubic_params[p_type];
       dist -= params.in_offset;
       float speed = cubic_calculate_speed(params, m_accel);
       // but do not exceed the maximum permitted for this turn.
@@ -78,8 +79,11 @@ class PathRunner {
     }
     dist = std::max(1.0f, dist);
     straightTraj = Straight(dist, start_speed, m_max_velocity, end_speed, m_accel);
-    Trajectory* trajectory = &straightTraj;
+    return &straightTraj;
+  }
 
+  Pose executeStraight(const Action& action, const Action& previous, const Action& next, const Pose& start_pose) {
+    Trajectory* trajectory = makeStraightTrajectory(action, previous, next, start_pose);
     trajectory->init(start_pose);
     trajectory->getDuration();
     Pose end_pose = trajectory->getCurrentPose();
@@ -90,15 +94,33 @@ class PathRunner {
     return start_pose;
   }
 
+  Trajectory* makeCubicTrajectory(const Action& action, const Action& previous, const Action& next, const Pose& start_pose) {
+    int p_type = action.get_smooth_turn_type();
+    CubicTurnParameters params = test_cubic_params[p_type];
+    float speed = cubic_calculate_speed(params, m_accel);
+    float length = params.length;
+    float angle = params.angle;
+    cubicTraj = Cubic(length, angle, speed);
+    return &cubicTraj;
+  }
+
   Pose executeSmoothTurn(const Action& action, const Action& previous, const Action& next, const Pose& start_pose) {
-    return start_pose;
+    Trajectory* trajectory = makeCubicTrajectory(action, previous, next, start_pose);
+    trajectory->init(start_pose);
+    trajectory->getDuration();
+    Pose end_pose = trajectory->getCurrentPose();
+    return end_pose;
   }
 
   Pose executeAction(const Action& action, const Action& previous, const Action& next, const Pose& start_pose) {
+    Pose result = start_pose;
     if (action.is_straight_move()) {
-      return executeStraight(action, previous, next, start_pose);
+      result = executeStraight(action, previous, next, start_pose);
+    } else if (action.is_smooth_turn()) {
+      result = executeSmoothTurn(action, previous, next, start_pose);
     }
-    return Pose(-999, -999, -999);
+    result.print();
+    return result;
   }
 
   inline Pose executeActionList(const uint8_t* actions, const Pose& start_pose) {
@@ -110,6 +132,7 @@ class PathRunner {
     if (length == 1 && actions[0] != ACT_BEGIN) {
       return Pose(-999, -999, -999);
     }
+    printf("\n");
     Pose current_pose = start_pose;
     for (int i = 1; i < length; i++) {
       /// We checked earlier so these should always be safe

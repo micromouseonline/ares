@@ -111,7 +111,7 @@ TEST(CubicTrajectoryTest, 040_Reset) {
   EXPECT_FLOAT_EQ(pose.getAngle(), 30.0f);
 }
 
-TEST(CubicTrajectoryTest, 100_SS90ER) {
+TEST(CubicTrajectoryTest, 100_SS90FR) {
   int id = SS90FR - OP_TURN_SMOOTH;
   CubicTurnParameters params = test_cubic_params[id];
   float length = params.length;
