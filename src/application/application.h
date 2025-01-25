@@ -53,7 +53,7 @@ class Application : public IEventObserver {
 
   ~Application() {
     ARES_TRACE("APP: Application Shutting Down ...");
-    //    m_robot_manager.stop();
+    m_robot_manager.resetRobot();
     ARES_TRACE("APP:   .. Robot Manager Stopped");
     m_window.reset();  // destroys the window explicitly so that we can clean up
     ARES_TRACE("APP:   .. Window Closed");
