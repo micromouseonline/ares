@@ -590,6 +590,9 @@ class MazeManager {
     list.push_back(index);
   }
 
+  /***
+   * we use a std::unordered_set here because it automatically handles duplicates.
+   */
   void addWallToSet(std::unordered_set<int>& list, int x, int y, Direction d) {
     if (x < 0 && (d == Direction::DIR_W || d == Direction::DIR_N || d == Direction::DIR_S)) {
       return;
