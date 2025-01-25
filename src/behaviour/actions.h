@@ -202,7 +202,6 @@ enum : uint8_t{
   ACT_BEGIN_HS =  193,
   ACT_EXPLORE  =  194,
   ACT_END      =  0,
-  ACT_NONE = 0,
 
 
   ACT_ERR_BASE  = 240,
