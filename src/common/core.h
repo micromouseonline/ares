@@ -7,6 +7,7 @@
 
 #include <atomic>
 #include <cmath>
+#include <functional>
 #include <limits>
 #include <mutex>
 #include <queue>
@@ -41,7 +42,7 @@ inline float normalizeAngle(float angle) {
   if (angle < 0) {
     angle += 360.0f;
   }
-  if (angle == -180.0f) {
+  if (angle <= -180.0f) {  // not an error - avoid compare for equal
     angle = 180.0f;
   }
   return angle - 180.0f;
