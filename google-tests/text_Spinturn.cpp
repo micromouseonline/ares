@@ -88,7 +88,7 @@ TEST(SpinturnTest, 010_Update_Negative) {
   EXPECT_NEAR(current_pose.getX(), 0.0f, 0.005);
   EXPECT_NEAR(current_pose.getY(), 0.0f, 0.005);
   /// Note: we normalise angles as 0..360
-  EXPECT_NEAR(current_pose.getAngle(), 260.0f, 0.05);  /// angles are less accurate
+  EXPECT_NEAR(current_pose.getAngle(), -100.0f, 0.05);  /// angles are less accurate
   EXPECT_NEAR(current_pose.getVelocity(), 0.0f, 0.005);
   EXPECT_NEAR(current_pose.getOmega(), 0.0f, 0.005);
   EXPECT_NEAR(current_pose.getDistance(), 0.0f, 0.005);

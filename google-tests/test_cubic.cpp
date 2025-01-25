@@ -91,7 +91,7 @@ TEST(CubicTrajectoryTest, 010_Update_Negative) {
   current_pose = cubic.getCurrentPose();
   EXPECT_NEAR(current_pose.getX(), 70.0f, 0.1);
   EXPECT_NEAR(current_pose.getY(), -70.0f, 0.1);
-  EXPECT_NEAR(current_pose.getAngle(), 270.0f, 0.005);
+  EXPECT_NEAR(current_pose.getAngle(), -90.0f, 0.005);
   EXPECT_NEAR(current_pose.getVelocity(), 100.0f, 0.005);
   EXPECT_NEAR(current_pose.getOmega(), 0.0f, 0.005);
   EXPECT_NEAR(current_pose.getDistance(), 115.6f, 0.005);

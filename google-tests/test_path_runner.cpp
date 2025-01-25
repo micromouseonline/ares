@@ -73,7 +73,7 @@ TEST_F(TrajectoryPathTest, 036_BSRSRE) {
   EXPECT_NEAR(exit_pose.getX(), 0.0f, 1.0f);
   EXPECT_NEAR(exit_pose.getY(), 0.0f, 1.0f);
   EXPECT_NEAR(exit_pose.getDistance(), 3600.0f, 1.0f);
-  EXPECT_NEAR(exit_pose.getAngle(), 360.0f, 0.1f);
+  EXPECT_NEAR(exit_pose.getAngle(), 0.0f, 0.1f);
   EXPECT_NEAR(exit_pose.getVelocity(), 0.0f, 0.1f);
   EXPECT_NEAR(exit_pose.getOmega(), 0.0f, 0.1f);
 }

@@ -36,6 +36,17 @@ inline void logMessage(const std::string msg) {
   g_log_messages.push(msg);
 }
 
+inline float normalizeAngle(float angle) {
+  angle = fmod(angle + 180.0f, 360.0f);
+  if (angle < 0) {
+    angle += 360.0f;
+  }
+  if (angle == -180.0f) {
+    angle = 180.0f;
+  }
+  return angle - 180.0f;
+}
+
 using SerialOut = std::function<void(const char)>;
 using BinaryOut = std::function<void(const uint8_t)>;
 

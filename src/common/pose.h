@@ -92,7 +92,8 @@ class Pose {
     float angle_change = m_omega * delta_time;
     m_distance += distance_change;
     m_theta += angle_change;
-    m_theta = std::fmod(m_theta + 360.0f, 360.0f);
+    m_theta = normalizeAngle(m_theta);
+
     m_x += distance_change * std::cos(m_theta * RADIANS);
     m_y += distance_change * std::sin(m_theta * RADIANS);
     m_elapsed_time += delta_time;

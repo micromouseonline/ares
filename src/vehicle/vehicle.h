@@ -223,7 +223,7 @@ class Vehicle {
 
     float newX = m_state.x + deltaDistance * std::cos(m_state.angle * RADIANS);
     float newY = m_state.y + deltaDistance * std::sin(m_state.angle * RADIANS);
-    float newAngle = std::fmod(m_state.angle + deltaAngle + 360.0f, 360.0f);
+    float newAngle = normalizeAngle(m_state.angle + deltaAngle);
 
     m_state.total_distance += deltaDistance;
     m_state.x = newX;
