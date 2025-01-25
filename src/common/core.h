@@ -47,7 +47,11 @@ inline float normalizeAngle(float angle) {
   return angle - 180.0f;
 }
 
+/// The following are effectively equivalent but the older
+/// style is slightly more efficient at run time.
 using SerialOut = std::function<void(const char)>;
 using BinaryOut = std::function<void(const uint8_t)>;
+// using SerialOut = void (*)(const char);
+// using BinaryOut = void (*)(const uint8_t);
 
 #endif  // CORE_H
