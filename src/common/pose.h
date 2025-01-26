@@ -73,6 +73,12 @@ class Pose {
   void setAngle(float theta) {
     m_theta = theta;
   }
+
+  void addSlip(float dx, float dy) {
+    m_x += dx;
+    m_y += dy;
+  }
+
   void print() {
     printf(" %6.1f, %6.1f, %6.1f, %6.1f, %6.1f, %6.3f, %6.3f\n", m_x, m_y, m_distance, m_theta, m_velocity, m_omega, m_elapsed_time);
   }
