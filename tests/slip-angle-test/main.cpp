@@ -17,46 +17,37 @@ struct Velocity {
 
 /// This function should work for any arbitrary version of CalculateVelocities
 /// that return a v,w pair.
-PoseBasic integratePath(double k) {
+Pose integratePath(double k) {
   Velocity vel;
-  PoseBasic pose;
+  //  PoseBasic pose;
+  Pose p;
   float dt = 0.001f;
-  Cubic cubic(194.81, 90, 1);  // Cubic trajectory with specified length, angle, and velocity
+  Cubic cubic(194.81, 90, 1000);  // Cubic trajectory with specified length, angle, and velocity
   cubic.setDeltaTime(dt);
-  cubic.init(Pose());
+  cubic.init(p);
   cubic.begin();
 
   int i = 0;
   while (!cubic.isFinished()) {
-    cubic.update();
+    cubic.updateWithSlip(k);
 
+    p = cubic.getCurrentPose();
     vel.forward = cubic.getCurrentPose().getVelocity();
     vel.angular = cubic.getCurrentPose().getOmega() * RADIANS;
+    p.print();
 
-    // Calculate slip angle proportional to lateral acceleration
-    double beta = k * vel.forward * vel.angular;
-
-    // Adjust velocities for slip angle
-    double adjusted_forward_velocity = vel.forward * cos(beta);
-
-    // Integrate pose
-    pose.x += adjusted_forward_velocity * cos(pose.theta) * dt + vel.forward * sin(beta) * sin(pose.theta) * dt;
-    pose.y += adjusted_forward_velocity * sin(pose.theta) * dt - vel.forward * sin(beta) * cos(pose.theta) * dt;
-    pose.theta += vel.angular * dt;  // Angle is corrected by gyro, no adjustment needed for slip
-
-    printf("%3i, %8.3f,  %8.3f,  %8.3f, %8.3f,  %8.3f \n", i, vel.forward, vel.angular, pose.x, pose.y, pose.theta * 57.29);
+    //    printf("%3i, %8.3f,  %8.3f,  %8.3f, %8.3f,  %8.3f \n", i, vel.forward, vel.angular, p.getX(), p.getY(), p.getAngle());
     i++;
   }
 
-  return pose;
+  return p;
 }
 
 int main() {
-  double k = 0.00002;  // Proportionality constant for slip angle radians/(m/s^2)
+  double k = 0.1;  // Proportionality constant for slip angle deg/(m/s^2)
 
-  PoseBasic actualEndPose = integratePath(k);
-
-  std::cout << "Actual End Pose: x = " << actualEndPose.x << ", y = " << actualEndPose.y << ", theta = " << actualEndPose.theta << std::endl;
+  Pose endPose = integratePath(k);
+  endPose.print();
 
   return 0;
 }

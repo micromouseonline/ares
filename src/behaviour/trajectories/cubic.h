@@ -80,6 +80,32 @@ class Cubic : public Trajectory {
     }
   }
 
+  void updateWithSlip(float k_slip) {
+    m_distance = std::min(m_current_step * m_delta_time * m_velocity, m_cubic_dist);
+    float remaining = m_cubic_dist - m_distance;
+    if (remaining <= 0) {
+      m_current_pose.setOmega(0);
+      m_finished = true;
+    } else {
+      float t = m_distance * remaining;
+
+      float omega = m_velocity * m_cubic_constant * t;
+
+      // Calculate slip angle
+      constexpr float mu = 1.0f;          // coefficient of friction
+      constexpr float gravity = 9800.0f;  // acceleration due to gravity
+      float slip_angle = (k_slip * RADIANS) * (omega * m_velocity) / (mu * gravity);
+
+      // Update pose with slip
+      float slip_x = -m_distance * std::sin(slip_angle);
+      float slip_y = m_distance * (1 - std::cos(slip_angle));
+      m_current_pose.advance(m_velocity, omega * DEGREES, m_delta_time);
+      m_current_pose.addSlip(slip_x, slip_y);
+
+      m_current_step++;
+    }
+  }
+
  private:
   float m_length = 0;
   float m_angle = 0;
