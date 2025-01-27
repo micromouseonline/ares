@@ -116,12 +116,14 @@ class RobotManager {
     ARES_INFO(" RM: Pausing Robot")
     std::lock_guard<std::mutex> lock(m_robot_mutex);
     m_mouse.pauseRunning();
+    m_paused = true;
   }
 
   void resumeRobot() {
     ARES_INFO(" RM: Resuming Robot");
     std::lock_guard<std::mutex> lock(m_robot_mutex);
     m_mouse.resumeRunning();
+    m_paused = false;
   }
 
   void resetRobot() {
@@ -151,6 +153,30 @@ class RobotManager {
 
   void setRobotContinuousMode(bool state) {
     m_mouse.setContinuous(state);
+  }
+
+  /// Some getters for the behaviour. Pause the robot, get the stuff, resume
+
+  /***
+   *We have to make a copy of the maze since it is being updated all the time
+   */
+
+  void getMazeCopy() {
+    Timer timer;
+    bool old_pause_state = m_paused;
+    // if (old_pause_state == false) {
+    m_mouse.pauseRunning();
+    // }
+    timer.wait_ms(0);
+
+    m_maze_map = m_mouse.getMaze();
+    if (old_pause_state == false) {
+      m_mouse.resumeRunning();
+    }
+  }
+
+  Maze& getMap() {
+    return m_maze_map;
   }
 
   /***
@@ -242,7 +268,9 @@ class RobotManager {
   }
 
  private:
+  bool m_paused = false;
   Mouse& m_mouse;
+  Maze m_maze_map;
   std::mutex m_robot_mutex;
   std::thread m_robot_thread;
   std::mutex m_serial_out_mutex;

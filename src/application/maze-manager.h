@@ -89,8 +89,9 @@ struct Wall {
 class MazeManager {
  public:
   MazeManager()
-      : m_posts_vertex_array(sf::Quads),  //
-        m_walls_vertex_array(sf::Quads)   //
+      : m_cells_vertex_array(sf::Quads),  //
+        m_posts_vertex_array(sf::Quads),
+        m_walls_vertex_array(sf::Quads)  //
   {
     resize(16);
 
@@ -124,13 +125,16 @@ class MazeManager {
     m_maze_base_rectangle.setFillColor(conf::MazeBaseColour);
 
     m_wall_states.resize(m_wall_count, WallType::WT_MappedAbsent);
+    m_cell_rectangles.resize(m_maze_width * m_maze_width);
     m_wall_rectangles.resize(m_wall_count);
     m_post_rectangles.resize(m_post_count);
+    m_cells_vertex_array.resize(m_maze_width * m_maze_width * 4);
     m_walls_vertex_array.resize(m_wall_count * 4);
     m_posts_vertex_array.resize(m_post_count * 4);
 
-    createWallGeometry();  //
+    createCellGeometry();
     createPostGeometry();
+    createWallGeometry();  //
     initialiseWallStates();
   }
 
@@ -334,6 +338,48 @@ class MazeManager {
     return m_cell_size;  //
   }
 
+  /***
+   *The base has an array or squares, one for each cell, that can be
+   * coloured according to status;
+   */
+  void createCellGeometry() {
+    for (int y = 0; y < m_maze_width; y++) {
+      for (int x = 0; x < m_maze_width; x++) {
+        int index = x * (m_maze_width) + y;
+        sf::Vector2f position = getCellOrigin(x, y);
+        position += {m_wall_thickness, m_wall_thickness};
+        float width = getCellSize() - m_wall_thickness;
+        sf::Vector2f size = {width, width};
+        m_cell_rectangles[index] = {position, size};
+        sf::Color colour = conf::MazeBaseColour;
+        m_cells_vertex_array[index * 4 + 0].position = position;
+        m_cells_vertex_array[index * 4 + 1].position = sf::Vector2f(position.x + size.x, position.y);
+        m_cells_vertex_array[index * 4 + 2].position = sf::Vector2f(position.x + size.x, position.y + size.y);
+        m_cells_vertex_array[index * 4 + 3].position = sf::Vector2f(position.x, position.y + size.y);
+        m_cells_vertex_array[index * 4 + 0].color = colour;
+        m_cells_vertex_array[index * 4 + 1].color = colour;
+        m_cells_vertex_array[index * 4 + 2].color = colour;
+        m_cells_vertex_array[index * 4 + 3].color = colour;
+      }
+    }
+  }
+
+  void resetCellColours() {
+    for (int y = 0; y < m_maze_width; y++) {
+      for (int x = 0; x < m_maze_width; x++) {
+        setCellColour(x, y, conf::MazeBaseColour);
+      }
+    }
+  }
+
+  void setCellColour(int x, int y, sf::Color colour) {
+    int index = x * (m_maze_width) + y;
+    m_cells_vertex_array[index * 4 + 0].color = colour;
+    m_cells_vertex_array[index * 4 + 1].color = colour;
+    m_cells_vertex_array[index * 4 + 2].color = colour;
+    m_cells_vertex_array[index * 4 + 3].color = colour;
+  }
+
   /**
    * The physical maze consist of two lists of rectangles - the posts
    * and the walls. The posts are all known and fixed in place at the
@@ -508,6 +554,7 @@ class MazeManager {
     //    setWallState(47, WallType::WT_MappedVirtual);
     window.draw(m_walls_vertex_array);
     window.draw(m_posts_vertex_array);
+    window.draw(m_cells_vertex_array);
   }
 
   /**
@@ -622,8 +669,10 @@ class MazeManager {
   // the maze
   std::vector<WallType> m_wall_states;  // the logical state of the walls in the world maze
   sf::RectangleShape m_maze_base_rectangle;
-  std::vector<sf::FloatRect> m_wall_rectangles;
+  std::vector<sf::FloatRect> m_cell_rectangles;
   std::vector<sf::FloatRect> m_post_rectangles;
+  std::vector<sf::FloatRect> m_wall_rectangles;
+  sf::VertexArray m_cells_vertex_array;
   sf::VertexArray m_posts_vertex_array;
   sf::VertexArray m_walls_vertex_array;
 

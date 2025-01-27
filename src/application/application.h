@@ -178,6 +178,14 @@ class Application : public IEventObserver {
     return ss.str();
   }
 
+  std::pair<int, int> getRobotLocation(VehicleState& state) {
+    sf::Vector2f pos = {state.x, state.y};
+    int cell = m_maze_manager.getCellFromPosition(pos.x, pos.y);
+    int cell_x = int(pos.x / m_maze_manager.getCellSize());
+    int cell_y = int(pos.y / m_maze_manager.getCellSize());
+    return std::pair(cell_x, cell_y);
+  }
+
   /***
    * This is where the work gets done. All the application logic and behaviour
    * is performed from this method. By passing in a deltaTime we can choose to
@@ -201,7 +209,20 @@ class Application : public IEventObserver {
 
     /// TODO: this needs sorting out. It may not be thread-safe
     ///       Is it better to just listen for mapping messages from the mouse?
-    m_maze_manager.updateFromMap(m_mouse.getMaze(), m_mouse.getMaze().getWidth());
+    m_robot_manager.getMazeCopy();
+    m_maze_manager.updateFromMap(m_robot_manager.getMap(), m_robot_manager.getMap().getWidth());
+    m_maze_manager.resetCellColours();
+    std::pair<int, int> location = getRobotLocation(m_vehicle_state);
+
+    // m_maze_manager.setCellColour(location.first, location.second, sf::Color::Green);
+    for (int x = 0; x < 16; x++) {
+      for (int y = 0; y < 16; y++) {
+        if (m_robot_manager.getMap().has_unknown_walls(x, y)) {
+          m_maze_manager.setCellColour(x, y, conf::MazeUnseenColour);
+        }
+      }
+    }
+    m_maze_manager.setCellColour(m_robot_manager.getMap().goal().x, m_robot_manager.getMap().goal().y, conf::MazeGoalColour);
 
     std::stringstream state_summary;
     SensorData sensors = m_vehicle_state.sensors;
@@ -365,7 +386,12 @@ class Application : public IEventObserver {
     sf::RenderWindow& window = *m_window->getRenderWindow();
     window.setView(m_window->getMazeView());
     // Render the physical maze TODO: think about how to add and distinguish the robot map from the physical maze
-
+    for (int x = 0; x < 16; x++) {
+      for (int y = 0; y < 16; y++) {
+        // Wall wall = m_robot_manager.maze().walls[x][y];
+        // m_maze_manager.set
+      }
+    }
     // TODO this is sketchy for the highlight. We can do better.
     //      by telling the maze manager what to do
     m_maze_manager.render(window);

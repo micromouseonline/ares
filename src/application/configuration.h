@@ -23,7 +23,9 @@ namespace conf {
   const float WindowPadding = 10.0f;
   const float MazeViewScreenSize = 964.0f;
 
-  const sf::Color MazeBaseColour = sf::Color(30, 30, 30, 64);
+  const sf::Color MazeGoalColour = sf::Color(30, 70, 30, 64);
+  const sf::Color MazeUnseenColour = sf::Color(20, 20, 20, 64);
+  const sf::Color MazeBaseColour = sf::Color(30, 50, 50, 64);
   const sf::Color PostColour = sf::Color(192, 0, 0);
 
   // Robot configuration defaults
