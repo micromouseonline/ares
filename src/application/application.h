@@ -201,11 +201,15 @@ class Application : public IEventObserver {
    * @param deltaTime
    */
   void update(sf::Time deltaTime = sf::seconds(0.01)) {
-    static bool maze_changed = true;
     m_window->update();  // call this first to process window events
     m_elapsed += deltaTime;
     ImGui::SFML::Update(*m_window->getRenderWindow(), m_frame_clock.restart());
     displayLogMessages();
+
+    if (m_maze_changed) {
+      setMaze(m_maze_index);
+      m_maze_changed = false;
+    }
 
     /// TODO: this needs sorting out. It may not be thread-safe
     ///       Is it better to just listen for mapping messages from the mouse?
@@ -272,23 +276,25 @@ class Application : public IEventObserver {
     }
     if (ImGui::Button("RESET", ImVec2(81, 24))) {
       m_robot_buttons |= (uint8_t)Button::BTN_RESET;
+      m_paused = false;
+      m_robot_manager.resumeRobot();
       m_robot_manager.resetRobot();
-      maze_changed = true;
+      m_maze_changed = true;
     } else {
       m_robot_buttons &= ~(uint8_t)Button::BTN_RESET;
     }
 
     ImGui::SameLine();
-    static bool paused = false;
-    bool is_paused = paused;
+
+    bool is_paused = m_paused;
     if (is_paused) {
       ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));         // Red
       ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));  // Lighter red when hovered
       ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));   // Darker red when active
     }
-    if (ImGui::Button(paused ? "RESUME" : "PAUSE", ImVec2(82, 24))) {
-      paused = !paused;
-      if (paused) {
+    if (ImGui::Button(m_paused ? "RESUME" : "PAUSE", ImVec2(82, 24))) {
+      m_paused = !m_paused;
+      if (m_paused) {
         m_robot_manager.pauseRobot();
       } else {
         m_robot_manager.resumeRobot();
@@ -305,24 +311,28 @@ class Application : public IEventObserver {
     } else {
       m_robot_buttons &= ~(uint8_t)Button::BTN_GO;
     }
-    static float speedup = 1.0f;
-    ImGui::SliderFloat("Speedup", &speedup, 0.01, 10.0, "%4.2f");
-    m_robot_manager.setRobotSpeedScale(speedup);
+    ImGui::SliderFloat("Speedup", &m_speed_scale, 0.01, 10.0, "%4.2f");
+    m_robot_manager.setRobotSpeedScale(m_speed_scale);
 
     drawSensorUpdateTime(m_process_time.asMicroseconds());
     ImGui::Text("%s", state_summary.str().c_str());
     ImGui::End();
-
+    renderApplicationControl();
     /////  IMGUI ////////////////////////////////////////////////////////////////////////////
-    ImGui::Begin("Mouse Control", nullptr);
+
+    m_textbox.render();
+  }
+
+  void resetRobot() {
+    m_robot_manager.resumeRobot();
+    m_robot_manager.resetRobot();
+    m_maze_changed = true;
+  }
+  void renderApplicationControl() {  /////  IMGUI ////////////////////////////////////////////////////////////////////////////
+    ImGui::Begin("Application Control", nullptr);
     ImGui::Text("Select the Maze data:");
     if (ImGui::Combo("Maze", &m_maze_index, m_maze_names.data(), (int)m_maze_names.size())) {
-      m_robot_manager.resetRobot();
-      maze_changed = true;
-    }
-    if (maze_changed) {
-      setMaze(m_maze_index);
-      maze_changed = false;
+      m_maze_changed = true;
     }
 
     /// TODO: the log level should be passed in through the vehicle state - like a button push or toggle
@@ -337,17 +347,15 @@ class Application : public IEventObserver {
     }
     renderStateData();
     ImGui::End();
-    /////  IMGUI ////////////////////////////////////////////////////////////////////////////
-
-    m_textbox.render();
   }
 
-  void setMaze(int m_maze_index) {
-    MazeDataSource m = mazeList[m_maze_index];
+  void setMaze(int index) {
+    MazeDataSource m = mazeList[index];
     m_maze_manager.loadFromMemory(m.data, m.size);
     std::string maze_name = m.title;
-    maze_name += "(" + std::to_string(m_maze_index) + ")";
+    maze_name += "(" + std::to_string(index) + ")";
     m_txt_maze_name.setString(maze_name);
+    m_robot_manager.resetRobot();
     m_robot_manager.initRobot();
   }
 
@@ -467,6 +475,9 @@ class Application : public IEventObserver {
   std::vector<sf::FloatRect> m_obstacles;
   std::vector<const char*> m_maze_names;
   int m_maze_index = 0;
+  bool m_maze_changed = true;
+  bool m_paused = false;
+  float m_speed_scale = 1.0f;
   VehicleInputs m_vehicle_inputs;  // data we pass back to the robot
   MazeManager m_maze_manager;
 
