@@ -272,7 +272,6 @@ class Application : public IEventObserver {
     }
     if (ImGui::Button("RESET", ImVec2(81, 24))) {
       m_robot_buttons |= (uint8_t)Button::BTN_RESET;
-      //      m_robot_manager.initRobot();
       m_robot_manager.resetRobot();
       maze_changed = true;
     } else {
@@ -321,6 +320,10 @@ class Application : public IEventObserver {
       m_robot_manager.resetRobot();
       maze_changed = true;
     }
+    if (maze_changed) {
+      setMaze(m_maze_index);
+      maze_changed = false;
+    }
 
     /// TODO: the log level should be passed in through the vehicle state - like a button push or toggle
     bool makes_detailed_event_log = m_robot_manager.isRobotEventLogDetailed();
@@ -332,7 +335,23 @@ class Application : public IEventObserver {
     if (ImGui::Checkbox("Continuous Search", &continuous_search)) {
       m_robot_manager.setRobotContinuousMode(continuous_search);
     }
+    renderStateData();
+    ImGui::End();
+    /////  IMGUI ////////////////////////////////////////////////////////////////////////////
 
+    m_textbox.render();
+  }
+
+  void setMaze(int m_maze_index) {
+    MazeDataSource m = mazeList[m_maze_index];
+    m_maze_manager.loadFromMemory(m.data, m.size);
+    std::string maze_name = m.title;
+    maze_name += "(" + std::to_string(m_maze_index) + ")";
+    m_txt_maze_name.setString(maze_name);
+    m_robot_manager.initRobot();
+  }
+
+  void renderStateData() const {
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "    time     X      Y   Theta     Vel   Omega");
     char s[60];
     /// NOTE: if the tick count is increasing, updateMotion is running and the thread is active
@@ -351,27 +370,6 @@ class Application : public IEventObserver {
     ImGui::PlotLines("speed", speed, IM_ARRAYSIZE(speed), index, "", 0, 3000, ImVec2(330, 100));
     ImGui::PlotLines("angular_velocity", omega, IM_ARRAYSIZE(omega), index, "", -1000, 1000, ImVec2(330, 140));
     ImGui::PlotLines("RDS", rds, IM_ARRAYSIZE(rds), index, "", -1000, 1000, ImVec2(330, 140));
-
-    ImGui::End();
-    /////  IMGUI ////////////////////////////////////////////////////////////////////////////
-
-    m_textbox.render();
-
-    ImGui::ShowDemoWindow();
-    //////////////////////////////////////////////////////////////////////////////////////////
-
-    if (maze_changed) {
-      MazeDataSource m = mazeList[m_maze_index];
-      m_maze_manager.loadFromMemory(m.data, m.size);
-
-      std::string maze_name = m.title;
-      maze_name += "(";
-      maze_name += std::to_string(m_maze_index);
-      maze_name += ")";
-      m_txt_maze_name.setString(maze_name);
-      m_robot_manager.initRobot();
-      maze_changed = false;
-    }
   }
 
   /// The Render() method is the only place that output is generated for the
