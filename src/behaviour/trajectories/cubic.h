@@ -97,7 +97,8 @@ class Cubic : public Trajectory {
       float slip_angle = (k_slip * RADIANS) * (omega * m_velocity) / (mu * gravity);
 
       // Update pose with slip
-      float slip_x = -m_distance * std::sin(slip_angle);
+      /// this is wrong
+      float slip_x = m_distance * std::sin(slip_angle);
       float slip_y = m_distance * (1 - std::cos(slip_angle));
       m_current_pose.advance(m_velocity, omega * DEGREES, m_delta_time);
       m_current_pose.addSlip(slip_x, slip_y);
