@@ -60,8 +60,8 @@ class Mouse {
         m_reset(false),
         m_paused(false),
         m_SerialOut(nullptr),
-        m_BinaryOut(nullptr) {
-          // BLOCK INTENTIONALLY EMPTY
+        m_BinaryOut(nullptr){
+            // BLOCK INTENTIONALLY EMPTY
         };
 
   ~Mouse() {
@@ -289,7 +289,8 @@ class Mouse {
     float speed = m_vehicle.getState().velocity;
     int cells = get_run_length(m_location, m_heading);
     m_logger.info("Cell lookahead %d", cells);
-    doMove(180, speed, speed, 5000);
+    //    doMove(180, speed, speed, 5000);
+    dash_forward(cells, speed);
   }
 
   /***
@@ -298,23 +299,17 @@ class Mouse {
    * without doing any checks. The move is done as a single motion
    * profile and the mouse location gets updated accordingly.
    */
-  void dash_forward(int cells) {
-    //    if (cells <= 0) {
-    //      m_forward->adjust_distance(-FULL_CELL);
-    //      return;
-    //    }
-    //    float start_pos = m_forward->distance();
-    //    float distance = FULL_CELL * cells - 30;
-    //    float speed = cells > 1 ? FAST_SEARCH_SPEED : SEARCH_SPEED;
-    //    move(distance, speed, SEARCH_SPEED, SEARCH_ACCELERATION);
-    //    // The forward move reset the position counter
-    //    m_forward->adjust_distance(start_pos - cells * FULL_CELL);
-    //
-    //    // now update location and the relative position
-    //    while (--cells > 0) {
-    //      m_location = m_location.neighbour(m_heading);
-    //    }
-    //    wait_until_distance(SENSING_POSITION);
+  void dash_forward(int cells, float speed) {
+    if (cells <= 0) {
+      return;
+    }
+    float distance = FULL_CELL * cells;
+    float v_max = cells > 1 ? 5 * speed : speed;
+    float a_max = cells > 1 ? 10000 : 5000;
+    doMove(distance, v_max, speed, a_max);
+    while (--cells > 0) {
+      m_location = m_location.neighbour(m_heading);
+    }
   }
 
   /***
