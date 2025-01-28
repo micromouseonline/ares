@@ -182,7 +182,6 @@ class Application : public IEventObserver {
 
   std::pair<int, int> getRobotLocation(VehicleState& state) {
     sf::Vector2f pos = {state.x, state.y};
-    int cell = m_maze_manager.getCellFromPosition(pos.x, pos.y);
     int cell_x = int(pos.x / m_maze_manager.getCellSize());
     int cell_y = int(pos.y / m_maze_manager.getCellSize());
     return std::pair(cell_x, cell_y);
