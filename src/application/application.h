@@ -32,6 +32,11 @@
 #include "robot-body.h"
 #include "vehicle/vehicle.h"
 
+const Activity activity[] = {
+    ACT_NONE,         ACT_CONTEST,    ACT_SEARCH,     ACT_SPEED_1,    ACT_SPEED_2,   ACT_SPEED_3,    ACT_SPEED_4,   ACT_SPEED_5,    ACT_TEST_FOLLOW_TO,
+    ACT_TEST_CIRCUIT, ACT_TEST_SS90E, ACT_TEST_SS90F, ACT_TEST_SS180, ACT_TEST_SD45, ACT_TEST_SD135, ACT_TEST_DS45, ACT_TEST_DS135, ACT_TEST_DD90,
+};
+
 class Application : public IEventObserver {
  public:
   Application()
@@ -147,7 +152,7 @@ class Application : public IEventObserver {
     /// This is not events. Test keyboard or mouse button STATE here
   }
 
-  void displayLogMessages() {
+  void renderLogMessageWindow() {
     m_robot_manager.processOutputQueue(g_log_messages);  ///                          make the log  vector and use that
     while (!g_log_messages.empty()) {
       m_textbox.addText(g_log_messages.front());
@@ -167,14 +172,11 @@ class Application : public IEventObserver {
   std::string formatRobotState(VehicleState& state) {
     std::stringstream ss;
     sf::Vector2f pos = {state.x, state.y};
-    int cell = m_maze_manager.getCellFromPosition(pos.x, pos.y);
     int cell_x = int(pos.x / m_maze_manager.getCellSize());
     int cell_y = int(pos.y / m_maze_manager.getCellSize());
-    ss << "Vehicle:  X: " << (int)pos.x << "\n"                                            //
-       << "        y: " << (int)pos.y << "\n"                                              //
-       << "    angle: " << std::fixed << std::setprecision(1) << state.angle << " deg \n"  //
-       << "\n"                                                                             //
-       << " Cell:  [" << cell_x << ", " << cell_y << "] = " << cell << "\n";               //
+    ss << "        X: " << std::setw(5) << (int)pos.x << " Y: " << std::setw(5) << (int)pos.y           //
+       << " Theta: " << std::setw(6) << std::fixed << std::setprecision(1) << state.angle << " deg \n"  //
+       << " Location:  [" << cell_x << ", " << cell_y << "] = " << "\n";                                //
     return ss.str();
   }
 
@@ -204,19 +206,27 @@ class Application : public IEventObserver {
     m_window->update();  // call this first to process window events
     m_elapsed += deltaTime;
     ImGui::SFML::Update(*m_window->getRenderWindow(), m_frame_clock.restart());
-    displayLogMessages();
 
+    updateMaze();
+
+    renderLogMessageWindow();          // ImGui
+    renderMouseControlWindow();        // ImGui
+    renderApplicationControlWindow();  // ImGui
+    m_textbox.render();                // ImGui
+  }
+
+  void updateMaze() {
     if (m_maze_changed) {
       setMaze(m_maze_index);
       m_maze_changed = false;
     }
-
-    /// TODO: this needs sorting out. It may not be thread-safe
-    ///       Is it better to just listen for mapping messages from the mouse?
     m_robot_manager.getMazeCopy();
     m_maze_manager.updateFromMap(m_robot_manager.getMap(), m_robot_manager.getMap().getWidth());
+    colourMazeCells();
+  }
+
+  void colourMazeCells() {
     m_maze_manager.resetCellColours();
-    std::pair<int, int> location = getRobotLocation(m_vehicle_state);
 
     // m_maze_manager.setCellColour(location.first, location.second, sf::Color::Green);
     for (int x = 0; x < 16; x++) {
@@ -227,34 +237,12 @@ class Application : public IEventObserver {
       }
     }
     m_maze_manager.setCellColour(m_robot_manager.getMap().goal().x, m_robot_manager.getMap().goal().y, conf::MazeGoalColour);
+  }
 
-    std::stringstream state_summary;
-    SensorData sensors = m_vehicle_state.sensors;
-    state_summary << "power:  " + formatSensorData((int)sensors.lfs_power, (int)sensors.lds_power, (int)sensors.rds_power, (int)sensors.rfs_power);
-    state_summary << " Dist:  " + formatSensorData((int)sensors.lfs_distance, (int)sensors.lds_distance, (int)sensors.rds_distance, (int)sensors.rfs_distance);
-    state_summary << "\n";
-    state_summary << formatRobotState(m_vehicle_state);
-
-    /////  IMGUI ////////////////////////////////////////////////////////////////////////////
+  void renderMouseControlWindow() {
     ImGui::Begin("MouseUI", nullptr);
-    const uint8_t leds = m_vehicle_state.leds;
-    for (int i = 7; i >= 0; i--) {
-      bool bitState = leds & BIT(i);
-      DrawLEDx(bitState, 6, IM_COL32(255, 64, 64, 255));
-    }
-    ImGui::Text("LEDS");
-    const char* item_names[] = {
-        "NOTHING",     "Run Contest", "Search", "Speedrun 1", "Speedrun 2", "Speedrun 3", "Speedrun 4", "Speedrun 5", "Wall Follower",
-        "Circuit Run", "SS90E",       "SS90F",  "SS180",      "SD45",       "SD135",      "DS45",       "DS135",      "DD90",
-    };
-    const Activity activity[] = {
-        ACT_NONE,         ACT_CONTEST,    ACT_SEARCH,     ACT_SPEED_1,    ACT_SPEED_2,   ACT_SPEED_3,    ACT_SPEED_4,   ACT_SPEED_5,    ACT_TEST_FOLLOW_TO,
-        ACT_TEST_CIRCUIT, ACT_TEST_SS90E, ACT_TEST_SS90F, ACT_TEST_SS180, ACT_TEST_SD45, ACT_TEST_SD135, ACT_TEST_DS45, ACT_TEST_DS135, ACT_TEST_DD90,
-    };
-
-    static int item_type = 2;
-    ImGui::Combo("Item Type", &item_type, item_names, IM_ARRAYSIZE(item_names), IM_ARRAYSIZE(item_names));
-
+    renderLEDs();
+    int item_type = renderActivityChooser();
     if (item_type >= ACT_TEST_CIRCUIT) {
       static int counts = 2;
       ImGui::AlignTextToFramePadding();
@@ -274,16 +262,87 @@ class Application : public IEventObserver {
       ImGui::SameLine();
       ImGui::Text("%d", counts);
     }
+
+    renderResetButton();
+    renderPauseButton();
+    renderGoButton(item_type);
+
+    ImGui::SliderFloat("Speedup", &m_speed_scale, 0.01, 10.0, "%4.2f");
+    m_robot_manager.setRobotSpeedScale(m_speed_scale);
+
+    drawSensorUpdateTime(m_process_time.asMicroseconds());
+
+    renderStateSummary();
+    ImGui::End();
+  }
+
+  void showProgressBar(float value, float maxValue, sf::Color color = sf::Color(60, 96, 150, 255)) {
+    // Normalize the value to the range [0, 1] for the progress bar
+    float progress = value / maxValue;
+    // Display the progress bar
+    char overlay[12];
+    snprintf(overlay, sizeof(overlay), "%3.0f", value);
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, color);
+    ImGui::ProgressBar(progress, ImVec2(255.0f, 16.0f), overlay);
+    ImGui::PopStyleColor(1);
+  }
+
+  void renderStateSummary() {
+    ImGui::Text("\nPower:");
+    SensorData sensors = m_vehicle_state.sensors;
+    ImGui::Text("  lfs");
+    ImGui::SameLine();
+    showProgressBar(sensors.lfs_power, 1024.0f);
+    ImGui::Text("  lds");
+    ImGui::SameLine();
+    showProgressBar(sensors.lds_power, 1024.0f);
+    ImGui::Text("  rds");
+    ImGui::SameLine();
+    showProgressBar(sensors.rds_power, 1024.0f);
+    ImGui::Text("  rfs");
+    ImGui::SameLine();
+    showProgressBar(sensors.rfs_power, 1024.0f);
+    ImGui::Text("\nDistance:");
+    ImGui::Text("  lfs");
+    ImGui::SameLine();
+    showProgressBar(sensors.lfs_distance, 300.0f);
+    ImGui::Text("  lds");
+    ImGui::SameLine();
+    showProgressBar(sensors.lds_distance, 300.0f);
+    ImGui::Text("  rds");
+    ImGui::SameLine();
+    showProgressBar(sensors.rds_distance, 300.0f);
+    ImGui::Text("  rfs");
+    ImGui::SameLine();
+    showProgressBar(sensors.rfs_distance, 300.0f);
+    ImGui::NewLine();
+    std::stringstream state_summary;
+    state_summary << formatRobotState(m_vehicle_state);
+    ImGui::Text("%s", state_summary.str().c_str());
+  }
+
+  void renderLEDs() const {
+    const uint8_t leds = m_vehicle_state.leds;
+    for (int i = 7; i >= 0; i--) {
+      bool bitState = leds & BIT(i);
+      DrawLEDx(bitState, 6, IM_COL32(255, 64, 64, 255));
+    }
+    ImGui::Text("LEDS");
+  }
+
+  void renderResetButton() {
     if (ImGui::Button("RESET", ImVec2(81, 24))) {
-      m_robot_buttons |= (uint8_t)Button::BTN_RESET;
+      m_robot_buttons |= (uint8_t)BTN_RESET;
       m_paused = false;
       m_robot_manager.resumeRobot();
       m_robot_manager.resetRobot();
       m_maze_changed = true;
     } else {
-      m_robot_buttons &= ~(uint8_t)Button::BTN_RESET;
+      m_robot_buttons &= ~(uint8_t)BTN_RESET;
     }
+  }
 
+  void renderPauseButton() {
     ImGui::SameLine();
 
     bool is_paused = m_paused;
@@ -303,24 +362,26 @@ class Application : public IEventObserver {
     if (is_paused) {
       ImGui::PopStyleColor(3);
     }
+  }
 
+  void renderGoButton(int item_type) {
     ImGui::SameLine();
     if (ImGui::Button("GO", ImVec2(81, 24))) {
       m_robot_manager.setRobotActivity(activity[item_type]);
-      m_robot_buttons |= (uint8_t)Button::BTN_GO;
+      m_robot_buttons |= (uint8_t)BTN_GO;
     } else {
-      m_robot_buttons &= ~(uint8_t)Button::BTN_GO;
+      m_robot_buttons &= ~(uint8_t)BTN_GO;
     }
-    ImGui::SliderFloat("Speedup", &m_speed_scale, 0.01, 10.0, "%4.2f");
-    m_robot_manager.setRobotSpeedScale(m_speed_scale);
+  }
 
-    drawSensorUpdateTime(m_process_time.asMicroseconds());
-    ImGui::Text("%s", state_summary.str().c_str());
-    ImGui::End();
-    renderApplicationControl();
-    /////  IMGUI ////////////////////////////////////////////////////////////////////////////
-
-    m_textbox.render();
+  int renderActivityChooser() {
+    const char* item_names[] = {
+        "NOTHING",     "Run Contest", "Search", "Speedrun 1", "Speedrun 2", "Speedrun 3", "Speedrun 4", "Speedrun 5", "Wall Follower",
+        "Circuit Run", "SS90E",       "SS90F",  "SS180",      "SD45",       "SD135",      "DS45",       "DS135",      "DD90",
+    };
+    static int item_type = 2;
+    ImGui::Combo("Item Type", &item_type, item_names, IM_ARRAYSIZE(item_names), IM_ARRAYSIZE(item_names));
+    return item_type;
   }
 
   void resetRobot() {
@@ -328,7 +389,7 @@ class Application : public IEventObserver {
     m_robot_manager.resetRobot();
     m_maze_changed = true;
   }
-  void renderApplicationControl() {  /////  IMGUI ////////////////////////////////////////////////////////////////////////////
+  void renderApplicationControlWindow() {  /////  IMGUI ////////////////////////////////////////////////////////////////////////////
     ImGui::Begin("Application Control", nullptr);
     ImGui::Text("Select the Maze data:");
     if (ImGui::Combo("Maze", &m_maze_index, m_maze_names.data(), (int)m_maze_names.size())) {
@@ -367,17 +428,16 @@ class Application : public IEventObserver {
             m_vehicle_state.ticks, m_vehicle_state.x, m_vehicle_state.y, m_vehicle_state.angle, m_vehicle_state.velocity, m_vehicle_state.angular_velocity);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", s);
     const int frames = 60 * 4;
+    static int index = 0;
     static float speed[frames];
     static float omega[frames];
     static float rds[frames];
-    static int index = 0;
     speed[index] = m_vehicle_state.velocity;
     omega[index] = m_vehicle_state.angular_velocity;
     rds[index] = m_vehicle_state.sensors.rds_power;
     index = (index + 1) % IM_ARRAYSIZE(speed);
     ImGui::PlotLines("speed", speed, IM_ARRAYSIZE(speed), index, "", 0, 3000, ImVec2(330, 100));
     ImGui::PlotLines("angular_velocity", omega, IM_ARRAYSIZE(omega), index, "", -1000, 1000, ImVec2(330, 140));
-    ImGui::PlotLines("RDS", rds, IM_ARRAYSIZE(rds), index, "", -1000, 1000, ImVec2(330, 140));
   }
 
   /// The Render() method is the only place that output is generated for the
