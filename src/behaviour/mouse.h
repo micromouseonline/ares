@@ -287,7 +287,59 @@ class Mouse {
 
   void goForward() {
     float speed = m_vehicle.getState().velocity;
+    int cells = get_run_length(m_location, m_heading);
+    m_logger.info("Cell lookahead %d", cells);
     doMove(180, speed, speed, 5000);
+  }
+
+  /***
+   * when exploring, the mouse looks ahead and counts the number of explored
+   * cells. When that number is known, it can run those cells quickly
+   * without doing any checks. The move is done as a single motion
+   * profile and the mouse location gets updated accordingly.
+   */
+  void dash_forward(int cells) {
+    //    if (cells <= 0) {
+    //      m_forward->adjust_distance(-FULL_CELL);
+    //      return;
+    //    }
+    //    float start_pos = m_forward->distance();
+    //    float distance = FULL_CELL * cells - 30;
+    //    float speed = cells > 1 ? FAST_SEARCH_SPEED : SEARCH_SPEED;
+    //    move(distance, speed, SEARCH_SPEED, SEARCH_ACCELERATION);
+    //    // The forward move reset the position counter
+    //    m_forward->adjust_distance(start_pos - cells * FULL_CELL);
+    //
+    //    // now update location and the relative position
+    //    while (--cells > 0) {
+    //      m_location = m_location.neighbour(m_heading);
+    //    }
+    //    wait_until_distance(SENSING_POSITION);
+  }
+
+  /***
+   * During search, calculate how many visited cells lie ahead
+   * maze must have been flooded
+   *
+   */
+  int get_run_length(Location location, Direction heading) {
+    int len = 1;
+    // get the common error cases sorted out early
+    if (not m_maze.is_exit(location, heading)) {
+      return -1;
+    }
+    Location next_cell = location.neighbour(heading);
+    if (m_maze.has_unknown_walls(location)) {
+      return -2;
+    }
+    // now we are in with a chance of a run
+    Direction new_heading = m_maze.direction_to_smallest(next_cell, heading);
+    while (new_heading == heading and !m_maze.has_unknown_walls(next_cell) and next_cell != m_maze.goal()) {
+      len++;
+      next_cell = next_cell.neighbour(new_heading);
+      new_heading = m_maze.direction_to_smallest(next_cell, new_heading);
+    }
+    return len;
   }
 
   void followTo(Location target) {
