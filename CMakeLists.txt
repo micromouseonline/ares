@@ -135,6 +135,10 @@ add_executable(${APP} "")
 copy_resources(${APP})
 copy_windows_dlls(${APP})
 
+target_compile_definitions(${APP} PRIVATE
+        ARES_SIMULATOR
+)
+
 target_compile_options(${APP} PUBLIC
         ${DEFAULT_COMPILER_OPTIONS_AND_WARNINGS}
 )

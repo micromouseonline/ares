@@ -28,6 +28,14 @@
 #include "trajectory.h"
 #include "vehicle/vehicle.h"
 
+#ifdef ARES_SIMULATOR
+#include <mutex>
+std::mutex mtx;
+#define ATOMIC std::lock_guard<std::mutex> lock(mtx);
+#else
+#define ATOMIC
+#endif
+
 enum Activity {
   ACT_NONE,
   ACT_CONTEST,
@@ -60,8 +68,8 @@ class Mouse {
         m_reset(false),
         m_paused(false),
         m_SerialOut(nullptr),
-        m_BinaryOut(nullptr){
-            // BLOCK INTENTIONALLY EMPTY
+        m_BinaryOut(nullptr) {
+          // BLOCK INTENTIONALLY EMPTY
         };
 
   ~Mouse() {
