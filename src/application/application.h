@@ -319,6 +319,7 @@ class Application : public IEventObserver {
     std::stringstream state_summary;
     state_summary << formatRobotState(m_vehicle_state);
     ImGui::Text("%s", state_summary.str().c_str());
+    ImGui::Text("%4.1f", m_mouse.getOffset());
   }
 
   void renderLEDs() const {
@@ -430,14 +431,14 @@ class Application : public IEventObserver {
     const int frames = 60 * 4;
     static int index = 0;
     static float speed[frames];
-    static float omega[frames];
-    static float rds[frames];
     speed[index] = m_vehicle_state.velocity;
-    omega[index] = m_vehicle_state.angular_velocity;
-    rds[index] = m_vehicle_state.sensors.rds_power;
-    index = (index + 1) % IM_ARRAYSIZE(speed);
     ImGui::PlotLines("speed", speed, IM_ARRAYSIZE(speed), index, "", 0, 3000, ImVec2(330, 100));
+    static float omega[frames];
+    omega[index] = m_vehicle_state.angular_velocity;
     ImGui::PlotLines("angular_velocity", omega, IM_ARRAYSIZE(omega), index, "", -1000, 1000, ImVec2(330, 140));
+    index = (index + 1) % IM_ARRAYSIZE(speed);
+    //    static float rds[frames];
+    //    rds[index] = m_vehicle_state.sensors.rds_power;
   }
 
   /// The Render() method is the only place that output is generated for the

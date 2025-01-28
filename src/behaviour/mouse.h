@@ -622,6 +622,12 @@ class Mouse {
   void systick() {
     if (m_current_trajectory && !m_current_trajectory->isFinished()) {
       m_current_trajectory->update();
+      float distance_moved = m_current_trajectory->getDistanceChange();
+      m_total_distance += distance_moved;
+      m_offset += distance_moved;
+      if (m_offset > m_cell_size) {
+        m_offset -= m_cell_size;
+      }
       float v = m_current_trajectory->getCurrentPose().getVelocity();
       float w = m_current_trajectory->getCurrentPose().getOmega();
       m_vehicle.setSpeeds(v, w);
@@ -703,6 +709,22 @@ class Mouse {
 
   void setActivity(int activity) {
     m_activity = activity;
+  }
+
+  float getOffset() {
+    return m_offset;
+  }
+
+  void setOffset(float offset) {
+    m_offset = offset;
+  }
+
+  float getDistance() {
+    return m_total_distance;
+  }
+
+  void setDistance(float distance) {
+    m_total_distance = distance;
   }
 
  private:
@@ -815,7 +837,9 @@ class Mouse {
   bool m_reset = false;
   bool m_paused = false;
   bool m_locked = false;
-
+  float m_total_distance = 0;
+  float m_offset = 0;  /// distance through one cell
+  float m_cell_size = 180.0f;
   uint32_t m_ticks = 0;
 
   std::atomic<int> m_activity = ACT_NONE;

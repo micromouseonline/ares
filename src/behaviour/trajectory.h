@@ -126,6 +126,10 @@ class Trajectory {
     return m_delta_time;
   }
 
+  float getDistanceChange() {
+    return m_current_pose.getVelocity() * m_delta_time;
+  }
+
   Type getType() {
     return m_type;
   }
