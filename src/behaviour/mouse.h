@@ -91,8 +91,8 @@ class Mouse {
         m_paused(false),
         m_SerialOut(nullptr),
         m_BinaryOut(nullptr) {
-          // BLOCK INTENTIONALLY EMPTY
-        };
+    begin();
+  };
 
   ~Mouse() {
     stopRunning();  //
@@ -1563,8 +1563,10 @@ class Mouse {
 
     m_logger.info((const char*)path_string);
     m_logger.info("\nCreating operations...");
-    compiler_make_orthogonal_operations(path_string, op_list);
-    compiler_make_diagonal_operations(path_string, op_list);
+    MotionCompiler::makeSmoothActions(path_string, op_list);
+    //    compiler_make_orthogonal_operations(path_string, op_list);
+    MotionCompiler::makeDiagonalActions(path_string, op_list, 256);
+    //    compiler_make_diagonal_operations(path_string, op_list);
 
     printf("done:\n");
     print_action_list((Action*)op_list);
@@ -1638,9 +1640,9 @@ class Mouse {
   }
 
   void update_map() {
-    bool leftWall = sensors()->see_left_wall;
-    bool frontWall = sensors()->see_front_wall;
-    bool rightWall = sensors()->see_right_wall;
+    bool leftWall = sensors().see_left_wall;
+    bool frontWall = sensors().see_front_wall;
+    bool rightWall = sensors().see_right_wall;
     char w[] = "--- ";
     if (leftWall) {
       w[0] = 'L';
@@ -1801,7 +1803,8 @@ class Mouse {
     path_make_string({0, 0}, m_maze.goal());
     m_logger.info("%s\n", path_string);
     printf("%s\n", path_string);
-    compiler_make_orthogonal_operations(path_string, op_list);
+    MotionCompiler::makeSmoothActions(path_string, op_list);
+    //    compiler_make_orthogonal_operations(path_string, op_list);
     //    print_action_list(op_list);
     return 0;
   }
