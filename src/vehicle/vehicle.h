@@ -261,29 +261,18 @@ class Vehicle {
     return m_has_panic;
   }
 
-  void panic(const char* message) __attribute__((noreturn)) {
+  /***
+   * In the hardware, this would not return.
+   * Instead,
+   *    the LEDS would all flash,
+   *    a message appears on the display
+   *    the speaker beeps
+   * @param message
+   */
+  void panic(const char* message) {
     m_has_panic = true;
-    //  shutdown(); // we need an orderly shutdown
-    //    Speaker* speaker = Board::instance()->speaker();
-    //    speaker->off();
-    //    Board::instance()->adc()->disable_emitters();
-    //    reset_drive_system();
-    //
-    //    Board::instance()->display()->cls();
-    //    Board::instance()->display()->println(message);
-    //    Board::instance()->display()->on();
-    //
-    //    // millis() is no longer updated to delay_ms is no good
-    //    while (true) {
-    //      delay_us(500000);
-    //      Board::instance()->display()->on();
-    //      speaker->set_frequency(100);
-    //      speaker->on();
-    //      delay_us(50000);
-    //      Board::instance()->display()->off();
-    //      speaker->off();
-    //    }
   }
+
   //////////////////////////////////////////////////////////////
 
   ///////////////////
@@ -307,12 +296,12 @@ class Vehicle {
   float omega() const {
     return m_state.angular_velocity;
   }
+  //////////////////////////
 
   void set_target_velocities(float velocity, float omega) {
     desired_velocities.velocity = velocity;
     desired_velocities.omega = omega;
   }
-  //////////////////////////
 
   /// This is safe to call only from the behaviour (mouse) code
   [[nodiscard]] VehicleState getState() const {
