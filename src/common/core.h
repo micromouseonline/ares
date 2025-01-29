@@ -61,10 +61,16 @@ inline float normalizeAngle(float angle) {
   return angle - 180.0f;
 }
 
+const float LOOP_FREQUENCY = 1000.0;
+const float LOOP_INTERVAL = (1.0 / LOOP_FREQUENCY);
+
 /// The following are effectively equivalent but the older
 /// style is slightly more efficient at run time.
 using SerialOut = std::function<void(const char)>;
 using BinaryOut = std::function<void(const uint8_t)>;
+
+/// used when having systick call the mouse behaviour during systick
+using SystickMouseCallback = std::function<void()>;
 // using SerialOut = void (*)(const char);
 // using BinaryOut = void (*)(const uint8_t);
 

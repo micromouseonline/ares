@@ -161,7 +161,7 @@ class Mouse {
     m_forward = new Profile();
     m_rotation = new Profile();
     //// This uses a lambda. I don't understand lambdas
-    //    m_robot->set_owner_callback([this] { update_callback(); });
+    m_vehicle.set_systick_callback([this] { systick_callback(); });
   };
 
   ///////////////////////////////
@@ -229,47 +229,7 @@ class Mouse {
     CubicTurnParameters params = cubic_params[turn_index];
     execute_cubic_turn(params.angle, params.length);
   }
-  ////////////////////////////////
-  /***
-   * The update_callback is called by the robot at every systick.
-   * It provides a way to have the Mouse update the profilers so that
-   * ownership of the current profile stays with the mouse, not the robot.
-   *
-   * Without this mechanism, how else would he Mouse tell the robot about the
-   * desired speed profile?
-   *
-   * OTOH, that means the Mouse must also take care of other stuff like,
-   * for example running for a given distance or to a given point.
-   *
-   * That is probably for the best.
-   *
-   * Can the Mouse really just assume that everything is hunky-dory or should
-   * it also monitor the Robot status - possibly in this callback.
-   *
-   */
-  void mouse_callback(float delta_time) {
-    // at the very least, this is where the mouse gets to update the desired velocity.
-    //    m_sensors->update();
-    //    m_robot->set_steering_feedback(m_sensors->get_steering_feedback());
-    m_forward->update(delta_time);
 
-    m_offset = m_offset + m_forward->increment();
-    m_total_distance = m_total_distance + m_forward->increment();
-    if (m_offset > m_cell_size) {
-      m_offset = m_offset - m_cell_size;
-    }
-    m_rotation->update(delta_time);
-    cubic_turn_update();
-    m_vehicle.setSpeeds(m_forward->speed(), m_rotation->speed());
-    //    if (Board::instance()->battery()->check() != Battery::GOOD) {
-    //      m_logger.info("\nERROR : Battery Low %4.2fV\n\n", m_robot->battery_voltage());
-    //      m_robot->panic("BATT");
-    //    }
-    //    if (m_forward->speed() > 400 && m_sensors->lds.value > 1500 && m_sensors->rds.value > 1500) {
-    //      m_logger.info("\nCRASH : Sensor overload while moving\n\n");
-    //      m_robot->panic("CRSH");
-    //    }
-  }
   ////////////////////////////////
 
   void set_steering_mode(uint8_t mode) {
@@ -2132,50 +2092,29 @@ class Mouse {
     }
   }
 
-  uint32_t getTimeStamp() {
-    return m_timeStamp;  //
-  }
-
   uint32_t millis() {
     return m_timeStamp;
   }
 
-  void systick() {
-    //    if (m_current_trajectory && !m_current_trajectory->isFinished()) {
-    //      m_current_trajectory->update();
-    //      float distance_moved = m_current_trajectory->getDistanceChange();
-    //      m_total_distance += distance_moved;
-    //      m_offset += distance_moved;
-    //      if (m_offset > m_cell_size) {
-    //        m_offset -= m_cell_size;
-    //      }
-    //      float v = m_current_trajectory->getCurrentPose().getVelocity();
-    //      float w = m_current_trajectory->getCurrentPose().getOmega();
-    //      m_vehicle.setSpeeds(v, w);
-    //    } else {
-    //      if (m_current_trajectory->getType() != Trajectory::IDLE) {
-    //        std::unique_ptr<IdleTrajectory> idle = std::make_unique<IdleTrajectory>();
-    //        m_current_trajectory = std::move(idle);
-    //      }
-    //    }
-    //
-    mouse_callback(m_step_time);
-    m_vehicle.updateSensors();
-    m_vehicle.updateInputs();
-
-    m_vehicle.updateMotion(m_step_time);
-    VehicleState v_state = m_vehicle.getState();
-    m_vehicle.setLed(7, v_state.sensors.lfs_power > 18);
-    m_vehicle.setLed(6, v_state.sensors.lds_power > 40);
-    m_vehicle.setLed(5, v_state.sensors.rds_power > 40);
-    m_vehicle.setLed(4, v_state.sensors.rfs_power > 18);
-
-    if (v_state.buttons & 0x02) {
-      m_timeStamp = 0;
+  ////////////////////////////////
+  /***
+   * The systick_callback is called by the vehicle at every systick.
+   * It provides a way to have the Mouse update the profilers so that
+   * ownership of the current profile stays with the mouse, not the robot.
+   */
+  void systick_callback() {
+    // at the very least, this is where the mouse gets to update the desired velocity.
+    //    m_sensors->update();
+    //    m_robot->set_steering_feedback(m_sensors->get_steering_feedback());
+    m_forward->update();
+    m_offset = m_offset + m_forward->increment();
+    m_total_distance = m_total_distance + m_forward->increment();
+    if (m_offset > m_cell_size) {
+      m_offset = m_offset - m_cell_size;
     }
-    m_vehicle.setLed(1, (v_state.buttons & Button::BTN_RESET) != 0);
-    m_vehicle.setLed(0, (v_state.buttons & Button::BTN_GO) != 0);
-
+    m_rotation->update();
+    cubic_turn_update();
+    m_vehicle.setSpeeds(m_forward->speed(), m_rotation->speed());
     m_timeStamp++;
     m_ticks++;
   }
@@ -2195,7 +2134,7 @@ class Mouse {
     Timer timer;
     while (ms > 0 && !m_terminate && !m_reset) {
       if (!m_paused) {
-        systick();
+        m_vehicle.systick();
         ms--;
       }
       timer.wait_us(1000 * m_speed_up);  // Avoid hogging the thread

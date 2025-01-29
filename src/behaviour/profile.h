@@ -205,12 +205,12 @@ class Profile {
   }
 
   // update is called from within systick and should be safe from interrupts
-  void update(float delta_time) {
+  void update() {
     if (m_state == PS_IDLE) {
       return;
     }
 
-    float delta_v = m_acceleration * delta_time;
+    float delta_v = m_acceleration * LOOP_INTERVAL;
     m_remaining = fabsf(m_final_distance) - fabsf(m_distance);
     if (m_state == PS_ACCELERATING) {
       if (m_remaining < get_braking_distance()) {
@@ -236,7 +236,7 @@ class Profile {
       }
     }
     // increment the distance
-    m_increment = m_speed * delta_time;
+    m_increment = m_speed * LOOP_INTERVAL;
     m_distance = m_distance + m_increment;
     if (m_state != PS_FINISHED && m_remaining < 0.125) {
       m_state = PS_FINISHED;

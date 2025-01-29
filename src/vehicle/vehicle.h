@@ -123,6 +123,16 @@ struct VehicleState {
   SensorData sensors;
 };
 
+struct Velocities {
+  float velocity = 0;
+  float omega = 0;
+};
+
+struct MotorVoltages {
+  float left = 0;
+  float right = 0;
+};
+
 /// Returns a SensorData struct
 using SensorDataCallback = std::function<VehicleInputs(VehicleState)>;
 
@@ -150,6 +160,37 @@ class Vehicle {
     m_initialised = true;
   }
 
+  /***
+   * In the hardware, systick is a timer interrupt.
+   * In the simulation, this is called from the behaviour's delay_ms() method
+   * to advance the state of the vehicle
+   * You could call it asynchronously using another thread but that just
+   * makes things more complicated.
+   */
+  void systick() {
+    //    boardUpdate();  /// update the state of the board
+    ///   speaker
+    ///   buttons
+    ///   display
+    ///   battery
+
+    updateSensors();  /// turn adc data into useful sensor results
+    updateMotion(m_step_time);
+
+    if (systick_mouse_callback) {
+      systick_mouse_callback();
+    }
+    Velocities actual_velocities;
+    float steering_feedback = get_steering_feedback();
+    MotorVoltages motor_voltages;
+    motor_voltages = motorControllersUpdate(desired_velocities, actual_velocities, steering_feedback);  /// calculate required motor output voltages
+    set_motor_voltage(motor_voltages.left, motor_voltages.right);                                       /// set the output voltage
+    updateLeds();
+    //    recorderUpdate(); /// process the next line of blackbox data
+
+    /// calculate time taken in this method
+  }
+
   void set_steering_feedback(float steering_fb) {
     m_steering_fb = steering_fb;
   }
@@ -157,8 +198,19 @@ class Vehicle {
     return m_steering_fb;
   }
 
-  ///// stubs for sim //////////////////////////////////////////
+  void set_systick_callback(SystickMouseCallback callback) {
+    systick_mouse_callback = callback;
+  }
 
+  ///// stubs for sim //////////////////////////////////////////
+  void updateLeds() {
+    setLed(7, m_state.sensors.lfs_power > 18);
+    setLed(6, m_state.sensors.lds_power > 40);
+    setLed(5, m_state.sensors.rds_power > 40);
+    setLed(4, m_state.sensors.rfs_power > 18);
+    setLed(1, (m_state.buttons & Button::BTN_RESET) != 0);
+    setLed(0, (m_state.buttons & Button::BTN_GO) != 0);
+  }
   void reset_imu(int ms) {
     //    Board::instance()->gyro()->reset(ms);
   }
@@ -169,6 +221,10 @@ class Vehicle {
     //    m_motors->reset();
     setSpeeds(0, 0);
     //    m_pwm->stop();
+  }
+
+  MotorVoltages motorControllersUpdate(Velocities desired, Velocities actual, float steering_feedback) {
+    return {0, 0};
   }
 
   void enable_motors() {
@@ -194,18 +250,19 @@ class Vehicle {
   }
 
   uint16_t system_load() {
-    //    return (int16_t)((100L * update_time()) / 1000);
-  }
-
-  uint16_t update_time() {
-    //    return m_update_cycles / board->clocks_per_microsecond();
+    return 1000;
   }
 
   /***
    * while testing this normally tells me the battery is going.
    * @param message
    */
+  bool has_panic() {
+    return m_has_panic;
+  }
+
   void panic(const char* message) __attribute__((noreturn)) {
+    m_has_panic = true;
     //  shutdown(); // we need an orderly shutdown
     //    Speaker* speaker = Board::instance()->speaker();
     //    speaker->off();
@@ -252,8 +309,8 @@ class Vehicle {
   }
 
   void set_target_velocities(float velocity, float omega) {
-    //    velocities.velocity = velocity;
-    //    velocities.omega = omega;
+    desired_velocities.velocity = velocity;
+    desired_velocities.omega = omega;
   }
   //////////////////////////
 
@@ -324,10 +381,6 @@ class Vehicle {
     }
   }
 
-  /// always call after sensors
-  void updateInputs() {
-  }
-
   /***
    * In this simulation, the updateMotion() method is invoked from the Behaviour class
    * to advance the Robot's state by one tick. Since Behaviour runs in a separate
@@ -358,8 +411,12 @@ class Vehicle {
   Vehicle& operator=(const Vehicle&) = delete;  /// no copying by assignment
                                                 //  bool m_running;
   SensorDataCallback m_sensor_callback = nullptr;
+  SystickMouseCallback systick_mouse_callback = nullptr;
   VehicleState m_state;
   VehicleInputs m_inputs;
   bool m_initialised = false;
+  bool m_has_panic = false;
   float m_steering_fb = 0.0f;
+  float m_step_time = 0.001f;
+  Velocities desired_velocities;
 };
