@@ -8,10 +8,8 @@
 #include <cmath>
 #include <functional>
 #include <iostream>
-
-// #include <mutex>
-#include "behaviour/trajectories/straight.h"
 #include "common/core.h"
+#include "common/singleton.h"
 
 /**
  * @brief The Vehicle class models the physical robot's behavior and movement.

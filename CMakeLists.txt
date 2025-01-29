@@ -131,7 +131,8 @@ FetchContent_MakeAvailable(GoogleTest)
 set(APP mouse-simulator)
 #add_definitions(-DWINDOW_TITLE=\"${APP}\")
 
-add_executable(${APP} "")
+add_executable(${APP} ""
+)
 copy_resources(${APP})
 copy_windows_dlls(${APP})
 
@@ -175,6 +176,7 @@ add_executable(google_test_mouse_simulator
         google-tests/test_trapezoid.cpp
         google-tests/text_Spinturn.cpp
         google-tests/test_cubic.cpp
+        src/common/singleton.h
 )
 
 # Link GoogleTest and your project to the test executable
