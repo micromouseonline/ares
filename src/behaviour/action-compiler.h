@@ -86,7 +86,7 @@ class MotionCompiler {
     PathFinish
   };
 
-  void makeInPlaceActions(const char *src, uint8_t *actions, uint16_t maxLength = 1024) {
+  static void makeInPlaceActions(const char *src, uint8_t *actions, uint16_t maxLength = 1024) {
     int p = 0;
     int runLength = 0;
     unsigned char cmd = OP_STOP;
@@ -154,7 +154,7 @@ class MotionCompiler {
    * This process does not really need a state machine but it is
    * here as a lead-in to the full diagonal path state machine.
    */
-  void makeSmoothActions(const char *src, uint8_t *actions) {
+  static void makeSmoothActions(const char *src, uint8_t *actions) {
     int runLength = 0;  // a counter for the number of cells to be crossed
     int p = 0;
     pathgen_state_t state = PathInit;
@@ -289,7 +289,7 @@ class MotionCompiler {
     }
   }
 
-  void makeDiagonalActions(const char *src, uint8_t *actions, const uint16_t maxLength) {
+  static void makeDiagonalActions(const char *src, uint8_t *actions, const uint16_t maxLength) {
     int runLength = 0;
     int p = 0;
     pathgen_state_t state = PathInit;
