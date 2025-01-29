@@ -19,6 +19,11 @@
 #define RADIANS (kPI / 180.0f)
 #define DEGREES (180.0f / kPI)
 #endif
+#define radians(deg) ((deg) * RADIANS)
+#define degrees(rad) ((rad) * DEGREES)
+
+constexpr char dir_letters[] = "FRAL";
+constexpr char hdg_letters[] = "N_E_S_W_";
 
 #ifndef BIT
 #define BIT(b) (1UL << (b))
@@ -26,6 +31,14 @@
 
 #ifndef SIGN
 #define SIGN(x) ((0 < x) - (x < 0))
+#endif
+
+#ifdef ARES_SIMULATOR
+#include <mutex>
+inline std::mutex mtx_mouse;
+#define ATOMIC std::lock_guard<std::mutex> lock(mtx_mouse);
+#else
+#define ATOMIC
 #endif
 
 /// TODO - use a thread-safe class for this

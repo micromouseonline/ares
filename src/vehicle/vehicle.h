@@ -94,6 +94,11 @@ struct SensorData {
   float lds_power = 0;
   float rds_power = 0;
   float rfs_power = 0;
+  float front_sum = 0;
+  float front_diff = 0;
+  bool see_front_wall = false;
+  bool see_left_wall = false;
+  bool see_right_wall = false;
 };
 
 struct VehicleInputs {
@@ -198,6 +203,11 @@ class Vehicle {
     if (m_sensor_callback) {
       m_inputs = m_sensor_callback(m_state);
       m_state.sensors = m_inputs.sensors;
+      m_state.sensors.front_sum = m_state.sensors.lfs_power + m_state.sensors.rfs_power;
+      m_state.sensors.front_diff = m_state.sensors.lfs_power - m_state.sensors.rfs_power;
+      m_state.sensors.see_front_wall = m_inputs.sensors.front_sum > 40;
+      m_state.sensors.see_left_wall = m_inputs.sensors.lfs_power > 40;
+      m_state.sensors.see_right_wall = m_inputs.sensors.rfs_power > 40;
       m_state.buttons = m_inputs.buttons;
     }
   }
