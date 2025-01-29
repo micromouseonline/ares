@@ -143,6 +143,120 @@ class Vehicle {
     setSpeeds(0, 0);
   }
 
+  void begin() {
+    m_state.ticks = 0;
+    m_state.total_distance = 0;
+    setSpeeds(0, 0);
+    m_initialised = true;
+  }
+
+  void set_steering_feedback(float steering_fb) {
+    m_steering_fb = steering_fb;
+  }
+  float get_steering_feedback() {
+    return m_steering_fb;
+  }
+
+  ///// stubs for sim //////////////////////////////////////////
+
+  void reset_imu(int ms) {
+    //    Board::instance()->gyro()->reset(ms);
+  }
+
+  void reset_drive_system() {
+    //    m_motors->controller_disable();
+    //    m_odometry->reset();
+    //    m_motors->reset();
+    setSpeeds(0, 0);
+    //    m_pwm->stop();
+  }
+
+  void enable_motors() {
+    //      m_motors->controller_enable();
+  }
+
+  void stop() {
+    //      m_motors->reset();
+    //      m_pwm->stop();  // TODO: is this redundant
+  }
+
+  void imu_calibrate(int samples = 500) {
+    //      Board::instance()->gyro()->reset(samples);
+  }
+
+  void set_motor_voltage(float left, float right) {
+    //    m_pwm->set_volts(left, right, Board::instance()->battery()->voltage());
+  }
+
+  float battery_voltage() {
+    return 7.4f;
+    //    return Board::instance()->battery()->voltage();
+  }
+
+  uint16_t system_load() {
+    //    return (int16_t)((100L * update_time()) / 1000);
+  }
+
+  uint16_t update_time() {
+    //    return m_update_cycles / board->clocks_per_microsecond();
+  }
+
+  /***
+   * while testing this normally tells me the battery is going.
+   * @param message
+   */
+  void panic(const char* message) __attribute__((noreturn)) {
+    //  shutdown(); // we need an orderly shutdown
+    //    Speaker* speaker = Board::instance()->speaker();
+    //    speaker->off();
+    //    Board::instance()->adc()->disable_emitters();
+    //    reset_drive_system();
+    //
+    //    Board::instance()->display()->cls();
+    //    Board::instance()->display()->println(message);
+    //    Board::instance()->display()->on();
+    //
+    //    // millis() is no longer updated to delay_ms is no good
+    //    while (true) {
+    //      delay_us(500000);
+    //      Board::instance()->display()->on();
+    //      speaker->set_frequency(100);
+    //      speaker->on();
+    //      delay_us(50000);
+    //      Board::instance()->display()->off();
+    //      speaker->off();
+    //    }
+  }
+  //////////////////////////////////////////////////////////////
+
+  ///////////////////
+  /***
+   * Odometry getters
+   * @return
+   */
+
+  float distance() const {
+    return m_state.total_distance;
+  }
+
+  float velocity() const {
+    return m_state.velocity;
+  }
+
+  float angle() const {
+    return m_state.angle;
+  }
+
+  float omega() const {
+    return m_state.angular_velocity;
+  }
+
+  void set_target_velocities(float velocity, float omega) {
+    //    velocities.velocity = velocity;
+    //    velocities.omega = omega;
+  }
+  //////////////////////////
+
   /// This is safe to call only from the behaviour (mouse) code
   [[nodiscard]] VehicleState getState() const {
     return m_state;
@@ -246,4 +360,6 @@ class Vehicle {
   SensorDataCallback m_sensor_callback = nullptr;
   VehicleState m_state;
   VehicleInputs m_inputs;
+  bool m_initialised = false;
+  float m_steering_fb = 0.0f;
 };
