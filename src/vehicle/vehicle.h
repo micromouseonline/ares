@@ -62,7 +62,7 @@ class Vehicle {
   ~Vehicle();
 
   /// used by MR32
-  void begin();
+  void begin();  /// not needed
   void systick();
   void stop() {};
   void reset_drive_system();  /// implement this
@@ -108,7 +108,6 @@ class Vehicle {
  private:
   /// MR32
   Velocities desired_velocities;
-  bool m_initialised = false;
   SystickMouseCallback systick_mouse_callback = nullptr;
   float m_steering_fb = 0.0f;
   bool m_has_panic = false;

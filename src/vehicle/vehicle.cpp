@@ -21,13 +21,6 @@ void Vehicle::reset() {
   setTargetVelocities(0, 0);
 }
 
-void Vehicle::begin() {
-  m_state.ticks = 0;
-  m_state.total_distance = 0;
-  setTargetVelocities(0, 0);
-  m_initialised = true;
-}
-
 void Vehicle::systick() {
   updateSensors();
   updateMotion(m_step_time);
@@ -172,6 +165,7 @@ void Vehicle::updateMotion(float deltaTime) {
 bool Vehicle::hasButtonPressed() {
   return m_inputs.buttons != 0;
 }
+
 void Vehicle::reset_drive_system() {
   setTargetVelocities(0, 0);
   /// reset odometry
@@ -179,6 +173,7 @@ void Vehicle::reset_drive_system() {
   /// set motor voltages to zero
   /// reset motors
 }
+
 void Vehicle::setLedPattern(uint8_t pattern) {
   m_state.leds = pattern;
 }
