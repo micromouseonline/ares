@@ -61,6 +61,16 @@ inline float normalizeAngle(float angle) {
   return angle - 180.0f;
 }
 
+struct Velocities {
+  float velocity = 0;
+  float omega = 0;
+};
+
+struct MotorVoltages {
+  float left = 0;
+  float right = 0;
+};
+
 const float LOOP_FREQUENCY = 1000.0;
 const float LOOP_INTERVAL = (1.0 / LOOP_FREQUENCY);
 
@@ -71,6 +81,7 @@ using BinaryOut = std::function<void(const uint8_t)>;
 
 /// used when having systick call the mouse behaviour during systick
 using SystickMouseCallback = std::function<void()>;
+
 // using SerialOut = void (*)(const char);
 // using BinaryOut = void (*)(const uint8_t);
 

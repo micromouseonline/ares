@@ -976,7 +976,7 @@ class Mouse {
     //      }
     //    }
     // Be sure robot has come to a halt.
-    m_vehicle.setSpeeds(0, 0);
+    m_vehicle.setTargetVelocities(0, 0);
     return walls;
   }
 
@@ -2114,7 +2114,7 @@ class Mouse {
     }
     m_rotation->update();
     cubic_turn_update();
-    m_vehicle.setSpeeds(m_forward->speed(), m_rotation->speed());
+    m_vehicle.setTargetVelocities(m_forward->speed(), m_rotation->speed());
     m_timeStamp++;
     m_ticks++;
   }
