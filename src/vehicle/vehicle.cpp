@@ -37,18 +37,13 @@ void Vehicle::systick() {
   }
 
   Velocities actual_velocities;
-  float steering_feedback = get_steering_feedback();
-  MotorVoltages motor_voltages = motorControllersUpdate(desired_velocities, actual_velocities, steering_feedback);
+  MotorVoltages motor_voltages = motorControllersUpdate(desired_velocities, actual_velocities, m_steering_fb);
   set_motor_voltage(motor_voltages.left, motor_voltages.right);
   updateLeds();
 }
 
 void Vehicle::set_steering_feedback(float steering_fb) {
   m_steering_fb = steering_fb;
-}
-
-float Vehicle::get_steering_feedback() {
-  return m_steering_fb;
 }
 
 void Vehicle::set_systick_callback(SystickMouseCallback callback) {
@@ -176,4 +171,14 @@ void Vehicle::updateMotion(float deltaTime) {
 
 bool Vehicle::hasButtonPressed() {
   return m_inputs.buttons != 0;
+}
+void Vehicle::reset_drive_system() {
+  setTargetVelocities(0, 0);
+  /// reset odometry
+  /// disable controllers
+  /// set motor voltages to zero
+  /// reset motors
+}
+void Vehicle::setLedPattern(uint8_t pattern) {
+  m_state.leds = pattern;
 }

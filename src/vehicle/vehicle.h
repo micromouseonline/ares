@@ -63,38 +63,43 @@ class Vehicle {
 
   /// used by MR32
   void begin();
-  void setLed(const int i, const bool state);
-  void setLedPattern(uint8_t pattern);
-  void set_systick_callback(SystickMouseCallback callback);
-  void set_steering_feedback(float steering_fb);
-  float get_steering_feedback();
   void systick();
-  void odometryUpdate();
-  void reset_imu(int ms);
-  void reset_drive_system();
-  void enable_motors() {};
-  void stop();
-  void imu_calibrate(int samples = 500);  // not implemented
+  void stop() {};
+  void reset_drive_system();  /// implement this
+  void set_systick_callback(SystickMouseCallback callback);
+
+  void setTargetVelocities(float velocity, float omega);
+  void set_steering_feedback(float steering_fb);
+
+  void odometryUpdate();    /// implement this
+  void enable_motors() {};  /// Not needed
+
+  void reset_imu(int ms);                 /// not needed
+  void imu_calibrate(int samples = 500);  /// not needed
+
   float distance() const;
   float velocity() const;
   float angle() const;
   float omega() const;
-  void setTargetVelocities(float velocity, float omega);
-  void set_motor_voltage(float left, float right);
+
+  MotorVoltages motorControllersUpdate(Velocities desired, Velocities actual, float steering_feedback);
+  void set_motor_voltage(float left, float right);  /// not needed
   float battery_voltage();
   bool has_panic();
   void panic(const char* message);
+
+  void setLed(const int i, const bool state);
+  void setLedPattern(uint8_t pattern);
+
   bool hasButtonPressed();
 
   /// used by ARES
   void reset();
   void updateLeds();
-  MotorVoltages motorControllersUpdate(Velocities desired, Velocities actual, float steering_feedback);
   VehicleState getState() const;
   void setPose(float x, float y, float angle);
   Pose getPose();
   void setSensorCallback(SensorDataCallback callback);
-  //  void setSpeeds(float velocity, float omega);
   bool readButton(Button btn);
   uint8_t getButtons();
   void updateSensors();
