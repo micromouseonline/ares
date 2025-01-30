@@ -63,28 +63,30 @@ class Vehicle {
   ~Vehicle();
 
   /// used by MR32
-  void begin();  /// not needed
+  void init();
+
+  void setSystickCallback(SystickMouseCallback callback);
   void systick();
-  void stop() {};
-  void reset_drive_system();  /// implement this
-  void set_systick_callback(SystickMouseCallback callback);
+
+  void stopMoving() {};
+  void enableMotorOutput() {};   /// Not needed
+  void disableMotorOutput() {};  /// Not needed
+  void resetDriveSystem();       /// implement this
+
+  /// These are the values measured by the Vehicle rather than the desired state
+  float getDistance() const;
+  float getVelocity() const;
+  float getAngle() const;
+  float getOmega() const;
+
+  void imuReset(int samples);  /// not needed
+  void odometryUpdate();       /// reads encoders and IMU to update odometry
 
   void setTargetVelocities(float velocity, float omega);
-  void set_steering_feedback(float steering_fb);
-
-  void odometryUpdate();    /// implement this
-  void enable_motors() {};  /// Not needed
-
-  void reset_imu(int ms);                 /// not needed
-  void imu_calibrate(int samples = 500);  /// not needed
-
-  float distance() const;
-  float velocity() const;
-  float angle() const;
-  float omega() const;
-
+  void setSteeringFeedback(float steering_fb);
   MotorVoltages motorControllersUpdate(Velocities desired, Velocities actual, float steering_feedback);
-  void set_motor_voltage(float left, float right);  /// not needed
+  void setMotorVoltage(float left, float right);  /// not needed
+
   float battery_voltage();
   bool has_panic();
   void panic(const char* message);
@@ -93,8 +95,9 @@ class Vehicle {
   void setLedPattern(uint8_t pattern);
 
   bool hasButtonPressed();
+  bool isButtonPressed(int button);
 
-  /// used by ARES
+  /// used by ARES //////////////////////////////////////////////////
   void reset();
   void updateLeds();
   VehicleState getState() const;
@@ -112,6 +115,7 @@ class Vehicle {
   SystickMouseCallback systick_mouse_callback = nullptr;
   float m_steering_fb = 0.0f;
   bool m_has_panic = false;
+  bool m_initialised = false;
 
   /// ARES
   Vehicle(const Vehicle&) = delete;

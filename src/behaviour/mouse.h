@@ -161,7 +161,7 @@ class Mouse {
     m_forward = new Profile();
     m_rotation = new Profile();
     //// This uses a lambda. I don't understand lambdas
-    m_vehicle.set_systick_callback([this] { systick_callback(); });
+    m_vehicle.setSystickCallback([this] { systick_callback(); });
   };
 
   ///////////////////////////////

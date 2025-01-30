@@ -9,10 +9,17 @@
 
 Vehicle::Vehicle()
     : m_state() {
+  if (!m_initialised) {
+    init();
+  }
   reset();
 }
 
 Vehicle::~Vehicle() {
+}
+
+void Vehicle::init() {
+  m_initialised = true;
 }
 
 void Vehicle::reset() {
@@ -31,15 +38,15 @@ void Vehicle::systick() {
 
   Velocities actual_velocities;
   MotorVoltages motor_voltages = motorControllersUpdate(desired_velocities, actual_velocities, m_steering_fb);
-  set_motor_voltage(motor_voltages.left, motor_voltages.right);
+  setMotorVoltage(motor_voltages.left, motor_voltages.right);
   updateLeds();
 }
 
-void Vehicle::set_steering_feedback(float steering_fb) {
+void Vehicle::setSteeringFeedback(float steering_fb) {
   m_steering_fb = steering_fb;
 }
 
-void Vehicle::set_systick_callback(SystickMouseCallback callback) {
+void Vehicle::setSystickCallback(SystickMouseCallback callback) {
   systick_mouse_callback = callback;
 }
 
@@ -59,7 +66,7 @@ MotorVoltages Vehicle::motorControllersUpdate(Velocities desired, Velocities act
   return {0, 0};
 }
 
-void Vehicle::set_motor_voltage(float left, float right) {
+void Vehicle::setMotorVoltage(float left, float right) {
   (void)left;
   (void)right;
 }
@@ -77,19 +84,19 @@ void Vehicle::panic(const char* message) {
   m_has_panic = true;
 }
 
-float Vehicle::distance() const {
+float Vehicle::getDistance() const {
   return m_state.total_distance;
 }
 
-float Vehicle::velocity() const {
+float Vehicle::getVelocity() const {
   return m_state.velocity;
 }
 
-float Vehicle::angle() const {
+float Vehicle::getAngle() const {
   return m_state.angle;
 }
 
-float Vehicle::omega() const {
+float Vehicle::getOmega() const {
   return m_state.angular_velocity;
 }
 
@@ -166,7 +173,11 @@ bool Vehicle::hasButtonPressed() {
   return m_inputs.buttons != 0;
 }
 
-void Vehicle::reset_drive_system() {
+bool Vehicle::isButtonPressed(int button) {
+  return (m_inputs.buttons & (1 << button)) != 0;
+}
+
+void Vehicle::resetDriveSystem() {
   setTargetVelocities(0, 0);
   /// reset odometry
   /// disable controllers
