@@ -52,6 +52,7 @@ struct VehicleState {
   uint8_t leds = 0;
   uint8_t buttons = 0;
   SensorData sensors;
+  uint16_t adc[16];
 };
 
 using SensorDataCallback = std::function<VehicleInputs(VehicleState)>;
