@@ -157,10 +157,10 @@ bool Vehicle::isButtonPressed(int button) {
 
 void Vehicle::resetDriveSystem() {
   setTargetVelocities(0, 0);
-  /// reset odometry
-  /// disable controllers
+  /// reset odometry angle to zero and wheel counters to zero
   /// set motor voltages to zero
-  /// reset motors
+  /// disable controllers
+  /// reset motor controller errors to zero
 }
 
 void Vehicle::setLedPattern(uint8_t pattern) {
