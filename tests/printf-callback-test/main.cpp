@@ -29,7 +29,9 @@ class Target {
   using SerialOut = std::function<void(const char)>;
   SerialOut serialOut;
 
-  Target() : ticks(0), serialOut(nullptr) {
+  Target()
+      : ticks(0),
+        serialOut(nullptr) {
   }
 
   ~Target() {
@@ -51,7 +53,7 @@ class Target {
   }
 
   /***
-   * On real hardware, updateMotion would be triggered by a hardware timer
+   * On real hardware, systick would be triggered by a hardware timer
    * interrupt every millisecond. In this simulation, it is called
    * explicitly within delay_ms to simulate time passage. This approach
    * assumes delay_ms is called frequently to maintain accurate timing.
@@ -64,7 +66,7 @@ class Target {
   }
 
   /***
-   * delay_ms simulates a blocking delay by repeatedly calling updateMotion.
+   * delay_ms simulates a blocking delay by repeatedly calling systick.
    * This design requires that delay_ms is called often enough to ensure
    * the simulated time progresses correctly.
    * @param ms
@@ -143,7 +145,11 @@ class Target {
 //////////////////////////////////////////////////////////////////////////////
 class Manager {
  public:
-  Manager() : target(), output_queue(OUTPUT_QUEUE_SIZE), target_mutex(), log_mutex() {
+  Manager()
+      : target(),
+        output_queue(OUTPUT_QUEUE_SIZE),
+        target_mutex(),
+        log_mutex() {
     printf("Manager created\n");
     StartTarget();
   }

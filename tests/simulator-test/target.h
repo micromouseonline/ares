@@ -17,7 +17,12 @@ struct SensorData {
   int rds;
   int rfs;
   float battery;
-  SensorData() : lfs(0), lds(0), rds(0), rfs(0), battery(78) {};
+  SensorData()
+      : lfs(0),
+        lds(0),
+        rds(0),
+        rfs(0),
+        battery(78) {};
 };
 
 typedef std::function<SensorData(int)> SensorCallbackFunction;
@@ -45,7 +50,9 @@ class Target {
   using SerialOut = std::function<void(const char*)>;
   SerialOut serialOut;
 
-  Target() : sensorCallback(nullptr), battery(0.95) {
+  Target()
+      : sensorCallback(nullptr),
+        battery(0.95) {
     setup();
     printf("Target setup\n");
   }
@@ -71,7 +78,7 @@ class Target {
     }
 
     sensors.battery = battery.update(50 + random() % 30);
-    log("updateMotion  log 0123456789012345678901234567890123456789 0123456789");
+    log("updateVehiclePose  log 0123456789012345678901234567890123456789 0123456789");
     timer.wait_us(1000);
   }
 

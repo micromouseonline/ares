@@ -55,7 +55,7 @@ class Target {
   }
 
   /***
-   * On real hardware, updateMotion would be triggered by a hardware timer
+   * On real hardware, systick would be triggered by a hardware timer
    * interrupt every millisecond. In this simulation, it is called
    * explicitly within delay_ms to simulate time passage. This approach
    * assumes delay_ms is called frequently to maintain accurate timing.
@@ -68,7 +68,7 @@ class Target {
   }
 
   /***
-   * delay_ms simulates a blocking delay by repeatedly calling updateMotion.
+   * delay_ms simulates a blocking delay by repeatedly calling systick.
    * This design requires that delay_ms is called often enough to ensure
    * the simulated time progresses correctly.
    * @param ms

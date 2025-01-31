@@ -124,8 +124,8 @@ class Vehicle {
   VehicleState getState() const;
   void setPose(float x, float y, float angle);
   void setSensorCallback(SensorDataCallback callback);
-  void updateSensors();                /// Interprets sensor data from ADC - should be in Mouse
-  void updateMotion(float deltaTime);  /// updat profilers - should be in Mouse
+  void updateSensors();                     /// Interprets sensor data from ADC - should be in Mouse
+  void updateVehiclePose(float deltaTime);  /// updat profilers - should be in Mouse
 
  private:
   /// MR32

@@ -2124,9 +2124,9 @@ class Mouse {
    *      delay_ms(1);
    *    }
    *
-   * delay_ms calls the robot's updateMotion method once per iteration. That is how
+   * delay_ms calls the vehicle's systick method once per iteration. That is how
    * the robot motion processing gets updated and the sensors get read. If the
-   * robot updateMotion is not called it will be unresponsive.
+   * vehicle systick is not called it will be unresponsive.
    */
   void delay_ms(int ms) {
     Timer timer;

@@ -26,13 +26,14 @@ void Vehicle::init() {
 }
 
 void Vehicle::systick() {
+  m_state.ticks++;
   updateSensors();
-  updateMotion(m_step_time);
 
   if (m_SystickMouseCallback) {
     m_SystickMouseCallback();
   }
 
+  updateVehiclePose(m_step_time);
   Velocities actual_velocities;
   MotorVoltages motor_voltages = updateMotorControlllers(desired_velocities, actual_velocities, m_steering_fb);
   setMotorVoltage(motor_voltages.left, motor_voltages.right);
@@ -131,7 +132,7 @@ void Vehicle::updateSensors() {
   }
 }
 
-void Vehicle::updateMotion(float deltaTime) {
+void Vehicle::updateVehiclePose(float deltaTime) {
   float deltaDistance = m_state.velocity * deltaTime;
   float deltaAngle = m_state.angular_velocity * deltaTime;
   float newX = m_state.x + deltaDistance * std::cos(m_state.angle * RADIANS);

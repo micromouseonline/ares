@@ -423,7 +423,7 @@ class Application : public IEventObserver {
   void renderStateData() const {
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "    time     X      Y   Theta     Vel   Omega");
     char s[60];
-    /// NOTE: if the tick count is increasing, updateMotion is running and the thread is active
+    /// NOTE: if the tick count is increasing, Vehicle.systick() is running and the thread is active
     sprintf(s, "%8u %5.1f  %5.1f  %6.2f  %6.1f  %6.1f  ",  //
             m_vehicle_state.ticks, m_vehicle_state.x, m_vehicle_state.y, m_vehicle_state.angle, m_vehicle_state.velocity, m_vehicle_state.angular_velocity);
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", s);
