@@ -2056,13 +2056,13 @@ class Mouse {
       if (m_paused) {
         continue;
       }
-      if (m_vehicle.readButton(Button::BTN_GO)) {
-        while (m_vehicle.readButton(Button::BTN_GO)) {
+      if (m_vehicle.isButtonPressed(Button::BTN_GO)) {
+        while (m_vehicle.isButtonPressed(Button::BTN_GO)) {
           delay_ms(1);
         }
       }
-      if (m_vehicle.readButton(Button::BTN_RESET)) {
-        while (m_vehicle.readButton(Button::BTN_RESET)) {
+      if (m_vehicle.isButtonPressed(Button::BTN_RESET)) {
+        while (m_vehicle.isButtonPressed(Button::BTN_RESET)) {
           delay_ms(1);
         }
       }

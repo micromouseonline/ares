@@ -122,11 +122,9 @@ class Vehicle {
 
   /// used only by ARES //////////////////////////////////////////////////
   void reset();
-  void updateLeds();
   VehicleState getState() const;
   void setPose(float x, float y, float angle);
   void setSensorCallback(SensorDataCallback callback);
-  bool readButton(Button btn);
   void updateSensors();
   void updateMotion(float deltaTime);
 

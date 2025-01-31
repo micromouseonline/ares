@@ -39,7 +39,6 @@ void Vehicle::systick() {
   Velocities actual_velocities;
   MotorVoltages motor_voltages = updateMotorControlllers(desired_velocities, actual_velocities, m_steering_fb);
   setMotorVoltage(motor_voltages.left, motor_voltages.right);
-  updateLeds();
 }
 
 void Vehicle::setSteeringFeedback(float steering_fb) {
@@ -48,15 +47,6 @@ void Vehicle::setSteeringFeedback(float steering_fb) {
 
 void Vehicle::setMouseCallback(SystickMouseCallback callback) {
   systick_mouse_callback = callback;
-}
-
-void Vehicle::updateLeds() {
-  setLed(7, m_state.sensors.lfs_power > 18);
-  setLed(6, m_state.sensors.lds_power > 40);
-  setLed(5, m_state.sensors.rds_power > 40);
-  setLed(4, m_state.sensors.rfs_power > 18);
-  setLed(1, (m_state.buttons & Button::BTN_RESET) != 0);
-  setLed(0, (m_state.buttons & Button::BTN_GO) != 0);
 }
 
 MotorVoltages Vehicle::updateMotorControlllers(Velocities desired, Velocities actual, float steering_feedback) {
@@ -127,9 +117,9 @@ void Vehicle::setLed(const int i, const bool state) {
   m_state.leds |= state ? mask : 0;
 }
 
-bool Vehicle::readButton(Button btn) {
-  return ((m_state.buttons & btn) != 0);
-}
+// bool Vehicle::readButton(Button btn) {
+//   return ((m_state.buttons & btn) != 0);
+// }
 
 void Vehicle::updateSensors() {
   if (m_sensor_callback) {
@@ -162,7 +152,7 @@ bool Vehicle::hasAnyButtonPressed() {
 }
 
 bool Vehicle::isButtonPressed(int button) {
-  return (m_inputs.buttons & (1 << button)) != 0;
+  return ((m_state.buttons & button) != 0);
 }
 
 void Vehicle::resetDriveSystem() {
