@@ -121,7 +121,6 @@ class Vehicle {
    */
 
   /// used only by ARES //////////////////////////////////////////////////
-  void reset();
   VehicleState getState() const;
   void setPose(float x, float y, float angle);
   void setSensorCallback(SensorDataCallback callback);

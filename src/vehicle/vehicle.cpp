@@ -12,20 +12,17 @@ Vehicle::Vehicle()
   if (!m_initialised) {
     init();
   }
-  reset();
+  resetDriveSystem();
 }
 
 Vehicle::~Vehicle() {
 }
 
 void Vehicle::init() {
-  m_initialised = true;
-}
-
-void Vehicle::reset() {
   m_state.ticks = 0;
   m_state.total_distance = 0;
-  setTargetVelocities(0, 0);
+  resetDriveSystem();
+  m_initialised = true;
 }
 
 void Vehicle::systick() {
@@ -135,7 +132,6 @@ void Vehicle::updateSensors() {
 }
 
 void Vehicle::updateMotion(float deltaTime) {
-  m_state.ticks++;
   float deltaDistance = m_state.velocity * deltaTime;
   float deltaAngle = m_state.angular_velocity * deltaTime;
   float newX = m_state.x + deltaDistance * std::cos(m_state.angle * RADIANS);

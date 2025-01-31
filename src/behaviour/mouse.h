@@ -1101,7 +1101,7 @@ class Mouse {
     serialPrintf(m_SerialOut, "Mouse - initialisation\n");
     m_locked = true;
     m_current_trajectory = std::make_unique<IdleTrajectory>();
-    m_vehicle.reset();
+    m_vehicle.init();
     m_maze.initialise();
     m_vehicle.setPose(96, 96, 90);
     m_heading = Direction::DIR_N;
@@ -1749,10 +1749,8 @@ class Mouse {
     //    set_steering_mode(STEERING_OFF);  // never steer from zero speed
     move(-BACK_WALL_TO_CENTER - 40, 100, 0, 1000);
     m_hand_start = true;
-    //    robot()->stop();
 
-    //    robot()->reset_drive_system();
-    m_vehicle.reset();
+    m_vehicle.resetDriveSystem();
 
     if (maze_has_solution()) {
       //      Board::instance()->speaker()->success();
@@ -1862,7 +1860,7 @@ class Mouse {
       setHeading(DIR_N);
       setLocation({0, 0});
       m_target = Location(7, 7);
-      m_vehicle.reset();
+      m_vehicle.resetDriveSystem();
       m_vehicle.setPose(96.0f, 96.0f - 40.0f, 90.0f);
 
       VehicleState robot_state = m_vehicle.getState();
