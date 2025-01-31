@@ -11,8 +11,6 @@
 #include <limits>
 #include <mutex>
 #include <queue>
-// #include "SFML/Graphics.hpp"
-#include "application/sensor-geometry.h"
 
 #ifndef kPI
 #define kPI 3.14159265358979323846f  // More precise

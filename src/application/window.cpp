@@ -15,7 +15,7 @@ extern "C" void _putchar(char c) {
  * It also handles events and updating the window.
  */
 Window::Window() {
-  m_window.create(conf::VideoMode, "Window from constructor");
+  m_window.create(app_conf::VideoMode, "Window from constructor");
 }
 
 Window::Window(const std::string& title, const sf::Vector2u& size) {
@@ -34,7 +34,7 @@ void Window::setup(const std::string title, const sf::Vector2u& size) {
   destroy();
   create();
   updateViews();
-  m_window.setFramerateLimit(conf::FrameRate);
+  m_window.setFramerateLimit(app_conf::FrameRate);
 }
 
 void Window::create() {
@@ -49,15 +49,15 @@ void Window::destroy() {
 }
 
 void Window::updateViews() {
-  m_maze_view = conf::MazeView;
+  m_maze_view = app_conf::MazeView;
   float width = (float)m_window.getSize().x;
   float height = (float)m_window.getSize().y;
   float scale = 1.0f;
   sf::FloatRect vp_rect;
-  vp_rect.left = conf::WindowPadding / width;
-  vp_rect.top = conf::WindowPadding / height;
-  vp_rect.width = scale * conf::MazeViewScreenSize / width;
-  vp_rect.height = scale * conf::MazeViewScreenSize / height;
+  vp_rect.left = app_conf::WindowPadding / width;
+  vp_rect.top = app_conf::WindowPadding / height;
+  vp_rect.width = scale * app_conf::MazeViewScreenSize / width;
+  vp_rect.height = scale * app_conf::MazeViewScreenSize / height;
   m_maze_view.setViewport(vp_rect);
   float visible_width = (float)m_window.getSize().x;
   float visible_height = (float)m_window.getSize().y;
@@ -65,7 +65,7 @@ void Window::updateViews() {
 }
 
 void Window::beginDraw() {
-  m_window.clear(conf::WindowBackGround);
+  m_window.clear(app_conf::WindowBackGround);
 }
 void Window::endDraw() {
   m_window.display();

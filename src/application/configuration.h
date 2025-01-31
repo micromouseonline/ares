@@ -4,7 +4,7 @@
 #include <string>
 #include "common/core.h"
 
-namespace conf {
+namespace app_conf {
 
   // Debug flags
 
@@ -31,14 +31,23 @@ namespace conf {
   // Robot configuration defaults
   // TODO: Add the body details
   enum WallSensorName { LFS = 0, LDS, RDS, RFS, SENSOR_COUNT };
-  const SensorGeometry SensorDefaultOffsets[SENSOR_COUNT] = {
+  struct SensorGeometry {
+    float x = 0;
+    float y = 0;
+    float theta = 0;
+    float halfAngle = 5.0f;
+    int rayCount = 32;
+  };
+
+  const SensorGeometry SensorDefaultOffsets[] = {
       {.x = 25, .y = 30, .theta = 10, .halfAngle = 5.0f, .rayCount = 12},
       {.x = 50, .y = 10, .theta = 60, .halfAngle = 5.0f, .rayCount = 12},
       {.x = 50, .y = -10, .theta = -60, .halfAngle = 5.0f, .rayCount = 12},
       {.x = 25, .y = -30, .theta = -10, .halfAngle = 5.0f, .rayCount = 12},
   };
+
   const float SENSOR_MAX_RANGE = 355.0f;
   const uint8_t SENSOR_ALPHA = 128;
   const sf::Color SENSOR_COLOUR(255, 0, 255, SENSOR_ALPHA);
 
-}  // namespace conf
+}  // namespace app_conf

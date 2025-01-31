@@ -40,7 +40,7 @@ const Activity activity[] = {
 class Application : public IEventObserver {
  public:
   Application()
-      : m_window(std::make_unique<Window>(conf::AppName, conf::WindowSize)),
+      : m_window(std::make_unique<Window>(app_conf::AppName, app_conf::WindowSize)),
         m_vehicle_state(),
         m_vehicle(),
         m_mouse(m_vehicle),
@@ -231,11 +231,11 @@ class Application : public IEventObserver {
     for (int x = 0; x < 16; x++) {
       for (int y = 0; y < 16; y++) {
         if (m_robot_manager.getMap().has_unknown_walls(x, y)) {
-          m_maze_manager.setCellColour(x, y, conf::MazeUnseenColour);
+          m_maze_manager.setCellColour(x, y, app_conf::MazeUnseenColour);
         }
       }
     }
-    m_maze_manager.setCellColour(m_robot_manager.getMap().goal().x, m_robot_manager.getMap().goal().y, conf::MazeGoalColour);
+    m_maze_manager.setCellColour(m_robot_manager.getMap().goal().x, m_robot_manager.getMap().goal().y, app_conf::MazeGoalColour);
   }
 
   void renderMouseControlWindow() {
@@ -507,15 +507,15 @@ class Application : public IEventObserver {
     m_robot_body.updateSensorGeometry(m_vehicle_state.x, m_vehicle_state.y, m_vehicle_state.angle);
     m_obstacles = m_maze_manager.GetObstacles(m_vehicle_state.x, m_vehicle_state.y);
     m_robot_body.updateSensors(m_obstacles);
-    m_vehicle_inputs.sensors.lfs_power = m_robot_body.getSensor(conf::LFS).getPower();
-    m_vehicle_inputs.sensors.lds_power = m_robot_body.getSensor(conf::LDS).getPower();
-    m_vehicle_inputs.sensors.rds_power = m_robot_body.getSensor(conf::RDS).getPower();
-    m_vehicle_inputs.sensors.rfs_power = m_robot_body.getSensor(conf::RFS).getPower();
+    m_vehicle_inputs.sensors.lfs_power = m_robot_body.getSensor(app_conf::LFS).getPower();
+    m_vehicle_inputs.sensors.lds_power = m_robot_body.getSensor(app_conf::LDS).getPower();
+    m_vehicle_inputs.sensors.rds_power = m_robot_body.getSensor(app_conf::RDS).getPower();
+    m_vehicle_inputs.sensors.rfs_power = m_robot_body.getSensor(app_conf::RFS).getPower();
 
-    m_vehicle_inputs.sensors.lfs_distance = m_robot_body.getSensor(conf::LFS).getDistance();
-    m_vehicle_inputs.sensors.lds_distance = m_robot_body.getSensor(conf::LDS).getDistance();
-    m_vehicle_inputs.sensors.rds_distance = m_robot_body.getSensor(conf::RDS).getDistance();
-    m_vehicle_inputs.sensors.rfs_distance = m_robot_body.getSensor(conf::RFS).getDistance();
+    m_vehicle_inputs.sensors.lfs_distance = m_robot_body.getSensor(app_conf::LFS).getDistance();
+    m_vehicle_inputs.sensors.lds_distance = m_robot_body.getSensor(app_conf::LDS).getDistance();
+    m_vehicle_inputs.sensors.rds_distance = m_robot_body.getSensor(app_conf::RDS).getDistance();
+    m_vehicle_inputs.sensors.rfs_distance = m_robot_body.getSensor(app_conf::RFS).getDistance();
 
     m_vehicle_inputs.buttons = m_robot_buttons;
     m_process_time = m_timer.getElapsedTime();

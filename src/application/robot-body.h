@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 #include "collisions.h"
+#include "configuration.h"
 #include "drawing.h"
 #include "robot-wall-sensor.h"
 #include "vehicle/vehicle.h"
@@ -37,10 +38,10 @@ class RobotBody {
 
   RobotBody() {
     createBody();
-    m_sensors[conf::LFS].SetGeometry(conf::SensorDefaultOffsets[conf::LFS]);
-    m_sensors[conf::LDS].SetGeometry(conf::SensorDefaultOffsets[conf::LDS]);
-    m_sensors[conf::RDS].SetGeometry(conf::SensorDefaultOffsets[conf::RDS]);
-    m_sensors[conf::RFS].SetGeometry(conf::SensorDefaultOffsets[conf::RFS]);
+    m_sensors[app_conf::LFS].SetGeometry(app_conf::SensorDefaultOffsets[app_conf::LFS]);
+    m_sensors[app_conf::LDS].SetGeometry(app_conf::SensorDefaultOffsets[app_conf::LDS]);
+    m_sensors[app_conf::RDS].SetGeometry(app_conf::SensorDefaultOffsets[app_conf::RDS]);
+    m_sensors[app_conf::RFS].SetGeometry(app_conf::SensorDefaultOffsets[app_conf::RFS]);
   }
 
   void createBody() {
@@ -152,14 +153,14 @@ class RobotBody {
   }
 
   const RobotWallSensor& getSensor(int i) {
-    if (i >= conf::SENSOR_COUNT) {
+    if (i >= app_conf::SENSOR_COUNT) {
       throw std::out_of_range("Sensor index out of range");
     }
     return m_sensors[i];  //
   }
 
  private:
-  RobotWallSensor m_sensors[conf::SENSOR_COUNT];
+  RobotWallSensor m_sensors[app_conf::SENSOR_COUNT];
   sf::Vector2f m_position;
   float m_angle = 0;
   sf::Color m_colour = sf::Color::White;

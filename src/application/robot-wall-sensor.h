@@ -40,12 +40,14 @@
  */
 class RobotWallSensor {
  public:
-  RobotWallSensor(sf::Vector2f origin = {0, 0}, float angle = 0) : m_origin(origin), m_angle(angle) {
+  RobotWallSensor(sf::Vector2f origin = {0, 0}, float angle = 0)
+      : m_origin(origin),
+        m_angle(angle) {
     m_vertices.resize(m_geometry.rayCount);
     m_vertices.setPrimitiveType(sf::TriangleFan);
     m_vertices[0].position = m_origin;  // First vertex is the origin
-    m_vertices[0].color = conf::SENSOR_COLOUR;
-    m_max_range = conf::SENSOR_MAX_RANGE;
+    m_vertices[0].color = app_conf::SENSOR_COLOUR;
+    m_max_range = app_conf::SENSOR_MAX_RANGE;
     m_power = 0.0f;
   }
 
@@ -68,12 +70,12 @@ class RobotWallSensor {
     m_vertices.resize(ray_count);
   }
 
-  void SetGeometry(SensorGeometry geometry) {
+  void SetGeometry(app_conf::SensorGeometry geometry) {
     m_geometry = geometry;
     m_vertices.resize(geometry.rayCount);
   }
 
-  SensorGeometry& getGeometry() {
+  app_conf::SensorGeometry& getGeometry() {
     return m_geometry;  //
   }
 
@@ -120,7 +122,7 @@ class RobotWallSensor {
       // Update the ray endpoint
       sf::Vector2f hitPosition = m_origin + dir * closestHit;
       m_vertices[i].position = hitPosition;
-      m_vertices[i].color.a = uint8_t(conf::SENSOR_ALPHA * (1.0f - closestHit / m_max_range));
+      m_vertices[i].color.a = uint8_t(app_conf::SENSOR_ALPHA * (1.0f - closestHit / m_max_range));
 
       /// Accumulate distance and power for averaging
       total_distance += closestHit;
@@ -136,7 +138,7 @@ class RobotWallSensor {
   }
 
  private:
-  SensorGeometry m_geometry = {.x = 0, .y = 0, .theta = 0, .halfAngle = 5.0f, .rayCount = 16};
+  app_conf::SensorGeometry m_geometry = {.x = 0, .y = 0, .theta = 0, .halfAngle = 5.0f, .rayCount = 16};
   sf::Vector2f m_origin = {0, 0};
   float m_angle;
   float m_max_range;

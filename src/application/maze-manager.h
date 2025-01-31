@@ -122,7 +122,7 @@ class MazeManager {
     m_maze_base_size = (float)new_width * ClassicCell * Scale + m_wall_length;
     m_maze_base_rectangle.setSize({m_maze_base_size, m_maze_base_size});
     m_maze_base_rectangle.setPosition(0.0f, 0.0f);
-    m_maze_base_rectangle.setFillColor(conf::MazeBaseColour);
+    m_maze_base_rectangle.setFillColor(app_conf::MazeBaseColour);
 
     m_wall_states.resize(m_wall_count, WallType::WT_MappedAbsent);
     m_cell_rectangles.resize(m_maze_width * m_maze_width);
@@ -351,7 +351,7 @@ class MazeManager {
         float width = getCellSize() - m_wall_thickness;
         sf::Vector2f size = {width, width};
         m_cell_rectangles[index] = {position, size};
-        sf::Color colour = conf::MazeBaseColour;
+        sf::Color colour = app_conf::MazeBaseColour;
         m_cells_vertex_array[index * 4 + 0].position = position;
         m_cells_vertex_array[index * 4 + 1].position = sf::Vector2f(position.x + size.x, position.y);
         m_cells_vertex_array[index * 4 + 2].position = sf::Vector2f(position.x + size.x, position.y + size.y);
@@ -367,7 +367,7 @@ class MazeManager {
   void resetCellColours() {
     for (int y = 0; y < m_maze_width; y++) {
       for (int x = 0; x < m_maze_width; x++) {
-        setCellColour(x, y, conf::MazeBaseColour);
+        setCellColour(x, y, app_conf::MazeBaseColour);
       }
     }
   }
@@ -408,7 +408,7 @@ class MazeManager {
       const sf::FloatRect& rect = m_post_rectangles[i];
       const sf::Vector2f& position = rect.getPosition();
       const sf::Vector2f& size = rect.getSize();
-      sf::Color colour = conf::PostColour;
+      sf::Color colour = app_conf::PostColour;
 
       m_posts_vertex_array[i * 4 + 0].position = position;
       m_posts_vertex_array[i * 4 + 1].position = sf::Vector2f(position.x + size.x, position.y);

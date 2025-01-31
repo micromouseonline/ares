@@ -130,6 +130,9 @@ class Vehicle {
 
  private:
   /// MR32
+  Vehicle(const Vehicle&) = delete;
+  Vehicle& operator=(const Vehicle&) = delete;
+
   Velocities desired_velocities;
   SystickMouseCallback m_SystickMouseCallback = nullptr;
   float m_steering_fb = 0.0f;
@@ -137,8 +140,6 @@ class Vehicle {
   bool m_initialised = false;
 
   /// ARES
-  Vehicle(const Vehicle&) = delete;
-  Vehicle& operator=(const Vehicle&) = delete;
 
   SensorDataCallback m_SensorReadCallback = nullptr;
   VehicleState m_state;
