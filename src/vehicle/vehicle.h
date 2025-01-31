@@ -65,47 +65,68 @@ class Vehicle {
   /// used by MR32
   void init();
 
-  void setSystickCallback(SystickMouseCallback callback);
+  /// systick will call a method in the Mouse class to update motion
+  void setMouseCallback(SystickMouseCallback callback);
+  /// systick updates all the vehicle hardware.
   void systick();
 
-  void stopMoving() {};
-  void enableMotorOutput() {};   /// Not needed
-  void disableMotorOutput() {};  /// Not needed
-  void resetDriveSystem();       /// implement this
+  void resetDriveSystem();    /// disable controller output, clear all counters, stop motors
+  void enableMotorOutput();   /// permits motor control voltage to be applied to motors
+  void disableMotorOutput();  /// prevents motor control voltage from being applied to motors
+  void stopMoving();          /// reset controller errors and stop the PWM
 
-  /// These are the values measured by the Vehicle rather than the desired state
+  /// The values measured by the Vehicle rather than the desired state
   float getDistance() const;
   float getVelocity() const;
   float getAngle() const;
   float getOmega() const;
 
-  void imuReset(int samples);  /// not needed
-  void odometryUpdate();       /// reads encoders and IMU to update odometry
+  void resetIMU(int samples);  /// not needed
+  /// reads encoders and IMU to update odometry
+  void updateOdometry();
 
   void setTargetVelocities(float velocity, float omega);
   void setSteeringFeedback(float steering_fb);
-  MotorVoltages motorControllersUpdate(Velocities desired, Velocities actual, float steering_feedback);
-  void setMotorVoltage(float left, float right);  /// not needed
+  MotorVoltages updateMotorControlllers(Velocities desired, Velocities actual, float steering_feedback);
+  void setMotorVoltage(float left, float right);  /// not needed in ARES
 
-  float battery_voltage();
-  bool has_panic();
+  float getBatteryVoltage();  /// interprets one of the ADC channels as battery voltage
+
+  /// enter endless loop flashing LEDs an show a message
   void panic(const char* message);
+  /// hardware will be in endless loop dusing panic. This is for compatibility with sim
+  bool panicIsActive();
 
-  void setLed(const int i, const bool state);
-  void setLedPattern(uint8_t pattern);
+  void setLed(int i, bool state);       /// for setting an individual LED
+  void setLedPattern(uint8_t pattern);  /// for setting first 8 LEDS on or off
 
-  bool hasButtonPressed();
+  bool hasAnyButtonPressed();
   bool isButtonPressed(int button);
 
-  /// used by ARES //////////////////////////////////////////////////
+  /** Not available to ARES (yet)
+     /// Hardware Abstraction Layer classes
+     /// (or they will be )
+     Speaker* speaker();
+     Board* board();
+     Display* display();
+     Usart* serial();
+     Button* button_x();
+     Button* button_y();
+     AnalogConverter* adc();
+     Battery* battery();
+     Gyro* gyro();
+     Odometry* odometry();
+     Motors* motors();
+     MotorPWM* pwm();
+   */
+
+  /// used only by ARES //////////////////////////////////////////////////
   void reset();
   void updateLeds();
   VehicleState getState() const;
   void setPose(float x, float y, float angle);
-  Pose getPose();
   void setSensorCallback(SensorDataCallback callback);
   bool readButton(Button btn);
-  uint8_t getButtons();
   void updateSensors();
   void updateMotion(float deltaTime);
 

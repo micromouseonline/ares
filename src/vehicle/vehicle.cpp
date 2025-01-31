@@ -37,7 +37,7 @@ void Vehicle::systick() {
   }
 
   Velocities actual_velocities;
-  MotorVoltages motor_voltages = motorControllersUpdate(desired_velocities, actual_velocities, m_steering_fb);
+  MotorVoltages motor_voltages = updateMotorControlllers(desired_velocities, actual_velocities, m_steering_fb);
   setMotorVoltage(motor_voltages.left, motor_voltages.right);
   updateLeds();
 }
@@ -46,7 +46,7 @@ void Vehicle::setSteeringFeedback(float steering_fb) {
   m_steering_fb = steering_fb;
 }
 
-void Vehicle::setSystickCallback(SystickMouseCallback callback) {
+void Vehicle::setMouseCallback(SystickMouseCallback callback) {
   systick_mouse_callback = callback;
 }
 
@@ -59,7 +59,7 @@ void Vehicle::updateLeds() {
   setLed(0, (m_state.buttons & Button::BTN_GO) != 0);
 }
 
-MotorVoltages Vehicle::motorControllersUpdate(Velocities desired, Velocities actual, float steering_feedback) {
+MotorVoltages Vehicle::updateMotorControlllers(Velocities desired, Velocities actual, float steering_feedback) {
   (void)desired;
   (void)actual;
   (void)steering_feedback;
@@ -71,11 +71,11 @@ void Vehicle::setMotorVoltage(float left, float right) {
   (void)right;
 }
 
-float Vehicle::battery_voltage() {
+float Vehicle::getBatteryVoltage() {
   return 7.4f;
 }
 
-bool Vehicle::has_panic() {
+bool Vehicle::panicIsActive() {
   return m_has_panic;
 }
 
@@ -117,14 +117,6 @@ void Vehicle::setPose(float x, float y, float angle) {
   m_state.angle = angle;
 }
 
-Pose Vehicle::getPose() {
-  Pose pose;
-  pose.setX(m_state.x);
-  pose.setY(m_state.y);
-  pose.setAngle(m_state.angle);
-  return pose;
-}
-
 void Vehicle::setSensorCallback(SensorDataCallback callback) {
   m_sensor_callback = callback;
 }
@@ -137,10 +129,6 @@ void Vehicle::setLed(const int i, const bool state) {
 
 bool Vehicle::readButton(Button btn) {
   return ((m_state.buttons & btn) != 0);
-}
-
-uint8_t Vehicle::getButtons() {
-  return m_state.buttons;
 }
 
 void Vehicle::updateSensors() {
@@ -169,7 +157,7 @@ void Vehicle::updateMotion(float deltaTime) {
   m_state.angle = newAngle;
 }
 
-bool Vehicle::hasButtonPressed() {
+bool Vehicle::hasAnyButtonPressed() {
   return m_inputs.buttons != 0;
 }
 
