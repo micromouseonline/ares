@@ -32,8 +32,8 @@ void Vehicle::systick() {
   updateSensors();
   updateMotion(m_step_time);
 
-  if (systick_mouse_callback) {
-    systick_mouse_callback();
+  if (m_SystickMouseCallback) {
+    m_SystickMouseCallback();
   }
 
   Velocities actual_velocities;
@@ -46,7 +46,7 @@ void Vehicle::setSteeringFeedback(float steering_fb) {
 }
 
 void Vehicle::setMouseCallback(SystickMouseCallback callback) {
-  systick_mouse_callback = callback;
+  m_SystickMouseCallback = callback;
 }
 
 MotorVoltages Vehicle::updateMotorControlllers(Velocities desired, Velocities actual, float steering_feedback) {
@@ -108,7 +108,7 @@ void Vehicle::setPose(float x, float y, float angle) {
 }
 
 void Vehicle::setSensorCallback(SensorDataCallback callback) {
-  m_sensor_callback = callback;
+  m_SensorReadCallback = callback;
 }
 
 void Vehicle::setLed(const int i, const bool state) {
@@ -122,8 +122,8 @@ void Vehicle::setLed(const int i, const bool state) {
 // }
 
 void Vehicle::updateSensors() {
-  if (m_sensor_callback) {
-    m_inputs = m_sensor_callback(m_state);
+  if (m_SensorReadCallback) {
+    m_inputs = m_SensorReadCallback(m_state);
     m_state.sensors = m_inputs.sensors;
     m_state.sensors.front_sum = m_state.sensors.lfs_power + m_state.sensors.rfs_power;
     m_state.sensors.front_diff = m_state.sensors.lfs_power - m_state.sensors.rfs_power;
