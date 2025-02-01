@@ -303,8 +303,7 @@ class Mouse {
   ////////////////////////////////
 
   void reset_drive_system() {
-    //    m_robot->reset_drive_system();
-    m_vehicle.reset();
+    m_vehicle.resetDriveSystem();
     m_forward->reset();
     m_rotation->reset();
   }
@@ -1716,7 +1715,7 @@ class Mouse {
     bool lost = search_to(m_maze.goal());
     if (lost) {
       //      robot()->reset_drive_system();
-      m_vehicle.reset();
+      m_vehicle.resetDriveSystem();
       return -1;
     }
     if (maze_has_solution()) {
@@ -1733,7 +1732,7 @@ class Mouse {
     lost = search_to(START);
     if (lost) {
       //      robot()->reset_drive_system();
-      m_vehicle.reset();
+      m_vehicle.resetDriveSystem();
       return -1;
     }
     //    robot()->enable_motors();
@@ -1809,7 +1808,7 @@ class Mouse {
 
     //    robot()->stop();
     //    robot()->reset_drive_system();
-    m_vehicle.reset();
+    m_vehicle.resetDriveSystem();
     return 0;
   }
 
