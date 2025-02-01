@@ -6,6 +6,7 @@
 
 #include "vehicle.h"
 #include <cmath>
+#include "behaviour/config.h"
 
 Vehicle::Vehicle()
     : m_state() {
@@ -120,9 +121,14 @@ void Vehicle::setLed(const int i, const bool state) {
 // }
 
 void Vehicle::updateSensors() {
+  /// TODO move this to the mouse
   if (m_SensorReadCallback) {
     m_inputs = m_SensorReadCallback(m_state);
-    m_state.sensors = m_inputs.sensors;
+
+    m_state.sensors.lfs_power = m_inputs.adc[LFS_ADC_CHANNEL];
+    m_state.sensors.lds_power = m_inputs.adc[LDS_ADC_CHANNEL];
+    m_state.sensors.rds_power = m_inputs.adc[RDS_ADC_CHANNEL];
+    m_state.sensors.rfs_power = m_inputs.adc[RFS_ADC_CHANNEL];
     m_state.sensors.front_sum = m_state.sensors.lfs_power + m_state.sensors.rfs_power;
     m_state.sensors.front_diff = m_state.sensors.lfs_power - m_state.sensors.rfs_power;
     m_state.sensors.see_front_wall = m_inputs.sensors.front_sum > 40;

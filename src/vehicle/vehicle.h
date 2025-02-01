@@ -38,6 +38,7 @@ struct SensorData {
 
 struct VehicleInputs {
   SensorData sensors;
+  uint16_t adc[16] = {0};
   uint8_t buttons = 0;
 };
 

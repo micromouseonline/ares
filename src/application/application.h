@@ -507,15 +507,19 @@ class Application : public IEventObserver {
     m_robot_body.updateSensorGeometry(m_vehicle_state.x, m_vehicle_state.y, m_vehicle_state.angle);
     m_obstacles = m_maze_manager.GetObstacles(m_vehicle_state.x, m_vehicle_state.y);
     m_robot_body.updateSensors(m_obstacles);
-    m_vehicle_inputs.sensors.lfs_power = m_robot_body.getSensor(app_conf::LFS).getPower();
-    m_vehicle_inputs.sensors.lds_power = m_robot_body.getSensor(app_conf::LDS).getPower();
-    m_vehicle_inputs.sensors.rds_power = m_robot_body.getSensor(app_conf::RDS).getPower();
-    m_vehicle_inputs.sensors.rfs_power = m_robot_body.getSensor(app_conf::RFS).getPower();
+    //    m_vehicle_inputs.sensors.lfs_power = m_robot_body.getSensor(app_conf::LFS).getPower();
+    //    m_vehicle_inputs.sensors.lds_power = m_robot_body.getSensor(app_conf::LDS).getPower();
+    //    m_vehicle_inputs.sensors.rds_power = m_robot_body.getSensor(app_conf::RDS).getPower();
+    //    m_vehicle_inputs.sensors.rfs_power = m_robot_body.getSensor(app_conf::RFS).getPower();
+    m_vehicle_inputs.adc[LFS_ADC_CHANNEL] = m_robot_body.getSensor(app_conf::LFS).getPower();
+    m_vehicle_inputs.adc[LDS_ADC_CHANNEL] = m_robot_body.getSensor(app_conf::LDS).getPower();
+    m_vehicle_inputs.adc[RDS_ADC_CHANNEL] = m_robot_body.getSensor(app_conf::RDS).getPower();
+    m_vehicle_inputs.adc[RFS_ADC_CHANNEL] = m_robot_body.getSensor(app_conf::RFS).getPower();
 
-    m_vehicle_inputs.sensors.lfs_distance = m_robot_body.getSensor(app_conf::LFS).getDistance();
-    m_vehicle_inputs.sensors.lds_distance = m_robot_body.getSensor(app_conf::LDS).getDistance();
-    m_vehicle_inputs.sensors.rds_distance = m_robot_body.getSensor(app_conf::RDS).getDistance();
-    m_vehicle_inputs.sensors.rfs_distance = m_robot_body.getSensor(app_conf::RFS).getDistance();
+    //    m_vehicle_inputs.sensors.lfs_distance = m_robot_body.getSensor(app_conf::LFS).getDistance();
+    //    m_vehicle_inputs.sensors.lds_distance = m_robot_body.getSensor(app_conf::LDS).getDistance();
+    //    m_vehicle_inputs.sensors.rds_distance = m_robot_body.getSensor(app_conf::RDS).getDistance();
+    //    m_vehicle_inputs.sensors.rfs_distance = m_robot_body.getSensor(app_conf::RFS).getDistance();
 
     m_vehicle_inputs.buttons = m_robot_buttons;
     m_process_time = m_timer.getElapsedTime();

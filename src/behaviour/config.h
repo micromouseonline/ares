@@ -60,7 +60,12 @@
 #include "chassis.h"
 #include "pins.h"
 #include "settings.h"
-#else
+#elif HARDWARE == HARDWARE_ARES_SIM
+const int LFS_ADC_CHANNEL = 0;
+const int LDS_ADC_CHANNEL = 1;
+const int RDS_ADC_CHANNEL = 2;
+const int RFS_ADC_CHANNEL = 3;
+
 // #error "NO HARDWARE DEFINED"
 #endif
 
