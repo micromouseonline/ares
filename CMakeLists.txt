@@ -133,6 +133,7 @@ set(APP mouse-simulator)
 
 add_executable(${APP} ""
         src/vehicle/vehicle.cpp
+        src/common/delay.cpp
 )
 copy_resources(${APP})
 copy_windows_dlls(${APP})
@@ -179,6 +180,7 @@ add_executable(google_test_mouse_simulator
         google-tests/test_cubic.cpp
         src/common/singleton.h
         src/vehicle/vehicle.cpp
+        src/common/delay.cpp
 )
 
 # Link GoogleTest and your project to the test executable

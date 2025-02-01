@@ -7,6 +7,7 @@
 #include "vehicle.h"
 #include <cmath>
 #include "behaviour/config.h"
+#include "hal/speaker.h"
 
 Vehicle::Vehicle()
     : m_state() {
@@ -24,9 +25,13 @@ void Vehicle::init() {
   m_state.total_distance = 0;
   resetDriveSystem();
   m_initialised = true;
+  m_reset = false;
 }
 
-void Vehicle::systick() {
+bool Vehicle::systick() {
+  if (m_terminate || m_reset || m_paused) {
+    return false;
+  }
   m_state.ticks++;
   updateSensors();
 
@@ -38,6 +43,7 @@ void Vehicle::systick() {
   Velocities actual_velocities;
   MotorVoltages motor_voltages = updateMotorControlllers(desired_velocities, actual_velocities, m_steering_fb);
   setMotorVoltage(motor_voltages.left, motor_voltages.right);
+  return true;
 }
 
 void Vehicle::setSteeringFeedback(float steering_fb) {
@@ -168,4 +174,26 @@ void Vehicle::resetDriveSystem() {
 
 void Vehicle::setLedPattern(uint8_t pattern) {
   m_state.leds = pattern;
+}
+
+bool Vehicle::isRunning() {
+  return !m_terminate && !m_reset;
+}
+
+void Vehicle::terminate() {
+  m_terminate = true;
+}
+
+void Vehicle::reset() {
+  m_reset = true;
+}
+
+void Vehicle::pause() {
+  m_paused = true;
+}
+void Vehicle::resume() {
+  m_paused = false;
+}
+bool Vehicle::isPaused() {
+  return m_paused;
 }

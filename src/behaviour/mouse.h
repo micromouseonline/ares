@@ -15,6 +15,7 @@
 #include "action-compiler.h"
 #include "application/timer.h"
 #include "common/core.h"
+#include "common/delay.h"
 #include "common/pose.h"
 #include "common/printf/printf.h"
 #include "maze.h"
@@ -26,6 +27,7 @@
 #include "trajectories/spinturn.h"
 #include "trajectories/straight.h"
 #include "trajectory.h"
+#include "vehicle/hal/speaker.h"
 #include "vehicle/vehicle.h"
 
 #include "profile.h"
@@ -82,13 +84,11 @@ inline int g_mouse_state = MS_FRESH_START;
 class Mouse {
  public:
   // TODO: Never instantiate the mouse without a vehicle
-  Mouse(Vehicle& vehicle)
-      : m_vehicle(vehicle),
+  Mouse()
+      :  // Vehicle::instance()(vehicle),
         m_timeStamp(0),
         m_thread_running(false),
-        m_terminate(false),
-        m_reset(false),
-        m_paused(false),
+
         m_SerialOut(nullptr),
         m_BinaryOut(nullptr) {
     begin();
@@ -161,7 +161,7 @@ class Mouse {
     m_forward = new Profile();
     m_rotation = new Profile();
     //// This uses a lambda. I don't understand lambdas
-    m_vehicle.setMouseCallback([this] { systick_callback(); });
+    Vehicle::instance().setMouseCallback([this] { systick_callback(); });
   };
 
   ///////////////////////////////
@@ -303,7 +303,7 @@ class Mouse {
   ////////////////////////////////
 
   void reset_drive_system() {
-    m_vehicle.resetDriveSystem();
+    Vehicle::instance().resetDriveSystem();
     m_forward->reset();
     m_rotation->reset();
   }
@@ -975,7 +975,7 @@ class Mouse {
     //      }
     //    }
     // Be sure robot has come to a halt.
-    m_vehicle.setTargetVelocities(0, 0);
+    Vehicle::instance().setTargetVelocities(0, 0);
     return walls;
   }
 
@@ -1100,32 +1100,26 @@ class Mouse {
     serialPrintf(m_SerialOut, "Mouse - initialisation\n");
     m_locked = true;
     m_current_trajectory = std::make_unique<IdleTrajectory>();
-    m_vehicle.init();
+    Vehicle::instance().init();
     m_maze.initialise();
-    m_vehicle.setPose(96, 96, 90);
+    Vehicle::instance().setPose(96, 96, 90);
     m_heading = Direction::DIR_N;
     m_location = {0, 0};
     m_target = {7, 7};
-    m_paused = false;
-    m_terminate = false;
     m_thread_running = true;
     m_timeStamp = 0;
     m_ticks = 0;
-    m_reset = false;
     m_activity = ACT_NONE;
-    m_speed_up = 1.0f;
     m_locked = false;
   }
 
-  Vehicle& getVehicle() {
-    return m_vehicle;
-  }
-
   void reset() {
-    m_reset = true;
+    //    m_reset = true;
+    Vehicle::instance().reset();
     m_activity = ACT_NONE;
-    m_vehicle.setPose(96, 96, 90);
+    Vehicle::instance().setPose(96, 96, 90);
     m_maze.initialise();
+    speaker();
   }
 
   void startRunning() {
@@ -1135,16 +1129,17 @@ class Mouse {
 
   void stopRunning() {
     serialPrintf(m_SerialOut, "Mouse - stop running\n");
-    m_terminate = true;
+    Vehicle::instance().terminate();
+    //    m_terminate = true;
     m_thread_running = false;
   }
 
   void pauseRunning() {
-    m_paused = true;
+    Vehicle::instance().pause();
   }
 
   void resumeRunning() {
-    m_paused = false;
+    Vehicle::instance().resume();
   }
 
   bool isRunning() {
@@ -1283,7 +1278,7 @@ class Mouse {
   }
 
   void turnLeft() {
-    float speed = m_vehicle.getState().velocity;
+    float speed = Vehicle::instance().getState().velocity;
     doMove(20, speed, 700, 5000);
     doCubicTurn(115.6, 90, speed);
     doMove(20, speed, speed, 5000);
@@ -1291,7 +1286,7 @@ class Mouse {
   }
 
   void turnRight() {
-    float speed = m_vehicle.getState().velocity;
+    float speed = Vehicle::instance().getState().velocity;
     doMove(20, speed, 700, 5000);
     doCubicTurn(115.6, -90, speed);
     doMove(20, speed, speed, 5000);
@@ -1299,7 +1294,7 @@ class Mouse {
   }
 
   void turnBack() {
-    float speed = m_vehicle.getState().velocity;
+    float speed = Vehicle::instance().getState().velocity;
     doMove(90, speed, 0, 5000);
     doInPlaceTurn(180, 400, 0, 5000);
     doMove(90, speed, speed, 5000);
@@ -1307,7 +1302,7 @@ class Mouse {
   }
 
   void goForward() {
-    float speed = m_vehicle.getState().velocity;
+    float speed = Vehicle::instance().getState().velocity;
     int cells = get_run_length(m_location, m_heading);
     m_logger.info("Cell lookahead %d", cells);
     //    doMove(180, speed, speed, 5000);
@@ -1715,7 +1710,7 @@ class Mouse {
     bool lost = search_to(m_maze.goal());
     if (lost) {
       //      robot()->reset_drive_system();
-      m_vehicle.resetDriveSystem();
+      Vehicle::instance().resetDriveSystem();
       return -1;
     }
     if (maze_has_solution()) {
@@ -1732,7 +1727,7 @@ class Mouse {
     lost = search_to(START);
     if (lost) {
       //      robot()->reset_drive_system();
-      m_vehicle.resetDriveSystem();
+      Vehicle::instance().resetDriveSystem();
       return -1;
     }
     //    robot()->enable_motors();
@@ -1749,7 +1744,7 @@ class Mouse {
     move(-BACK_WALL_TO_CENTER - 40, 100, 0, 1000);
     m_hand_start = true;
 
-    m_vehicle.resetDriveSystem();
+    Vehicle::instance().resetDriveSystem();
 
     if (maze_has_solution()) {
       //      Board::instance()->speaker()->success();
@@ -1808,7 +1803,7 @@ class Mouse {
 
     //    robot()->stop();
     //    robot()->reset_drive_system();
-    m_vehicle.resetDriveSystem();
+    Vehicle::instance().resetDriveSystem();
     return 0;
   }
 
@@ -1820,14 +1815,14 @@ class Mouse {
     /// assume we are centred in the start cell.
     setHeading(DIR_N);
     setLocation({0, 0});
-    m_vehicle.setPose(96.0f, 96.0f - 40.0f, 90.0f);
-    VehicleState robot_state = m_vehicle.getState();
+    Vehicle::instance().setPose(96.0f, 96.0f - 40.0f, 90.0f);
+    VehicleState robot_state = Vehicle::instance().getState();
     delay_ms(500);
     updateMap(robot_state);
     doMove(90 + 40.0f, 700, 700, 5000);
-    while (!m_terminate && !m_reset) {
+    while (Vehicle::instance().isRunning()) {
       setLocation(getLocation().neighbour(getHeading()));
-      robot_state = m_vehicle.getState();
+      robot_state = Vehicle::instance().getState();
       updateMap(robot_state);
       if (getLocation() == target) {
         break;
@@ -1859,22 +1854,22 @@ class Mouse {
       setHeading(DIR_N);
       setLocation({0, 0});
       m_target = Location(7, 7);
-      m_vehicle.resetDriveSystem();
-      m_vehicle.setPose(96.0f, 96.0f - 40.0f, 90.0f);
+      Vehicle::instance().resetDriveSystem();
+      Vehicle::instance().setPose(96.0f, 96.0f - 40.0f, 90.0f);
 
-      VehicleState robot_state = m_vehicle.getState();
+      VehicleState robot_state = Vehicle::instance().getState();
       delay_ms(500);
       updateMap(robot_state);
       doMove(90 + 40.0f, 700, 700, 5000);
       uint32_t t = m_ticks;
       float start_distance = robot_state.total_distance;
       searchTo(m_target);
-      robot_state = m_vehicle.getState();
+      robot_state = Vehicle::instance().getState();
       float end_distance = robot_state.total_distance;
       t = m_ticks - t;
       m_logger.info("Arrived: %d mm in  %d ms", (int)(end_distance - start_distance), t);
       delay_ms(2000);
-      if (m_reset || m_terminate) {
+      if (!Vehicle::instance().isRunning()) {
         return false;
       }
       if (m_frontWall) {
@@ -1897,12 +1892,12 @@ class Mouse {
       t = m_ticks;
       m_target = Location(0, 0);
       searchTo(m_target);
-      robot_state = m_vehicle.getState();
+      robot_state = Vehicle::instance().getState();
       t = m_ticks - t;
       end_distance = robot_state.total_distance;
       m_logger.info("Arrived: %d mm in  %d ms", (int)(end_distance - start_distance), t);
 
-      if (m_reset || m_terminate) {
+      if (!Vehicle::instance().isRunning()) {
         return false;
       }
     }
@@ -1990,11 +1985,11 @@ class Mouse {
 
     //////////////////////////////////////////////////////////////////////////////////////TERMINATING CONDITION IS WRONG !
     while (!(getLocation() == target)) {
-      if (m_terminate || m_reset) {  /// TODO: should m_terminate just set m_reset?
+      if (!Vehicle::instance().isRunning()) {  /// TODO: should m_terminate just set m_reset?
         return false;
       }
       setLocation(getLocation().neighbour(getHeading()));
-      VehicleState robot_state = m_vehicle.getState();
+      VehicleState robot_state = Vehicle::instance().getState();
       updateMap(robot_state);
       if (getLocation() == target) {
         break;
@@ -2050,16 +2045,16 @@ class Mouse {
     m_current_trajectory = std::move(idle);
     /// loop
     while (m_thread_running) {
-      if (m_paused) {
+      if (Vehicle::instance().isPaused()) {
         continue;
       }
-      if (m_vehicle.isButtonPressed(Button::BTN_GO)) {
-        while (m_vehicle.isButtonPressed(Button::BTN_GO)) {
+      if (Vehicle::instance().isButtonPressed(Button::BTN_GO)) {
+        while (Vehicle::instance().isButtonPressed(Button::BTN_GO)) {
           delay_ms(1);
         }
       }
-      if (m_vehicle.isButtonPressed(Button::BTN_RESET)) {
-        while (m_vehicle.isButtonPressed(Button::BTN_RESET)) {
+      if (Vehicle::instance().isButtonPressed(Button::BTN_RESET)) {
+        while (Vehicle::instance().isButtonPressed(Button::BTN_RESET)) {
           delay_ms(1);
         }
       }
@@ -2111,7 +2106,7 @@ class Mouse {
     }
     m_rotation->update();
     cubic_turn_update();
-    m_vehicle.setTargetVelocities(m_forward->speed(), m_rotation->speed());
+    Vehicle::instance().setTargetVelocities(m_forward->speed(), m_rotation->speed());
     m_timeStamp++;
     m_ticks++;
   }
@@ -2127,20 +2122,16 @@ class Mouse {
    * the robot motion processing gets updated and the sensors get read. If the
    * vehicle systick is not called it will be unresponsive.
    */
-  void delay_ms(int ms) {
-    Timer timer;
-    while (ms > 0 && !m_terminate && !m_reset) {
-      if (!m_paused) {
-        m_vehicle.systick();
-        ms--;
-      }
-      timer.wait_us(1000 * m_speed_up);  // Avoid hogging the thread
-    }
-  }
-
-  void setSpeedUp(float speed_up) {
-    m_speed_up = 1.0f / speed_up;
-  }
+  //  void delay_ms(int ms) {
+  //    Timer timer;
+  //    while (ms > 0 && !m_terminate && !m_reset) {
+  //      if (!m_paused) {
+  //        Vehicle::instance().systick();
+  //        ms--;
+  //      }
+  //      timer.wait_us(1000 * m_speed_up);  // Avoid hogging the thread
+  //    }
+  //  }
 
   Maze& getMaze() {
     return m_maze;
@@ -2190,14 +2181,14 @@ class Mouse {
   Maze m_maze;
 
   bool waitForTrajectory() {
-    while (!trajectoryFinished() && !m_terminate & !m_reset) {
+    while (!trajectoryFinished() && Vehicle::instance().isRunning()) {
       delay_ms(1);
     }
-    return !m_terminate;
+    return true;
   }
 
   void startMove(float distance, float v_max, float v_end, float accel) {
-    float v_start = m_vehicle.getState().velocity;
+    float v_start = Vehicle::instance().getState().velocity;
     std::unique_ptr<Straight> trapezoid = std::make_unique<Straight>(distance, v_start, v_max, v_end, accel);
     m_current_trajectory = std::move(trapezoid);
     m_current_trajectory->init(Pose());
@@ -2209,7 +2200,7 @@ class Mouse {
   }
 
   void startTurn(float angle, float omega_Max, float omega_end, float alpha) {
-    float w_start = m_vehicle.getState().angular_velocity;
+    float w_start = Vehicle::instance().getState().angular_velocity;
     std::unique_ptr<Straight> trapezoid = std::make_unique<Straight>(angle, w_start, omega_Max, omega_end, alpha);
     m_current_trajectory = std::move(trapezoid);
     m_current_trajectory->init(Pose());
@@ -2224,7 +2215,7 @@ class Mouse {
   }
 
   void startInPlaceTurn(float angle, float omega_Max, float omega_end, float alpha) {
-    float w_start = m_vehicle.getState().angular_velocity;
+    float w_start = Vehicle::instance().getState().angular_velocity;
     std::unique_ptr<Spinturn> spinturn = std::make_unique<Spinturn>(angle, w_start, omega_Max, omega_end, alpha);
     m_current_trajectory = std::move(spinturn);
     m_current_trajectory->init(Pose());
@@ -2241,7 +2232,7 @@ class Mouse {
 
   SensorData sensors() {
     ATOMIC
-    return m_vehicle.getState().sensors;
+    return Vehicle::instance().getState().sensors;
   }
 
   /// From MR32 mostly
@@ -2285,21 +2276,18 @@ class Mouse {
     return count;  // Return the number of characters written
   }
 
-  Vehicle& m_vehicle;
+  //  Vehicle& Vehicle::instance();
   Location m_target = {7, 7};
   bool m_leftWall = false;
   bool m_frontWall = false;
   bool m_rightWall = false;
-  float m_step_time = 0.001;
   bool m_first_run = true;
   bool m_event_log_detailed = false;
   bool m_continuous_search = true;
 
   uint32_t m_timeStamp = 0;
   bool m_thread_running = false;
-  bool m_terminate = false;
-  bool m_reset = false;
-  bool m_paused = false;
+
   bool m_locked = false;
   uint32_t m_ticks = 0;
 

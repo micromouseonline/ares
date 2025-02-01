@@ -59,17 +59,22 @@ struct VehicleState {
 using SensorDataCallback = std::function<VehicleInputs(VehicleState)>;
 
 class Vehicle {
- public:
+ private:
   Vehicle();
   ~Vehicle();
 
+ public:
+  static Vehicle& instance() {
+    static Vehicle instance;
+    return instance;
+  }
   /// used by MR32
   void init();
 
   /// systick will call a method in the Mouse class to update motion
   void setMouseCallback(SystickMouseCallback callback);
   /// systick updates all the vehicle hardware.
-  void systick();
+  bool systick();
 
   void resetDriveSystem();    /// disable controller output, clear all counters, stop motors
   void enableMotorOutput();   /// permits motor control voltage to be applied to motors
@@ -122,6 +127,12 @@ class Vehicle {
    */
 
   /// used only by ARES //////////////////////////////////////////////////
+  void reset();
+  void pause();
+  void resume();
+  void terminate();
+  bool isRunning();
+  bool isPaused();
   VehicleState getState() const;
   void setPose(float x, float y, float angle);
   void setSensorCallback(SensorDataCallback callback);
@@ -140,6 +151,10 @@ class Vehicle {
   bool m_initialised = false;
 
   /// ARES
+
+  bool m_terminate = false;
+  bool m_reset = false;
+  bool m_paused = false;
 
   SensorDataCallback m_SensorReadCallback = nullptr;
   VehicleState m_state;

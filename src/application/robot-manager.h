@@ -139,10 +139,6 @@ class RobotManager {
     m_mouse.setActivity(activity);
   }
 
-  void setRobotSpeedScale(float scale) {
-    m_mouse.setSpeedUp(scale);
-  }
-
   bool isRobotEventLogDetailed() {
     return m_mouse.getEventLogDetailed();
   }
@@ -222,19 +218,19 @@ class RobotManager {
   }
 
   SensorData getVehicleSensors() {
-    return m_mouse.getVehicle().getState().sensors;
+    return Vehicle::instance().getState().sensors;
   }
 
   VehicleState getVehicleState() {
-    return m_mouse.getVehicle().getState();
+    return Vehicle::instance().getState();
   }
 
   uint8_t getVehicleButtons() {
-    return m_mouse.getVehicle().getState().buttons;
+    return Vehicle::instance().getState().buttons;
   }
 
   uint8_t getVehicleLeds() {
-    return m_mouse.getVehicle().getState().leds;
+    return Vehicle::instance().getState().leds;
   }
 
   /////////////////////////////////////////////////////

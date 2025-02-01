@@ -12,6 +12,7 @@
 #include <mutex>
 #include <sstream>
 #include "common/core.h"
+#include "common/delay.h"
 #include "event_observer.h"
 #include "imgui-SFML.h"
 #include "imgui.h"
@@ -42,8 +43,8 @@ class Application : public IEventObserver {
   Application()
       : m_window(std::make_unique<Window>(app_conf::AppName, app_conf::WindowSize)),
         m_vehicle_state(),
-        m_vehicle(),
-        m_mouse(m_vehicle),
+        //        m_vehicle(),
+        m_mouse(),
         m_robot_manager(m_mouse) {
     ARES_INFO("APP: Initialising Application ...");
     m_elapsed = sf::Time::Zero;
@@ -118,7 +119,7 @@ class Application : public IEventObserver {
 
     ARES_INFO("APP: Set Vehicle sensor callback");
     /// The Lambda expression here serves to bind the callback to the application instance
-    m_vehicle.setSensorCallback([this](VehicleState state) -> VehicleInputs { return sensorDataCallback(state); });
+    Vehicle::instance().setSensorCallback([this](VehicleState state) -> VehicleInputs { return sensorDataCallback(state); });
 
     ARES_INFO("APP: Vehicle running");
   }
@@ -267,10 +268,8 @@ class Application : public IEventObserver {
     renderGoButton(item_type);
 
     ImGui::SliderFloat("Speedup", &m_speed_scale, 0.01, 10.0, "%4.2f");
-    m_robot_manager.setRobotSpeedScale(m_speed_scale);
-
+    setSpeedUp(m_speed_scale);
     drawSensorUpdateTime(m_process_time.asMicroseconds());
-
     renderStateSummary();
     ImGui::End();
   }
@@ -507,20 +506,10 @@ class Application : public IEventObserver {
     m_robot_body.updateSensorGeometry(m_vehicle_state.x, m_vehicle_state.y, m_vehicle_state.angle);
     m_obstacles = m_maze_manager.GetObstacles(m_vehicle_state.x, m_vehicle_state.y);
     m_robot_body.updateSensors(m_obstacles);
-    //    m_vehicle_inputs.sensors.lfs_power = m_robot_body.getSensor(app_conf::LFS).getPower();
-    //    m_vehicle_inputs.sensors.lds_power = m_robot_body.getSensor(app_conf::LDS).getPower();
-    //    m_vehicle_inputs.sensors.rds_power = m_robot_body.getSensor(app_conf::RDS).getPower();
-    //    m_vehicle_inputs.sensors.rfs_power = m_robot_body.getSensor(app_conf::RFS).getPower();
     m_vehicle_inputs.adc[LFS_ADC_CHANNEL] = m_robot_body.getSensor(app_conf::LFS).getPower();
     m_vehicle_inputs.adc[LDS_ADC_CHANNEL] = m_robot_body.getSensor(app_conf::LDS).getPower();
     m_vehicle_inputs.adc[RDS_ADC_CHANNEL] = m_robot_body.getSensor(app_conf::RDS).getPower();
     m_vehicle_inputs.adc[RFS_ADC_CHANNEL] = m_robot_body.getSensor(app_conf::RFS).getPower();
-
-    //    m_vehicle_inputs.sensors.lfs_distance = m_robot_body.getSensor(app_conf::LFS).getDistance();
-    //    m_vehicle_inputs.sensors.lds_distance = m_robot_body.getSensor(app_conf::LDS).getDistance();
-    //    m_vehicle_inputs.sensors.rds_distance = m_robot_body.getSensor(app_conf::RDS).getDistance();
-    //    m_vehicle_inputs.sensors.rfs_distance = m_robot_body.getSensor(app_conf::RFS).getDistance();
-
     m_vehicle_inputs.buttons = m_robot_buttons;
     m_process_time = m_timer.getElapsedTime();
     /// the returned data is copied so there is no need for a lock
@@ -531,7 +520,7 @@ class Application : public IEventObserver {
   std::unique_ptr<Window> m_window;
 
   VehicleState m_vehicle_state;
-  Vehicle m_vehicle;  // The robot instance
+  //  Vehicle m_vehicle;  // The robot instance
   Mouse m_mouse;
   RobotManager m_robot_manager;
 
