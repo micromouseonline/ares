@@ -8,6 +8,7 @@
 #include <cmath>
 #include "behaviour/config.h"
 #include "hal/board.h"
+#include "hal/motor-controller.h"
 
 Vehicle::Vehicle()
     : m_state() {
@@ -202,32 +203,44 @@ bool Vehicle::isPaused() {
 /// passthroughs for Board capabilities
 
 Speaker* Vehicle::speaker() {
-  return speaker();
+  return &m_speaker;
 }
 
 Display* Vehicle::display() {
-  return display();
+  return &m_display;
 }
 
 Usart* Vehicle::serial() {
-  return serial();
+  return &m_serial;
 }
 
 ButtonQ* Vehicle::button_x() {
-  return Board::instance()->button_x();
+  return &m_button_x;
 }
 
 ButtonQ* Vehicle::button_y() {
-  return button_y();
+  return &m_button_y;
 }
 
 AnalogueConverter* Vehicle::adc() {
-  return adc();
+  return &m_adc;
 }
 
 Battery* Vehicle::battery() {
-  return battery();
+  return &m_battery;
 }
 Gyro* Vehicle::gyro() {
-  return gyro();
+  return &m_gyro;
+}
+
+Odometry* Vehicle::odometry() {
+  return &m_odometry;
+}
+
+MotorController* Vehicle::motors() {
+  return &m_motors;
+}
+
+MotorPWM* Vehicle::pwm() {
+  return &m_pwm;
 }

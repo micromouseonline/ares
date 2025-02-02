@@ -9,7 +9,6 @@
 #include "common/singleton.h"
 #include "hal/analogue-converter.h"
 #include "hal/battery.h"
-#include "hal/board.h"
 #include "hal/button.h"
 #include "hal/display.h"
 #include "hal/gyro.h"
@@ -158,10 +157,18 @@ class Vehicle {
   bool m_has_panic = false;
   bool m_initialised = false;
 
-  Speaker* m_speaker;
-  MotorController* m_motors;
-  MotorPWM* m_pwm;
-  Odometry* m_odometry;
+  /// for some reason these live on the vehicle
+  Speaker m_speaker;
+  MotorController m_motors;
+  MotorPWM m_pwm;
+  Odometry m_odometry;
+  ButtonQ m_button_x;
+  ButtonQ m_button_y;
+  AnalogueConverter m_adc;
+  Battery m_battery;
+  Gyro m_gyro;
+  Display m_display;
+  Usart m_serial;  //  this is a pointer to an existing usart device
 
   /// ARES
 
