@@ -27,10 +27,12 @@ class MotorPWM {
   }
 
   void setLeftVolts(float volts) {
+    (void)volts;
     /// broken out for testing and force feedback
   }
 
   void setRightVolts(float volts) {
+    (void)volts;
     /// broken out for testing and force feedback
   }
 
@@ -40,10 +42,12 @@ class MotorPWM {
   }
 
   void setLeftPWM(int pwm) {
+    (void)pwm;
     /// talk to the hardware, setting actual PWM signal
   }
 
   void setRightPWM(int pwm) {
+    (void)pwm;
     /// talk to the hardware, setting actual PWM signal
   }
 };

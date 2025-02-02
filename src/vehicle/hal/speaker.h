@@ -34,7 +34,9 @@ class Speaker {
   }
 
   void playTone(uint32_t frequency, uint32_t duration) {
-    delay_ms(duration);
+    (void)frequency;
+    (void)duration;
+    //    delay_ms(duration);
   }
 
   void confirm() {

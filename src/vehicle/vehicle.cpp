@@ -7,7 +7,7 @@
 #include "vehicle.h"
 #include <cmath>
 #include "behaviour/config.h"
-#include "hal/speaker.h"
+#include "hal/board.h"
 
 Vehicle::Vehicle()
     : m_state() {
@@ -196,4 +196,38 @@ void Vehicle::resume() {
 }
 bool Vehicle::isPaused() {
   return m_paused;
+}
+
+///////////////////////////////
+/// passthroughs for Board capabilities
+
+Speaker* Vehicle::speaker() {
+  return speaker();
+}
+
+Display* Vehicle::display() {
+  return display();
+}
+
+Usart* Vehicle::serial() {
+  return serial();
+}
+
+ButtonQ* Vehicle::button_x() {
+  return Board::instance()->button_x();
+}
+
+ButtonQ* Vehicle::button_y() {
+  return button_y();
+}
+
+AnalogueConverter* Vehicle::adc() {
+  return adc();
+}
+
+Battery* Vehicle::battery() {
+  return battery();
+}
+Gyro* Vehicle::gyro() {
+  return gyro();
 }

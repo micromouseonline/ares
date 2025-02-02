@@ -39,21 +39,27 @@ class Odometry {
   }
 
   float angle() {
+    return 0.0f;
   }
 
   float omega() {
+    return 0.0f;
   }
 
   float distance() {
+    return 0.0f;
   }
 
   float velocity() {
+    return 0.0f;
   }
 
   int leftCount() {
+    return 0;
   }
 
   int rightCount() {
+    return 0;
   }
 
   void update() {

@@ -30,6 +30,7 @@ class AnalogueConverter {
   void createChannel(int channelID) {
     /// this will configure a physical analogue pin and assign it to
     /// a position in the channel array
+    (void)channelID;
   }
 
   uint16_t convertChannel(int channelID) {
@@ -37,6 +38,8 @@ class AnalogueConverter {
     /// the channelID is the position in the array, not the
     /// hardware channel.
     /// Confusing terminology
+    (void)channelID;
+    return 0;
   }
 
   uint16_t getChannel(int channel) {

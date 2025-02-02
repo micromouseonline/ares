@@ -7,7 +7,18 @@
 #include "common/core.h"
 #include "common/pose.h"
 #include "common/singleton.h"
-#include "hal/
+#include "hal/analogue-converter.h"
+#include "hal/battery.h"
+#include "hal/board.h"
+#include "hal/button.h"
+#include "hal/display.h"
+#include "hal/gyro.h"
+#include "hal/motor-controller.h"
+#include "hal/odometry.h"
+#include "hal/pwm.h"
+#include "hal/speaker.h"
+#include "hal/usart.h"
+
 enum Button {
   BTN_GO = (1 << 0),
   BTN_RESET = (1 << 1),
@@ -109,22 +120,19 @@ class Vehicle {
   bool hasAnyButtonPressed();
   bool isButtonPressed(int button);
 
-  /** Not available to ARES (yet)
-     /// Hardware Abstraction Layer classes
-     /// (or they will be )
-     Speaker* speaker();
-     Board* board();
-     Display* display();
-     Usart* serial();
-     Button* button_x();
-     Button* button_y();
-     AnalogConverter* adc();
-     Battery* battery();
-     Gyro* gyro();
-     Odometry* odometry();
-     Motors* motors();
-     MotorPWM* pwm();
-   */
+  /// Hardware Abstraction Layer classes
+  /// (or they will be )
+  Speaker* speaker();
+  Display* display();
+  Usart* serial();
+  ButtonQ* button_x();
+  ButtonQ* button_y();
+  AnalogueConverter* adc();
+  Battery* battery();
+  Gyro* gyro();
+  Odometry* odometry();
+  MotorController* motors();
+  MotorPWM* pwm();
 
   /// used only by ARES //////////////////////////////////////////////////
   void reset();
@@ -149,6 +157,11 @@ class Vehicle {
   float m_steering_fb = 0.0f;
   bool m_has_panic = false;
   bool m_initialised = false;
+
+  Speaker* m_speaker;
+  MotorController* m_motors;
+  MotorPWM* m_pwm;
+  Odometry* m_odometry;
 
   /// ARES
 

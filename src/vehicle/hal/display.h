@@ -10,10 +10,11 @@
 class Display {
  public:
   void printf(const char *format, ...) {
-
+    (void)format;
   };
 
   int puts(char *str) {
+    (void)str;
     return 0;
   };
 

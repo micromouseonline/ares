@@ -27,19 +27,33 @@ class MotorController {
   }
 
   float updatePositionControl(float desired, float actual) {
+    (void)desired;
+    (void)actual;
+    return 0.0f;
   }
 
   float updateRotationControl(float desired, float actual) {
+    (void)desired;
+    (void)actual;
+    return 0.0f;
   }
 
   float calculateforwardFeedForward(float velocity) {
+    (void)velocity;
+    return 0.0f;
   }
 
   float calculaterotationFeedForward(float omega) {
+    (void)omega;
+    return 0.0f;
   }
 
   /// Called from systick to generate the motor voltages
   Voltages calculateMotorVoltages(Velocities desired, Velocities actual, float steering_adjust) {
+    (void)desired;
+    (void)actual;
+    (void)steering_adjust;
+    return {0.0f, 0.0f};
   }
 
   void enableFeedForward() {
@@ -58,15 +72,19 @@ class MotorController {
 
   /// these are simple PD controllers a class would be better
   Voltages getControllerOutputs() {
+    return {0.0f, 0.0f};
   }
 
   Voltages getFeedForwardOutputs() {
+    return {0.0f, 0.0f};
   }
 
   float getForwardError() {
+    return 0.0f;
   }
 
   float getRotationError() {
+    return 0.0f;
   }
 
   /// TODO rename as connectOutput and disconnectOutput
@@ -77,6 +95,7 @@ class MotorController {
   }
 
   bool isConnected() {
+    return m_controller_output_enabled;
   }
 
  private:

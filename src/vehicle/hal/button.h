@@ -9,7 +9,7 @@
  *
  */
 
-class Button {
+class ButtonQ {
  public:
   bool isPressed() {
     return false;
