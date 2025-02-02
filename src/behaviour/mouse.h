@@ -1119,7 +1119,6 @@ class Mouse {
     m_activity = ACT_NONE;
     Vehicle::instance().setPose(96, 96, 90);
     m_maze.initialise();
-    speaker();
   }
 
   void startRunning() {

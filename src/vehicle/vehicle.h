@@ -7,7 +7,7 @@
 #include "common/core.h"
 #include "common/pose.h"
 #include "common/singleton.h"
-
+#include "hal/
 enum Button {
   BTN_GO = (1 << 0),
   BTN_RESET = (1 << 1),
