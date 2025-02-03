@@ -2047,13 +2047,13 @@ class Mouse {
       if (Vehicle::instance().isPaused()) {
         continue;
       }
-      if (Vehicle::instance().isButtonPressed(Button::BTN_GO)) {
-        while (Vehicle::instance().isButtonPressed(Button::BTN_GO)) {
+      if (Vehicle::instance().isButtonPressed(ButtonID::BTN_GO)) {
+        while (Vehicle::instance().isButtonPressed(ButtonID::BTN_GO)) {
           delay_ms(1);
         }
       }
-      if (Vehicle::instance().isButtonPressed(Button::BTN_RESET)) {
-        while (Vehicle::instance().isButtonPressed(Button::BTN_RESET)) {
+      if (Vehicle::instance().isButtonPressed(ButtonID::BTN_RESET)) {
+        while (Vehicle::instance().isButtonPressed(ButtonID::BTN_RESET)) {
           delay_ms(1);
         }
       }

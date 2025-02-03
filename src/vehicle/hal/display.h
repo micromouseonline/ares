@@ -9,11 +9,15 @@
  */
 class Display {
  public:
+  void write(uint8_t c) {
+    (void)c;
+  };
+
   void printf(const char *format, ...) {
     (void)format;
   };
 
-  int puts(char *str) {
+  int puts(const char *str) {
     (void)str;
     return 0;
   };

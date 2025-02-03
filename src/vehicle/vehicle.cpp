@@ -214,11 +214,11 @@ Usart* Vehicle::serial() {
   return &m_serial;
 }
 
-ButtonQ* Vehicle::button_x() {
+Button* Vehicle::button_x() {
   return &m_button_x;
 }
 
-ButtonQ* Vehicle::button_y() {
+Button* Vehicle::button_y() {
   return &m_button_y;
 }
 

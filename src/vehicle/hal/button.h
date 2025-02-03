@@ -9,16 +9,16 @@
  *
  */
 
-class ButtonQ {
+class Button {
  public:
   bool isPressed() {
-    return false;
-  }
-
-  void waitForRelease() {
+    return m_state;
   }
 
   int getPressType() {
-    return 0;
+    return 1;
   }
+
+ private:
+  bool m_state;
 };

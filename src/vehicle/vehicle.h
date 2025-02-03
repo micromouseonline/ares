@@ -18,17 +18,7 @@
 #include "hal/speaker.h"
 #include "hal/usart.h"
 
-enum Button {
-  BTN_GO = (1 << 0),
-  BTN_RESET = (1 << 1),
-};
-
-enum Led {
-  LED_1 = (1 << 0),
-  LED_2 = (1 << 1),
-  LED_3 = (1 << 2),
-  LED_4 = (1 << 3),
-};
+#include "hal/board-config.h"
 
 struct SensorData {
   float lfs_distance = 0;
@@ -124,8 +114,8 @@ class Vehicle {
   Speaker* speaker();
   Display* display();
   Usart* serial();
-  ButtonQ* button_x();
-  ButtonQ* button_y();
+  Button* button_x();
+  Button* button_y();
   AnalogueConverter* adc();
   Battery* battery();
   Gyro* gyro();
@@ -162,8 +152,8 @@ class Vehicle {
   MotorController m_motors;
   MotorPWM m_pwm;
   Odometry m_odometry;
-  ButtonQ m_button_x;
-  ButtonQ m_button_y;
+  Button m_button_x;
+  Button m_button_y;
   AnalogueConverter m_adc;
   Battery m_battery;
   Gyro m_gyro;

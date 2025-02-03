@@ -14,8 +14,8 @@
 
 class Usart {
  public:
-  void write(const char *str) {
-    (void)str;
+  void write(const char c) {
+    (void)c;
   }
 
   int println(const char *str) {
