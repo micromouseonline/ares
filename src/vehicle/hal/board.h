@@ -136,6 +136,8 @@ class Board {
   }
 
  private:
+  /// These should ideally have constructors that initialise them
+  /// and they should only
   Speaker m_speaker;
   AnalogueConverter m_adc;
   Odometry m_odometry;
