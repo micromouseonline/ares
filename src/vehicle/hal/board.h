@@ -8,7 +8,7 @@
  * the board is a singleton that looks after the hardware
  *
  */
-
+#include <stdio.h>
 #include "analogue-converter.h"
 #include "battery.h"
 #include "button.h"
@@ -27,10 +27,11 @@ class Board {
     return &instance;
   }
 
-  Usart* serial() {
+  Usart& serial() {
     return m_serial;
   }
 
+  /// TODO: combine the buttons?
   ButtonQ* button_x() {
     return &m_button_x;
   }
@@ -62,7 +63,7 @@ class Board {
   Battery m_battery;
   Gyro m_gyro;
   Display m_display;
-  Usart* m_serial;  //  this is a pointer to an existing usart device
+  Usart m_serial;  //  this is a pointer to an existing usart device
 
   Board() {
     /// set the system clock
@@ -70,8 +71,10 @@ class Board {
     /// create the ADCchannels
     /// initialise the gyro
     /// kick off systick
+    printf("Board created\n");
   }
 
+  /// make sure we ca create no copies
   Board& operator=(const Board) = delete;
   Board(const Board&) = delete;
   Board& operator=(const Board&) = delete;
