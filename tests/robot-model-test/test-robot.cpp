@@ -2,11 +2,13 @@
 #include <iostream>
 #include "mockboard.h"
 #include "robot.h"  // Include Vehicle logic
+#include "vehicle/hal/board-interface.h"
 
 // Test fixture for Vehicle
 class VehicleTest : public ::testing::Test {
  protected:
   MockBoard mockBoard;
+  BasicBoard& basic = BasicBoard::getInstance();
   Vehicle* vehicle;  // Store singleton reference
 
   void SetUp() override {

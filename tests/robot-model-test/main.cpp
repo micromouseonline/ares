@@ -18,9 +18,14 @@ int main() {
    *
    */
   //  /// first create the board and have it initialise itself
-  BasicBoard& board = BasicBoard::getInstance();  // Singleton board;
+  BoardInterface& board = BasicBoard::getInstance();  // Singleton board;
   board.beep(100);
-  board.setMotorVolts(1, 2);
+  board.setMotorVoltage(1, 2);
+
+  /// pointers are fine too
+  BoardInterface* pBoard = &BasicBoard::getInstance();
+  pBoard->beep(0);
+
   //  /// give that to the Vehicle and have the vehicle initialise itself
   Vehicle& vehicle = Vehicle::getInstance();
   vehicle.setSpeed(123);

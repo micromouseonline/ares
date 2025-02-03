@@ -5,7 +5,7 @@
 #pragma once
 #include <stdint.h>
 #include <iostream>
-#include "robot.h"
+#include "vehicle/hal/board-interface.h"
 
 // MockBoard class for testing
 class MockBoard : public BoardInterface {
