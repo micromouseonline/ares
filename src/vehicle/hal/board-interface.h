@@ -35,6 +35,7 @@ class BoardInterface {
  public:
   virtual ~BoardInterface() = default;
   virtual void init() = 0;
+  virtual void update() = 0;
   virtual void setLed(int id, bool state) {
   }
   virtual bool isButtonPressed(int button_id) {
@@ -111,6 +112,10 @@ class BasicBoard : public BoardInterface {
   }
   void init(void* params) {
     std::cout << "initialising with parameters." << std::endl;
+  }
+
+  void update() override {
+    std::cout << "updating." << std::endl;
   }
 
  private:
