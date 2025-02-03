@@ -7,7 +7,7 @@
 #include "vehicle.h"
 #include <cmath>
 #include "behaviour/config.h"
-#include "hal/board.h"
+#include "hal/board-mr32.h"
 #include "hal/motor-controller.h"
 
 Vehicle::Vehicle()

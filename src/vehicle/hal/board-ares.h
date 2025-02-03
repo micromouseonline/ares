@@ -12,6 +12,7 @@
 #include "analogue-converter.h"
 #include "battery.h"
 #include "board-config.h"
+#include "board-interface.h"
 #include "button.h"
 #include "display.h"
 #include "gyro.h"
@@ -22,15 +23,20 @@
 #include "usart.h"
 
 /// TODO: this need to be an interface class for actual boards
-class Board {
+class AresBoard : public BoardInterface {
  public:
-  Board() {
-    init();
-    printf("Board created\n");
+  static AresBoard& getInstance(void* params = nullptr) {
+    static AresBoard instance(params);  // Meyers Singleton
+    return instance;
   }
 
-  ~Board() {
-    printf("Board destroyed\n");
+  AresBoard(void* params) {
+    init();
+    printf("AresBoard created\n");
+  }
+
+  ~AresBoard() {
+    printf("AresBoard destroyed\n");
   }
 
   /// initialise all the hardware
@@ -40,7 +46,7 @@ class Board {
     /// create the ADCchannels
     /// initialise the gyro
     /// kick off systick
-    printf("Board initialiseing\n");
+    printf("AresBoard initialiseing\n");
   }
 
   /***
@@ -51,7 +57,7 @@ class Board {
   }
 
   /// Buttons
-  bool hasAnyButtonPressed() {
+  bool isAnyButtonPressed() override {
     for (int i = 0; i < BUTTON_COUNT; i++) {
       if (m_buttons[i].isPressed()) {
         return true;
@@ -60,34 +66,35 @@ class Board {
     return false;
   };
 
-  bool isButtonPressed(ButtonID button) {
+  bool isButtonPressed(int button) override {
     return m_buttons[button].isPressed();
   };
 
   /// LEDs
-  void setLed(LedID led, bool state) {
+  void setLed(int led, bool state) override {
     m_leds[led] = state;
   }
 
   /// Serial device
-  void serialWrite(const char c) {
+  void serialWrite(const char c) override {
     m_serial.write(c);
   }
-  int serialPuts(const char* s) {
-    return m_serial.puts(s);
+
+  void serialPuts(const char* s) override {
+    m_serial.puts(s);
   }
 
   /// Display Device
-  void displayWrite(const char c) {
+  void displayWrite(const char c) override {
     m_display.write(c);
   }
 
-  int displayPuts(const char* s) {
-    return m_display.puts(s);
+  void displayPuts(const char* s) {
+    m_display.puts(s);
   }
 
   void displayCLS() {
-    return m_display.cls();
+    m_display.cls();
   }
 
   /// ADC data
@@ -127,11 +134,11 @@ class Board {
   }
 
   /// Speaker
-  void playTone(uint32_t frequency, uint32_t duration) {
+  void playTone(uint32_t frequency, uint32_t duration) override {
     m_speaker.playTone(frequency, duration);
   }
 
-  void beep(uint16_t duration) {
+  void beep(int duration) override {
     m_speaker.playTone(1000, 100);
   }
 
@@ -150,9 +157,9 @@ class Board {
   uint16_t m_adc_data[ADC_CHANNEL_COUNT];
 
   /// make sure we ca create no copies
-  Board& operator=(const Board) = delete;
-  Board(const Board&) = delete;
-  Board& operator=(const Board&) = delete;
-  Board(Board&&) = delete;
-  Board& operator=(Board&&) = delete;
+  AresBoard& operator=(const AresBoard) = delete;
+  AresBoard(const AresBoard&) = delete;
+  AresBoard& operator=(const AresBoard&) = delete;
+  AresBoard(AresBoard&&) = delete;
+  AresBoard& operator=(AresBoard&&) = delete;
 };
