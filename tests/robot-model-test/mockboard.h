@@ -14,6 +14,10 @@ class MockBoard : public BoardInterface {
     std::cout << "[MOCK] BasicBoard initialising." << std::endl;
   }
 
+  void update() override {
+    std::cout << "[MOCK] BasicBoard updating." << std::endl;
+  }
+
   void setMotorVoltage(float left, float right) override {
     lastLeftVolts = left;
     lastRightVolts = right;
