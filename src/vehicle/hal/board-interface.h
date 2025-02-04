@@ -110,7 +110,9 @@ class BasicBoard : public BoardInterface {
   void init() override {
     std::cout << "initialising." << std::endl;
   }
+
   void init(void* params) {
+    (void)params;
     std::cout << "initialising with parameters." << std::endl;
   }
 

@@ -9,14 +9,14 @@
 #include "behaviour/config.h"
 #include "hal/board-mr32.h"
 #include "hal/motor-controller.h"
-
-Vehicle::Vehicle()
-    : m_state() {
-  if (!m_initialised) {
-    init();
-  }
-  resetDriveSystem();
-}
+//
+// Vehicle::Vehicle()
+//    : m_state() {
+//  if (!m_initialised) {
+//    init();
+//  }
+//  resetDriveSystem();
+//}
 
 Vehicle::~Vehicle() {
 }

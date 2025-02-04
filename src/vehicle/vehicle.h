@@ -6,9 +6,9 @@
 #include <functional>
 #include "common/core.h"
 #include "common/pose.h"
-#include "common/singleton.h"
 #include "hal/analogue-converter.h"
 #include "hal/battery.h"
+#include "hal/board-interface.h"
 #include "hal/button.h"
 #include "hal/display.h"
 #include "hal/gyro.h"
@@ -64,8 +64,9 @@ class Vehicle {
   ~Vehicle();
 
  public:
-  static Vehicle& instance() {
-    static Vehicle instance;
+  static Vehicle& instance(BoardInterface* board = nullptr) {
+    /// If no pointer to a board is provided, use a BasicBoard
+    static Vehicle instance(board ? *board : BasicBoard::getInstance());  // ✅ Correct Meyers Singleton
     return instance;
   }
   /// used by MR32
@@ -137,6 +138,16 @@ class Vehicle {
   void updateVehiclePose(float deltaTime);  /// updat profilers - should be in Mouse
 
  private:
+  explicit Vehicle(BoardInterface& board)
+      : m_board(board) {
+    if (!m_initialised) {
+      init();
+    }
+    resetDriveSystem();
+    std::cout << "Vehicle initialized." << std::endl;
+  }
+  BoardInterface& m_board;
+
   /// MR32
   Vehicle(const Vehicle&) = delete;
   Vehicle& operator=(const Vehicle&) = delete;
