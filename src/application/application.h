@@ -46,37 +46,37 @@ class Application : public IEventObserver {
         m_vehicle_state(),
         m_mouse(),
         m_robot_manager(m_mouse) {
-    ARES_INFO("APP: Initialising Application ...");
+    ARES_INFO(" APP: Initialising Application ...");
     m_elapsed = sf::Time::Zero;
     setupWindow();
-    ARES_TRACE("APP:   .. Window Ready");
+    ARES_TRACE(" APP:   .. Window Ready");
     setupImGui();
-    ARES_TRACE("APP:   .. ImGui Ready");
+    ARES_TRACE(" APP:   .. ImGui Ready");
     setupVehicle();
-    ARES_TRACE("APP:   .. Board is {}", m_robot_manager.getBoardName());
-    ARES_TRACE("APP:   .. Robot Ready");
+    ARES_TRACE(" APP:   .. Board is {}", m_robot_manager.getBoardName());
+    ARES_TRACE(" APP:   .. Robot Ready");
     printActionListWithCost(test_path);
   }
 
   ~Application() {
-    ARES_TRACE("APP: Application Shutting Down ...");
+    ARES_TRACE(" APP: Application Shutting Down ...");
     m_robot_manager.resetRobot();
-    ARES_TRACE("APP:   .. Robot Manager Stopped");
+    ARES_TRACE(" APP:   .. Robot Manager Stopped");
     m_window.reset();  // destroys the window explicitly so that we can clean up
-    ARES_TRACE("APP:   .. Window Closed");
+    ARES_TRACE(" APP:   .. Window Closed");
     ImGui::SFML::Shutdown();
-    ARES_TRACE("APP:   .. ImGui Shutdown");
+    ARES_TRACE(" APP:   .. ImGui Shutdown");
   }
 
   void run() {
-    ARES_TRACE("APP: Application running");
+    ARES_TRACE(" APP: Application running");
     //    m_robot_manager.start();
     while (!getWindow()->isDone()) {
       handleInput();
       update();
       render();
     }
-    ARES_TRACE("APP: Application Finished");
+    ARES_TRACE(" APP: Application Finished");
   }
 
   void setupWindow() {
@@ -114,15 +114,15 @@ class Application : public IEventObserver {
    * Also, we need to do it here because the sensor callback is local.
    */
   void setupVehicle() {
-    ARES_INFO("APP: Set Vehicle pose");
+    ARES_INFO(" APP: Set Vehicle pose");
     sf::Vector2f start_pos = m_maze_manager.getCellCentre(0, 0);
     m_robot_manager.setVehiclePose(start_pos.x, start_pos.y, 90.0f);
 
-    ARES_INFO("APP: Set Vehicle sensor callback");
+    ARES_INFO(" APP: Set Vehicle sensor callback");
     /// The Lambda expression here serves to bind the callback to the application instance
     Vehicle::instance().setSensorCallback([this](VehicleState state) -> VehicleInputs { return sensorDataCallback(state); });
 
-    ARES_INFO("APP: Vehicle running");
+    ARES_INFO(" APP: Vehicle running");
   }
 
   /***

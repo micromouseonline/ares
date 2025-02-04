@@ -93,9 +93,6 @@ class Mouse {
 
         m_SerialOut(nullptr),
         m_BinaryOut(nullptr) {
-    /// nasty hack to ensure initialisation of the board and vehicle
-    BoardInterface& board = AresBoard::getInstance();
-    Vehicle::instance(&board);
     begin();
   };
 

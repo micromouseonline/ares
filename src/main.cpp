@@ -2,36 +2,34 @@
 #include "application//applog-manager.h"
 #include "application/application.h"
 
-/***
- * This app starts to take the 015 example and convert it to a more generic application structure.
- *
- * There are more generic classes used to assemble the application. In particular, main()
- * has little to do besides initialise the application and then run it. All the actual work
- * is done in the application class which manages its own window(s) and resources.
- *
- * The structure is derived from code associated with the book
- * "SFML Game Development by Example" by Maxime Lévesque
- *
- * The repository for the book code is at:
- * https://github.com/SFML/SFML-Game-Development-By-Example
- *
- */
+#include "vehicle/hal/board-ares.h"
+#include "vehicle/vehicle.h"
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-///
-///
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
 AppLogManager g_applog;
+
 int main() {
   // Program entry point.
   g_applog.initialise();
+
+  ARES_INFO("MAIN: Applog ready");
+  ARES_INFO("MAIN: Program starts");
+  /// We need to create instances of the main components of the robot as early
+  /// as possible to guarantee the order of instantiation
+  ARES_INFO("MAIN: Create Vehicle Board");
+  BoardInterface& board = AresBoard::getInstance();
+  ARES_INFO("MAIN: Create Vehicle using Board {}", board.getBoardName());
+  Vehicle::instance(&board);
+
+  ARES_INFO("MAIN: Instantiate Application");
   Application app;
+  ARES_INFO("MAIN: Load Assets");
   auto image = sf::Image{};
   if (image.loadFromFile("assets/images/mouse-a.png")) {
     app.getWindow()->getRenderWindow()->setIcon(image.getSize().x, image.getSize().y, image.getPixelsPtr());
   }
 
+  ARES_INFO("MAIN: Run Application");
   app.run();
+  ARES_INFO("MAIN: Shutdown ...");
   return 0;
 }

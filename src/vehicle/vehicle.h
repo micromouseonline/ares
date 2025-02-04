@@ -59,14 +59,11 @@ struct VehicleState {
 using SensorDataCallback = std::function<VehicleInputs(VehicleState)>;
 
 class Vehicle {
- private:
-  Vehicle();
-  ~Vehicle();
-
  public:
   static Vehicle& instance(BoardInterface* board = nullptr) {
     /// If no pointer to a board is provided, use a BasicBoard
-    static Vehicle instance(board ? *board : BasicBoard::getInstance());  // ✅ Correct Meyers Singleton
+    
+    static Vehicle instance(board ? *board : BasicBoard::getInstance());
     return instance;
   }
 
@@ -148,9 +145,13 @@ class Vehicle {
       init();
     }
     resetDriveSystem();
-    std::cout << "Vehicle initialized." << std::endl;
   }
+
   BoardInterface& m_board;
+
+ private:
+  Vehicle();
+  ~Vehicle();
 
   /// MR32
   Vehicle(const Vehicle&) = delete;

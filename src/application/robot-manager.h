@@ -73,30 +73,30 @@ class RobotManager {
         m_robot_mutex(),
         m_serial_output_queue(2048),
         m_binary_output_queue(1024 * 1024) {
-    ARES_INFO(" RM: Assign Vehicle to Mouse");
-    ARES_INFO(" RM: Assign Robot Callbacks");
+    ARES_INFO("  RM: Assign Vehicle to Mouse");
+    ARES_INFO("  RM: Assign Robot Callbacks");
     m_mouse.setSerialOut([this](char c) { this->serialOutCallback(c); });
     m_mouse.setBinaryOut([this](uint8_t b) { this->binaryOutCallback(b); });
-    ARES_INFO(" RM: Start Robot");
+    ARES_INFO("  RM: Start Robot");
     initRobot();
     startRobotThread();
-    ARES_INFO(" RM: Initialised");
+    ARES_INFO("  RM: Initialised");
   }
 
   ~RobotManager() {
-    ARES_INFO(" RM: Destructor...")
+    ARES_INFO("  RM: Destructor...")
     stopRobotThread();
     Timer timer;
     timer.wait_ms(100);
-    ARES_INFO(" RM: Join the Robot Thread")
+    ARES_INFO("  RM: Join the Robot Thread")
     if (m_robot_thread.joinable()) {
       m_robot_thread.join();
-      ARES_INFO(" RM: Joined Robot Thread")
+      ARES_INFO("  RM: Joined Robot Thread")
     }
   }
 
   void initRobot() {
-    ARES_INFO(" RM: Initialising Robot")
+    ARES_INFO("  RM: Initialising Robot")
     std::lock_guard<std::mutex> lock(m_robot_mutex);
     m_mouse.init();
   }
@@ -110,32 +110,32 @@ class RobotManager {
   }
 
   void startRobotThread() {
-    ARES_INFO(" RM: Starting Robot")
+    ARES_INFO("  RM: Starting Robot")
     m_robot_thread = std::thread([this]() { m_mouse.run(); });
   }
 
   void stopRobotThread() {
-    ARES_INFO(" RM: Stopping Robot")
+    ARES_INFO("  RM: Stopping Robot")
     std::lock_guard<std::mutex> lock(m_robot_mutex);
     m_mouse.stopRunning();
   }
 
   void pauseRobot() {
-    ARES_INFO(" RM: Pausing Robot")
+    ARES_INFO("  RM: Pausing Robot")
     std::lock_guard<std::mutex> lock(m_robot_mutex);
     m_mouse.pauseRunning();
     m_paused = true;
   }
 
   void resumeRobot() {
-    ARES_INFO(" RM: Resuming Robot");
+    ARES_INFO("  RM: Resuming Robot");
     std::lock_guard<std::mutex> lock(m_robot_mutex);
     m_mouse.resumeRunning();
     m_paused = false;
   }
 
   void resetRobot() {
-    ARES_INFO(" RM: Resetting Robot")
+    ARES_INFO("  RM: Resetting Robot")
     std::lock_guard<std::mutex> lock(m_robot_mutex);
     m_mouse.reset();
   }
@@ -222,7 +222,7 @@ class RobotManager {
   /////////////////////////////////////////////////////
   /// Vehicle passthroughs
   void setVehiclePose(float x, float y, float angle) {
-    ARES_INFO(" RM: Set Robot Pose {},{} {}", x, y, angle);
+    ARES_INFO("  RM: Set Robot Pose {},{} {}", x, y, angle);
   }
 
   SensorData getVehicleSensors() {

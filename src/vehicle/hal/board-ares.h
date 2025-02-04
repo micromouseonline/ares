@@ -31,13 +31,13 @@ class AresBoard : public BoardInterface {
   }
 
   AresBoard(void* params) {
-    init();
     name = "ARES BOARD";
-    printf("AresBoard created\n");
+    init();
+    //    printf("AresBoard created\n");
   }
 
   ~AresBoard() {
-    printf("AresBoard destroyed\n");
+    //    printf("AresBoard destroyed\n");
   }
 
   /// initialise all the hardware
@@ -47,7 +47,7 @@ class AresBoard : public BoardInterface {
     /// create the ADCchannels
     /// initialise the gyro
     /// kick off systick
-    printf("AresBoard initialiseing\n");
+    //    printf("AresBoard initialiseing\n");
   }
 
   /***
@@ -110,6 +110,8 @@ class AresBoard : public BoardInterface {
 
   /// Motors
   void setMotorVoltages(float left, float right) {
+    (void)left;
+    (void)right;
   }
 
   MotorVoltages getMotorVoltages() {
