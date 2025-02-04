@@ -53,6 +53,7 @@ class Application : public IEventObserver {
     setupImGui();
     ARES_TRACE("APP:   .. ImGui Ready");
     setupVehicle();
+    ARES_TRACE("APP:   .. Board is {}", m_robot_manager.getBoardName());
     ARES_TRACE("APP:   .. Robot Ready");
     printActionListWithCost(test_path);
   }

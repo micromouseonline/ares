@@ -93,9 +93,14 @@ class BoardInterface {
   virtual void resetImu() {
   }
 
+  virtual const char* getBoardName() {
+    return name;
+  }
+
  protected:
   /// only derived classes can call the constructor
   BoardInterface() = default;
+  const char* name = "BoardInterface";
 
  private:
   // Delete copy/move constructors and assignment operators

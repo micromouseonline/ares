@@ -103,6 +103,9 @@ class Mouse {
     stopRunning();  //
   }
 
+  const char* getBoardName() {
+    return Vehicle::instance().getBoardName();
+  }
   //////////////////////////////
 
   void set_run_state(int state) {

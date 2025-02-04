@@ -32,6 +32,7 @@ class AresBoard : public BoardInterface {
 
   AresBoard(void* params) {
     init();
+    name = "ARES BOARD";
     printf("AresBoard created\n");
   }
 

@@ -105,6 +105,10 @@ class RobotManager {
     return m_mouse;
   }
 
+  const char* getBoardName() {
+    return m_mouse.getBoardName();
+  }
+
   void startRobotThread() {
     ARES_INFO(" RM: Starting Robot")
     m_robot_thread = std::thread([this]() { m_mouse.run(); });

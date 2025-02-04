@@ -69,6 +69,10 @@ class Vehicle {
     static Vehicle instance(board ? *board : BasicBoard::getInstance());  // ✅ Correct Meyers Singleton
     return instance;
   }
+
+  const char* getBoardName() {
+    return m_board.getBoardName();
+  }
   /// used by MR32
   void init();
 

@@ -33,6 +33,7 @@ class MR32Board : public BoardInterface {
   MR32Board(void* params = nullptr) {
     (void)params;
     init();
+    name = "MR32 Board";
     printf("MR32Board created\n");
   }
 
