@@ -178,7 +178,6 @@ add_executable(google_test_mouse_simulator
         google-tests/test_trapezoid.cpp
         google-tests/text_Spinturn.cpp
         google-tests/test_cubic.cpp
-        src/common/singleton.h
         src/vehicle/vehicle.cpp
         src/common/delay.cpp
 )
