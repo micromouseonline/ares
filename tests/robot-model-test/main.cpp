@@ -1,9 +1,12 @@
 
 #include <stdint.h>
 #include <iostream>
-#include "robot.h"
+#include "classes.h"
 #include "stdio.h"
 /////////////////////////////////////////////////////////////////////////////////
+/***
+ * Simple program to model the assembly of parts of the mouse
+ */
 
 int main() {
   /***
@@ -18,20 +21,23 @@ int main() {
    *
    */
   //  /// first create the board and have it initialise itself
-  BoardInterface& board = BasicBoard::getInstance();  // Singleton board;
-  board.beep(100);
-  board.setMotorVoltage(1, 2);
+  int id = 99;
+  Board& board = Board::getInstance(&id);  // Singleton board;
+  //
+  //  /// pointers are fine too
+  //  //  Board* pBoard = &Board::getInstance();
+  //
+  //  //  /// give that to the Vehicle and have the vehicle initialise itself
+  //  Vehicle& vehicle = Vehicle::getInstance(&board);
+  //  /// now give the vehicle to the behaviour and let it initialise itself
+  //  Behaviour mouse = Behaviour::getInstance();
+  //  /// Finally turn it loose
+  //  mouse.run();
 
-  /// pointers are fine too
-  BoardInterface* pBoard = &BasicBoard::getInstance();
-  pBoard->beep(0);
+  std::cout << "\nCreate the Robot" << std::endl;
+  Robot robot = Robot::getInstance();
+  std::cout << "\nRun The Robot" << std::endl;
+  robot.run();
 
-  //  /// give that to the Vehicle and have the vehicle initialise itself
-  Vehicle& vehicle = Vehicle::getInstance();
-  vehicle.setSpeed(123);
-  /// now give the vehicle to the behaviour and let it initialise itself
-  Behaviour mouse = Behaviour::getInstance();
-  /// Finally turn it loose
-  mouse.run();
   return 0;
 }
