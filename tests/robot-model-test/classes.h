@@ -7,52 +7,103 @@
 #include <iostream>
 
 //////////////////////////////////////////////////////////////////////////////////
-class Board {
+class IBoard {
  public:
-  static Board& getInstance(void* params = nullptr) {
-    static Board instance(params);  // Meyers Singleton
+  virtual void beep() = 0;
+};
+
+//////////////////////////////////////////////////////////////////////////////////
+class BeepBoard : public IBoard {
+ public:
+  static BeepBoard& getInstance(void* params = nullptr) {
+    static BeepBoard instance(params);  // Meyers Singleton
     return instance;
   }
 
   void init(void* params = nullptr) {
     (void)params;
-    std::cout << "Board initialisation." << std::endl;
+    std::cout << "BeepBoard initialisation." << std::endl;
   }
 
-  void beep() {
+  void beep() override {
     std::cout << "      BEEP!" << std::endl;
   }
 
  private:
-  Board(void* params = nullptr) {
+  BeepBoard(void* params = nullptr) {
     if (params) {
-      std::cout << "Board Constructor with parameters" << std::endl;
+      std::cout << "BeepBoard Constructor with parameters" << std::endl;
     } else {
-      std::cout << "Board Constructor without parameters" << std::endl;
+      std::cout << "BeepBoard Constructor without parameters" << std::endl;
+    }
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////////////
+class BoopBoard : public IBoard {
+ public:
+  static BoopBoard& getInstance(void* params = nullptr) {
+    static BoopBoard instance(params);  // Meyers Singleton
+    return instance;
+  }
+
+  void init(void* params = nullptr) {
+    (void)params;
+    std::cout << "BoopBoard initialisation." << std::endl;
+  }
+
+  void beep() override {
+    std::cout << "      BOOP!" << std::endl;
+  }
+
+ private:
+  BoopBoard(void* params = nullptr) {
+    if (params) {
+      std::cout << "BoopBoard Constructor with parameters" << std::endl;
+    } else {
+      std::cout << "BoopBoard Constructor without parameters" << std::endl;
     }
   }
 };
 
 /////////////////////////////////////////////////////////////////////////////////
-class Vehicle {
+/////////////////////////////////////////////////////////////////////////////////
+class IVehicle {
  public:
-  static Vehicle& getInstance() {
-    static Vehicle instance(Board::getInstance());  // ✅ Correct Meyers Singleton
+  virtual void init() = 0;
+  virtual void move() = 0;
+  virtual ~IVehicle() = default;
+};
+
+/////////////////////////////////////////////////////////////////////////////////
+class Vehicle : public IVehicle {
+ public:
+  static Vehicle& getInstance(IBoard* board = nullptr) {
+    static Vehicle instance(board ? *board : BeepBoard::getInstance());  // ✅ Correct Meyers Singleton
     return instance;
+  }
+
+  void init() override {
+  }
+
+  void setBoard(IBoard* board) {
+    if (board) {
+      m_board = board;
+    }
   }
 
   void move() {
     std::cout << "    Vehicle Moving" << std::endl;
-    m_board.beep();
+    m_board->beep();
   }
 
  private:
-  explicit Vehicle(Board& board)
-      : m_board(board) {
+  explicit Vehicle(IBoard& board)
+      : m_board(&board) {
     std::cout << "Vehicle Constructor." << std::endl;
   }
 
-  Board& m_board;
+  IBoard* m_board;
 
   ~Vehicle() = default;
   Vehicle(const Vehicle&) = delete;
@@ -62,15 +113,33 @@ class Vehicle {
 };
 
 /////////////////////////////////////////////////////////////////////////////////
-
-class Behaviour {
+/////////////////////////////////////////////////////////////////////////////////
+class IBehaviour {
  public:
-  static Behaviour& getInstance() {
-    static Behaviour instance(Vehicle::getInstance());  // Meyers Singleton with DI
+  virtual void init() = 0;
+  virtual void run() = 0;
+  virtual ~IBehaviour() = default;
+};
+
+/////////////////////////////////////////////////////////////////////////////////
+
+class Behaviour : public IBehaviour {
+ public:
+  static Behaviour& getInstance(IVehicle* vehicle = nullptr) {
+    static Behaviour instance(vehicle ? *vehicle : Vehicle::getInstance());  // Meyers Singleton with DI
     return instance;
   }
 
-  void run() {
+  void init() override {
+  }
+
+  void setVehicle(IVehicle* vehicle) {
+    if (vehicle) {
+      m_vehicle = vehicle;
+    }
+  }
+
+  void run() override {
     std::cout << "  Behaviour running." << std::endl;
     perform();
   }
@@ -78,35 +147,53 @@ class Behaviour {
   // Calculate the speed for the robot to move forward
   void perform() {
     std::cout << "  Behaviour is performing " << std::endl;
-    m_vehicle.move();
+    m_vehicle->move();
   }
 
  private:
-  explicit Behaviour(Vehicle& vehicle)
-      : m_vehicle(vehicle) {
+  explicit Behaviour(IVehicle& vehicle)
+      : m_vehicle(&vehicle) {
     std::cout << "  Behaviour constructor." << std::endl;
   }
-  Vehicle& m_vehicle;
+  IVehicle* m_vehicle;
 };
 
+//////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
 
 class Robot {
  public:
-  static Robot& getInstance() {
-    static Robot instance(Behaviour::getInstance());  // Meyers Singleton with DI
+  static Robot& getInstance(IBehaviour* behaviour = nullptr) {
+    static Robot instance(behaviour ? *behaviour : Behaviour::getInstance());  // Meyers Singleton with DI
     return instance;
   }
 
   void run() {
     std::cout << "Robot running." << std::endl;
-    m_behaviour.run();
+    m_behaviour->run();
+  }
+
+  explicit Robot(IBehaviour& behaviour)
+      : m_behaviour(&behaviour) {
+    std::cout << "Robot Constructor." << std::endl;
   }
 
  private:
-  explicit Robot(Behaviour& behaviour)
-      : m_behaviour(behaviour) {
-    std::cout << "Robot Constructor." << std::endl;
+  IBehaviour* m_behaviour;
+};
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+class RobotFactory {
+ public:
+  static Robot createRobot(IBoard* board, IVehicle* vehicle, IBehaviour* behaviour) {
+    if (vehicle && board) {
+      dynamic_cast<Vehicle*>(vehicle)->setBoard(board);
+    }
+    if (behaviour && vehicle) {
+      dynamic_cast<Behaviour*>(behaviour)->setVehicle(vehicle);
+    }
+    return Robot(*behaviour);
   }
-  Behaviour& m_behaviour;
 };
