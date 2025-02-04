@@ -37,34 +37,48 @@ class BoardInterface {
   virtual void init() = 0;
   virtual void update() = 0;
   virtual void setLed(int id, bool state) {
+    (void)id;
+    (void)state;
   }
   virtual bool isButtonPressed(int button_id) {
+    (void)button_id;
     return false;
   }
   virtual bool isAnyButtonPressed() {
     return false;
   }
   virtual void beep(int duration) {
+    (void)duration;
   }
   virtual void playTone(uint32_t frequency, uint32_t duration) {
+    (void)frequency;
+    (void)duration;
   }
   virtual void serialWrite(const char c) {
+    (void)c;
   }
   virtual void serialPuts(const char* str) {
+    (void)str;
   }
   virtual void displayWrite(const char c) {
+    (void)c;
   }
   virtual void displayPuts(const char* str) {
+    (void)str;
   }
   virtual void displayClear() {
   }
   virtual uint16_t getAdcChannel(uint8_t channel) {
+    (void)channel;
     return 0;
   }
   virtual float getBatteryVoltage() {
     return 0.0f;
   }
-  virtual void setMotorVoltage(float left, float right) {};
+  virtual void setMotorVoltage(float left, float right) {
+    (void)left;
+    (void)right;
+  };
   virtual int getLeftEncoderCount() {
     return 0;
   }

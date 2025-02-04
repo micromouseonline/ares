@@ -101,6 +101,10 @@ class RobotManager {
     m_mouse.init();
   }
 
+  Mouse& getMouse() {
+    return m_mouse;
+  }
+
   void startRobotThread() {
     ARES_INFO(" RM: Starting Robot")
     m_robot_thread = std::thread([this]() { m_mouse.run(); });

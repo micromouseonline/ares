@@ -30,7 +30,8 @@ class MR32Board : public BoardInterface {
     return instance;
   }
 
-  MR32Board(void* params) {
+  MR32Board(void* params = nullptr) {
+    (void)params;
     init();
     printf("MR32Board created\n");
   }
@@ -110,6 +111,8 @@ class MR32Board : public BoardInterface {
 
   /// Motors
   void setMotorVoltages(float left, float right) {
+    (void)left;
+    (void)right;
   }
 
   MotorVoltages getMotorVoltages() {
@@ -140,7 +143,7 @@ class MR32Board : public BoardInterface {
   }
 
   void beep(int duration) override {
-    m_speaker.playTone(1000, 100);
+    m_speaker.playTone(1000, duration);
   }
 
  private:

@@ -27,6 +27,8 @@
 #include "trajectories/spinturn.h"
 #include "trajectories/straight.h"
 #include "trajectory.h"
+#include "vehicle/hal/board-ares.h"
+#include "vehicle/hal/board-interface.h"
 #include "vehicle/hal/speaker.h"
 #include "vehicle/vehicle.h"
 
@@ -91,6 +93,9 @@ class Mouse {
 
         m_SerialOut(nullptr),
         m_BinaryOut(nullptr) {
+    /// nasty hack to ensure initialisation of the board and vehicle
+    BoardInterface& board = AresBoard::getInstance();
+    Vehicle::instance(&board);
     begin();
   };
 

@@ -31,7 +31,8 @@
 #include "behaviour/mouse.h"
 #include "behaviour/path-printer.h"
 #include "robot-body.h"
-#include "vehicle/vehicle.h"
+#include "vehicle/hal/board-ares.h"
+#include "vehicle/hal/board-interface.h"
 
 const Activity activity[] = {
     ACT_NONE,         ACT_CONTEST,    ACT_SEARCH,     ACT_SPEED_1,    ACT_SPEED_2,   ACT_SPEED_3,    ACT_SPEED_4,   ACT_SPEED_5,    ACT_TEST_FOLLOW_TO,
@@ -43,7 +44,6 @@ class Application : public IEventObserver {
   Application()
       : m_window(std::make_unique<Window>(app_conf::AppName, app_conf::WindowSize)),
         m_vehicle_state(),
-        //        m_vehicle(),
         m_mouse(),
         m_robot_manager(m_mouse) {
     ARES_INFO("APP: Initialising Application ...");
@@ -317,7 +317,7 @@ class Application : public IEventObserver {
     std::stringstream state_summary;
     state_summary << formatRobotState(m_vehicle_state);
     ImGui::Text("%s", state_summary.str().c_str());
-    ImGui::Text("%4.1f", m_mouse.getOffset());
+    ImGui::Text("%4.1f", m_robot_manager.getMouse().getOffset());
   }
 
   void renderLEDs() const {
@@ -520,7 +520,6 @@ class Application : public IEventObserver {
   std::unique_ptr<Window> m_window;
 
   VehicleState m_vehicle_state;
-  //  Vehicle m_vehicle;  // The robot instance
   Mouse m_mouse;
   RobotManager m_robot_manager;
 
