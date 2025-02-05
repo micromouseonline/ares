@@ -4,21 +4,20 @@
 
 #pragma once
 #include <functional>
+#include "board/board-config.h"
+#include "board/board-interface.h"
+#include "board/hal/analogue-converter.h"
+#include "board/hal/battery.h"
+#include "board/hal/button.h"
+#include "board/hal/display.h"
+#include "board/hal/gyro.h"
+#include "board/hal/motor-controller.h"
+#include "board/hal/odometry.h"
+#include "board/hal/pwm.h"
+#include "board/hal/speaker.h"
+#include "board/hal/usart.h"
 #include "common/core.h"
 #include "common/pose.h"
-#include "hal/analogue-converter.h"
-#include "hal/battery.h"
-#include "hal/board-interface.h"
-#include "hal/button.h"
-#include "hal/display.h"
-#include "hal/gyro.h"
-#include "hal/motor-controller.h"
-#include "hal/odometry.h"
-#include "hal/pwm.h"
-#include "hal/speaker.h"
-#include "hal/usart.h"
-
-#include "hal/board-config.h"
 
 struct SensorData {
   float lfs_distance = 0;
@@ -62,7 +61,7 @@ class Vehicle {
  public:
   static Vehicle& instance(BoardInterface* board = nullptr) {
     /// If no pointer to a board is provided, use a BasicBoard
-    
+
     static Vehicle instance(board ? *board : BasicBoard::getInstance());
     return instance;
   }

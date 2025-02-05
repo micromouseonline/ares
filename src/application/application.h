@@ -31,8 +31,8 @@
 #include "behaviour/mouse.h"
 #include "behaviour/path-printer.h"
 #include "robot-body.h"
-#include "vehicle/hal/board-ares.h"
-#include "vehicle/hal/board-interface.h"
+#include "robot/board/board-ares.h"
+#include "robot/board/board-interface.h"
 
 const Activity activity[] = {
     ACT_NONE,         ACT_CONTEST,    ACT_SEARCH,     ACT_SPEED_1,    ACT_SPEED_2,   ACT_SPEED_3,    ACT_SPEED_4,   ACT_SPEED_5,    ACT_TEST_FOLLOW_TO,

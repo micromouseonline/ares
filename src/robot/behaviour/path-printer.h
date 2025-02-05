@@ -6,10 +6,10 @@
 #include <stdio.h>
 
 #include "actions.h"
-#include "trajectories/cubic.h"
-#include "trajectories/cubic_parameters.h"
-#include "trajectories/spinturn.h"
-#include "trajectories/straight.h"
+#include "robot/behaviour/trajectories/cubic.h"
+#include "robot/behaviour/trajectories/cubic_parameters.h"
+#include "robot/behaviour/trajectories/spinturn.h"
+#include "robot/behaviour/trajectories/straight.h"
 #include "trajectory.h"
 
 inline void print_action_list(Action* action_list) {

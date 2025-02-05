@@ -9,18 +9,18 @@
  *
  */
 #include <stdio.h>
-#include "analogue-converter.h"
-#include "battery.h"
 #include "board-config.h"
 #include "board-interface.h"
-#include "button.h"
-#include "display.h"
-#include "gyro.h"
-#include "motor-controller.h"
-#include "odometry.h"
-#include "pwm.h"
-#include "speaker.h"
-#include "usart.h"
+#include "board/hal/analogue-converter.h"
+#include "board/hal/battery.h"
+#include "board/hal/button.h"
+#include "board/hal/display.h"
+#include "board/hal/gyro.h"
+#include "board/hal/motor-controller.h"
+#include "board/hal/odometry.h"
+#include "board/hal/pwm.h"
+#include "board/hal/speaker.h"
+#include "board/hal/usart.h"
 
 /// TODO: this need to be an interface class for actual boards
 class AresBoard : public BoardInterface {

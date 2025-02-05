@@ -6,9 +6,9 @@
 
 #include "actions.h"
 #include "common/pose.h"
-#include "trajectories/cubic.h"
-#include "trajectories/spinturn.h"
-#include "trajectories/straight.h"
+#include "robot/behaviour/trajectories/cubic.h"
+#include "robot/behaviour/trajectories/spinturn.h"
+#include "robot/behaviour/trajectories/straight.h"
 #include "trajectory.h"
 /***
  * Pathrunner will perform operations on a path described as an

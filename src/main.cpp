@@ -2,7 +2,7 @@
 #include "application//applog-manager.h"
 #include "application/application.h"
 
-#include "vehicle/hal/board-ares.h"
+#include "robot/board/board-ares.h"
 #include "vehicle/vehicle.h"
 
 AppLogManager g_applog;

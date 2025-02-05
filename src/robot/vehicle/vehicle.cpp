@@ -7,8 +7,8 @@
 #include "vehicle.h"
 #include <cmath>
 #include "behaviour/config.h"
-#include "hal/board-mr32.h"
-#include "hal/motor-controller.h"
+#include "board/hal/motor-controller.h"
+#include "robot/board/board-mr32.h"
 //
 // Vehicle::Vehicle()
 //    : m_state() {
