@@ -27,7 +27,10 @@ int main() {
   if (image.loadFromFile("assets/images/mouse-a.png")) {
     app.getWindow()->getRenderWindow()->setIcon(image.getSize().x, image.getSize().y, image.getPixelsPtr());
   }
-
+  ARES_WARN("size of Board = {}", sizeof(AresBoard));
+  ARES_WARN("size of Vehicle = {}", sizeof(Vehicle));
+  ARES_WARN("size of Mouse = {}", sizeof(Mouse));
+  //  printf("size of Board = %ul\n", sizeof(Mouse::instance()));
   ARES_INFO("MAIN: Run Application");
   app.run();
   ARES_INFO("MAIN: Shutdown ...");
