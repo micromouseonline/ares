@@ -44,7 +44,7 @@ class Application : public IEventObserver {
   Application()
       : m_window(std::make_unique<Window>(app_conf::AppName, app_conf::WindowSize)),
         m_vehicle_state(),
-        m_mouse(),
+        m_mouse(Mouse::instance(&Vehicle::instance(&AresBoard::getInstance()))),
         m_robot_manager(m_mouse) {
     ARES_INFO(" APP: Initialising Application ...");
     m_elapsed = sf::Time::Zero;
@@ -521,7 +521,7 @@ class Application : public IEventObserver {
   std::unique_ptr<Window> m_window;
 
   VehicleState m_vehicle_state;
-  Mouse m_mouse;
+  Mouse& m_mouse;
   RobotManager m_robot_manager;
 
   RobotBody m_robot_body;
