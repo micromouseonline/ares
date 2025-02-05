@@ -1,0 +1,46 @@
+cmake_minimum_required(VERSION 3.10)
+project(EmbeddedIMUProject CXX)
+
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# Define project directories
+set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
+set(BOARDS_DIR "${SRC_DIR}/boards")
+set(HAL_DIR "${SRC_DIR}/hal")
+set(DRIVERS_DIR "${SRC_DIR}/drivers")
+set(IMU_DIR "${DRIVERS_DIR}/imu")
+
+# Define cross-compilation settings
+if(CMAKE_CROSSCOMPILING)
+    message(STATUS "Cross-compiling for embedded target")
+endif()
+
+# Include common directories
+include_directories(
+    ${SRC_DIR}/app
+    ${HAL_DIR}/include
+    ${IMU_DIR}
+)
+
+# Define common source files
+set(COMMON_SOURCES
+    ${SRC_DIR}/app/main.cpp
+    ${IMU_DIR}/IMU.cpp
+)
+
+# --- Ares Target (for Embedded Cortex-M) ---
+add_executable(imu_ares ${COMMON_SOURCES} ${IMU_DIR}/ares/IMU_Ares.cpp)
+target_include_directories(imu_ares PRIVATE ${BOARDS_DIR}/ares)
+target_compile_definitions(imu_ares PRIVATE BOARD_ARES)
+target_link_libraries(imu_ares m)  # Link math library
+
+# --- MR32 Target (for Embedded Cortex-M) ---
+add_executable(imu_mr32 ${COMMON_SOURCES} ${IMU_DIR}/mr32/IMU_MR32.cpp)
+target_include_directories(imu_mr32 PRIVATE ${BOARDS_DIR}/mr32)
+target_compile_definitions(imu_mr32 PRIVATE BOARD_MR32)
+target_link_libraries(imu_mr32 m)
+
+# Display build configuration
+message(STATUS "Targets available: imu_ares, imu_mr32")

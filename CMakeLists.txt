@@ -132,7 +132,7 @@ set(APP mouse-simulator)
 #add_definitions(-DWINDOW_TITLE=\"${APP}\")
 
 add_executable(${APP} ""
-        src/vehicle/vehicle.cpp
+        src/robot/vehicle/vehicle.cpp
         src/common/delay.cpp
 )
 copy_resources(${APP})
@@ -156,6 +156,7 @@ target_link_libraries(${APP}
 
 include_directories(src)
 include_directories(src/utils)
+include_directories(src/robot)
 
 target_sources(${APP} PRIVATE
         src/main.cpp
@@ -178,7 +179,7 @@ add_executable(google_test_mouse_simulator
         google-tests/test_trapezoid.cpp
         google-tests/text_Spinturn.cpp
         google-tests/test_cubic.cpp
-        src/vehicle/vehicle.cpp
+        src/robot/vehicle/vehicle.cpp
         src/common/delay.cpp
 )
 
@@ -214,3 +215,4 @@ add_subdirectory(tests/printf-callback-test)
 add_subdirectory(tests/slip-angle-test)
 add_subdirectory(tests/streaming-print-test)
 add_subdirectory(tests/robot-model-test)
+add_subdirectory(tests/mult-target-test)

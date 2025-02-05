@@ -2,7 +2,7 @@
 #include <iostream>
 #include "mockboard.h"
 #include "robot.h"  // Include Vehicle logic
-#include "vehicle/hal/board-interface.h"
+#include "robot/board/board-interface.h"
 
 // Test fixture for Vehicle
 class VehicleTest : public ::testing::Test {
