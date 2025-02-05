@@ -1,10 +1,12 @@
 #pragma once
 
+#include <iostream>
 #include "imu-hal.h"
 
 class IMUAres : public IMUHAL {
  public:
   void initialize() override {
+    std::cout << "initialised the IMU for ARES\n";
     // Ares-specific initialization code
     // e.g., SPI initialization for Ares IMU
   }
