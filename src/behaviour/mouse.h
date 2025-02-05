@@ -86,13 +86,13 @@ inline int g_mouse_state = MS_FRESH_START;
 
 class Mouse {
  public:
-  static Mouse& instance(Vehicle* vehicle = nullptr) {
+  static Mouse& instance(Vehicle* vehicle) {
     /// If no pointer to a board is provided, use a BasicBoard
     static Mouse instance(&Vehicle::instance());
     return instance;
   }
   // TODO: Never instantiate the mouse without a vehicle
-  explicit Mouse(Vehicle* vehicle = nullptr)
+  explicit Mouse(Vehicle* vehicle)
       : m_vehicle(vehicle),
         m_timeStamp(0),
         m_thread_running(false) {
