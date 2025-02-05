@@ -1,3 +1,4 @@
+
 /******************************************************************************
  * Project: mazerunner32-ares                                                 *
  * -----                                                                      *
@@ -85,14 +86,16 @@ inline int g_mouse_state = MS_FRESH_START;
 
 class Mouse {
  public:
+  static Mouse& instance(Vehicle* vehicle = nullptr) {
+    /// If no pointer to a board is provided, use a BasicBoard
+    static Mouse instance(&Vehicle::instance());
+    return instance;
+  }
   // TODO: Never instantiate the mouse without a vehicle
-  Mouse()
-      :  // Vehicle::instance()(vehicle),
+  explicit Mouse(Vehicle* vehicle = nullptr)
+      : m_vehicle(vehicle),
         m_timeStamp(0),
-        m_thread_running(false),
-
-        m_SerialOut(nullptr),
-        m_BinaryOut(nullptr) {
+        m_thread_running(false) {
     begin();
   };
 
@@ -1601,16 +1604,16 @@ class Mouse {
     bool leftWall = sensors().see_left_wall;
     bool frontWall = sensors().see_front_wall;
     bool rightWall = sensors().see_right_wall;
-    char w[] = "--- ";
-    if (leftWall) {
-      w[0] = 'L';
-    }
-    if (frontWall) {
-      w[1] = 'F';
-    }
-    if (rightWall) {
-      w[2] = 'R';
-    }
+    //    char w[] = "--- ";
+    //    if (leftWall) {
+    //      w[0] = 'L';
+    //    }
+    //    if (frontWall) {
+    //      w[1] = 'F';
+    //    }
+    //    if (rightWall) {
+    //      w[2] = 'R';
+    //    }
     //    m_logger.info("%6d - @%3d {%d,%d} %c %s", (int)m_robot->m_odometry->distance(), (int)m_forward->distance(), m_location.x, m_location.y,
     //    hdg_letters[m_heading],
     //            w);
@@ -2280,6 +2283,7 @@ class Mouse {
     return count;  // Return the number of characters written
   }
 
+  Vehicle* m_vehicle;
   //  Vehicle& Vehicle::instance();
   Location m_target = {7, 7};
   bool m_leftWall = false;
@@ -2300,8 +2304,8 @@ class Mouse {
   std::atomic<float> m_speed_up = 1.0f;
   MouseLog m_logger;
   std::unique_ptr<Trajectory> m_current_trajectory = std::make_unique<IdleTrajectory>();
-  SerialOut m_SerialOut;
-  BinaryOut m_BinaryOut;
+  SerialOut m_SerialOut = nullptr;
+  BinaryOut m_BinaryOut = nullptr;
 
   //// from MR32 - more or less
   float m_total_distance = 0;

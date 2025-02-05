@@ -31,6 +31,7 @@ class AresBoard : public BoardInterface {
   }
 
   AresBoard(void* params) {
+    (void)params;
     name = "ARES BOARD";
     init();
     //    printf("AresBoard created\n");
@@ -142,7 +143,7 @@ class AresBoard : public BoardInterface {
   }
 
   void beep(int duration) override {
-    m_speaker.playTone(1000, 100);
+    m_speaker.playTone(1000, duration);
   }
 
  private:
