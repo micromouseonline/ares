@@ -160,15 +160,20 @@ class Behaviour : public IBehaviour {
 
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
+class IRobot {
+ public:
+  virtual void run() = 0;
+};
+//////////////////////////////////////////////////////////////////////////////////
 
-class Robot {
+class Robot : public IRobot {
  public:
   static Robot& getInstance(IBehaviour* behaviour = nullptr) {
     static Robot instance(behaviour ? *behaviour : Behaviour::getInstance());  // Meyers Singleton with DI
     return instance;
   }
 
-  void run() {
+  void run() override {
     std::cout << "Robot running." << std::endl;
     m_behaviour->run();
   }
@@ -184,7 +189,10 @@ class Robot {
 
 //////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////
-
+/***
+ * We can build a robot from the three components.
+ * Each of those components is a singleton
+ */
 class RobotFactory {
  public:
   static Robot createRobot(IBoard* board, IVehicle* vehicle, IBehaviour* behaviour) {
