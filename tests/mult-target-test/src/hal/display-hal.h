@@ -9,6 +9,7 @@ class DisplayHAL {
  public:
   virtual void initialize() = 0;
   virtual void cls() = 0;
-  virtual void write(const char c) {};
+  virtual void setCursor(int x, int y) = 0;
+  virtual void write(const char c) = 0;
   virtual ~DisplayHAL() = default;
 };

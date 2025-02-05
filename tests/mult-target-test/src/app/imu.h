@@ -1,6 +1,6 @@
 #pragma once
 
-#include "imu-hal.h"
+#include "hal/imu-hal.h"
 
 class IMU {
  public:

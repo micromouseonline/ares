@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include "imu-hal.h"
+#include "hal/imu-hal.h"
 
 class IMUAres : public IMUHAL {
  public:

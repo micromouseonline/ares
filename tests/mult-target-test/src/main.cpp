@@ -3,8 +3,8 @@
 //
 #include <iostream>
 #include "board-config.h"
-#include "display/display.h"  // High-level interface for display
-#include "imu/imu.h"          // High-level interface for IMU
+#include "display.h"  // High-level interface for display
+#include "imu.h"      // High-level interface for IMU
 
 int main() {
   initPeripherals();

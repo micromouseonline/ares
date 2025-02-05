@@ -4,6 +4,7 @@ project(${APP} C CXX)
 
 # Define project directories
 set(SRC_DIR "src")
+set(APP_DIR "${SRC_DIR}/app")
 set(BOARDS_DIR "${SRC_DIR}/boards")
 set(HAL_DIR "${SRC_DIR}/hal")
 set(DRIVERS_DIR "${SRC_DIR}/drivers")
@@ -11,27 +12,26 @@ set(IMU_DIR "${DRIVERS_DIR}/imu")
 
 # Include common directories
 include_directories(
-        ${SRC_DIR}/app
+        ${SRC_DIR}
+        ${APP_DIR}
         ${DRIVERS_DIR}
         ${BOARDS_DIR}
-        ${HAL_DIR}/include
+        #        ${HAL_DIR}
         #        ${IMU_DIR}
 )
 
 # Define common source files
 set(COMMON_SOURCES
-        ${SRC_DIR}/app/main.cpp
-        ${IMU_DIR}/imu.cpp
+        ${SRC_DIR}/main.cpp
 )
 
 target_sources(${APP} PRIVATE
-        src/app/main.cpp
+        src/main.cpp
 )
 
 # --- Ares Target (for Embedded Cortex-M) ---
 add_executable(imu_ares
         ${COMMON_SOURCES}
-        ${IMU_DIR}/ares/imu-ares.cpp
 )
 target_include_directories(imu_ares PRIVATE
         ${BOARDS_DIR}/ares
@@ -43,7 +43,6 @@ target_compile_definitions(imu_ares PRIVATE
 # --- MR32 Target (for Embedded Cortex-M) ---
 add_executable(imu_mr32
         ${COMMON_SOURCES}
-        ${IMU_DIR}/mr32/imu-mr32.cpp
 )
 
 target_include_directories(imu_mr32 PRIVATE
