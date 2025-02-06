@@ -5,6 +5,7 @@
 // Board-specific includes (e.g., SPI, GPIO, UART drivers)
 #include "drivers/display/HCM3906.h"
 #include "drivers/imu/imu-mr32.h"
+#include "drivers/stm32/stm32-encoder.h"
 
 // Define hardware-specific parameters for Ares
 #define BOARD_NAME "MR32"

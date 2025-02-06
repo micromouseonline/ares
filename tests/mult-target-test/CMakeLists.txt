@@ -16,7 +16,7 @@ include_directories(
         ${APP_DIR}
         ${DRIVERS_DIR}
         ${BOARDS_DIR}
-        #        ${HAL_DIR}
+        ${HAL_DIR}
         #        ${IMU_DIR}
 )
 

@@ -15,4 +15,23 @@ class IMUAres : public IMUHAL {
     // Ares-specific code to read data from IMU
     // e.g., SPI communication to fetch sensor data
   }
+
+  virtual float getRollAngle() override {
+    return 0.0f;
+  };
+  virtual float getPitchAngle() override {
+    return 0.0f;
+  };
+  virtual float getYawAngle() override {
+    return 0.0f;
+  };
+  virtual float getRollRate() override {
+    return 0.0f;
+  };
+  virtual float getPitchRate() override {
+    return 0.0f;
+  };
+  virtual float getYawRate() override {
+    return 0.0f;
+  };
 };

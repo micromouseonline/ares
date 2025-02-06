@@ -16,6 +16,10 @@ class IMU {
     imuHAL->readData();
   }
 
+  float getHeading() {
+    return imuHAL->getYawAngle();
+  }
+
  private:
   IMUHAL* imuHAL;
 };

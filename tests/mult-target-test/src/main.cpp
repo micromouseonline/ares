@@ -5,6 +5,7 @@
 #include "board-config.h"
 #include "display.h"  // High-level interface for display
 #include "imu.h"      // High-level interface for IMU
+#include "vehicle/odometry.h"
 
 int main() {
   initPeripherals();
