@@ -3,38 +3,42 @@
 /// this would go in a "board-config.h" file
 
 /***
- * A config file can hold a bunch of preprocessor macros that define
+ * A config file can hold a bunch of configurations that define
  * the hardware configuration of the target board
  */
 
-// pick your board
-// #define BOARD_A
-#define BOARD_B
+// Configuration structure
+struct BoardConfig {
+  const char *boardName = "UNDEFINED";
 
-// Board A configuration
-#ifdef BOARD_A
-constexpr char BOARD_NAME[] = "D4";
-#define HAS_WALLSENSOR 1
-#define HAS_IR_SENSOR 0
-#define HAS_TOF_SENSOR 1
+  bool hasWallSensor = false;
+  bool hasIrSensor = false;
+  bool hasTofSensor = false;
 
-#define HAS_IMU 1
-#define HAS_ANALOGUE_IMU 1
-#define HAS_DIGITAL_IMU 0
-#endif
-//
-//// Board B configuration
-#ifdef BOARD_B
-constexpr char BOARD_NAME[] = "MR32";
+  bool hasImu = false;
+  bool hasAnalogImu = false;
+  bool hasDigitalImu = false;
+};
 
-#define HAS_WALLSENSOR 1
-#define HAS_IR_SENSOR 1
-#define HAS_TOF_SENSOR 0
+// Define configurations for different boards
+constexpr BoardConfig BoardA_Config = {
+    .boardName = "D4",      //
+    .hasWallSensor = true,  //
+    .hasTofSensor = true,   //
+    .hasImu = true,         //
+    .hasDigitalImu = false  //
+};
 
-#define HAS_IMU 1
-#define HAS_ANALOGUE_IMU 0
-#define HAS_DIGITAL_IMU 1
-#endif
+constexpr BoardConfig BoardB_Config = {
+    .boardName = "MR32",    //
+    .hasWallSensor = true,  //
+    .hasIrSensor = true,    //
+    .hasImu = true,         //
+    .hasDigitalImu = true   //
+};
+
+// Select the board
+constexpr BoardConfig CurrentBoard = BoardB_Config;
 
 /////////////////////////////////////////////////
 
@@ -138,7 +142,7 @@ class Board {
   Board(WallSensorHAL *wall_sensor, IMUHAL *imu)
       : m_wall_sensor(wall_sensor),
         m_imu(imu) {
-    std::cout << "Board created - " << BOARD_NAME << std::endl;
+    std::cout << "Board created - " << CurrentBoard.boardName << std::endl;
     initializeFeatures();
     std::cout << "Board ready\n" << std::endl;
   };
@@ -178,7 +182,7 @@ class Board {
       /// where it only exists for that class. Not that
       /// calibrate is a good candidate here.
       /// Note that RTTI may not be available on some platforms
-      ///      so you may need to add the extra method to the base class.
+      ///      so you may need to add the extra method(s) to the base class.
       if (auto digitalIMU = dynamic_cast<DigitalIMU *>(m_imu)) {
         digitalIMU->calibrate();
       }
@@ -216,41 +220,38 @@ class Board {
  * type is the base class type so that we can create objects of any
  * concrete type.
  *
- * It is probably a good itea to do at least some of the initialization
+ * The compiler, or linter, because it knows the state of the flags, may
+ * complain about unreachable code here
+ *
+ * It is probably a good idea to do at least some of the initialization
  * here. If using the STM32CubeMX, most of that will be done automatically
  * and we just get to connect stuff up to the pointers.
  */
 
 WallSensorHAL *setupWallSensors() {
-  WallSensorHAL *p_sensor = nullptr;
-#if HAS_WALLSENSOR
-#if HAS_IR_SENSOR
-  static ReflectiveIRSensor reflectiveIRSensor;
-  p_sensor = &reflectiveIRSensor;
-#elif HAS_TOF_SENSOR
-  static TOFSensor tofSensor;
-  p_sensor = &tofSensor;
-#else
-#warning "No wall sensor selected"
-#endif
-#endif
-  return p_sensor;
+  if constexpr (CurrentBoard.hasWallSensor) {
+    if constexpr (CurrentBoard.hasIrSensor) {
+      static ReflectiveIRSensor irSensor;
+      return &irSensor;
+    } else if constexpr (CurrentBoard.hasTofSensor) {
+      static TOFSensor tofSensor;
+      return &tofSensor;
+    }
+  }
+  return nullptr;
 }
 
 IMUHAL *setupIMU() {
-  IMUHAL *p_imu = nullptr;
-#if HAS_IMU
-#if HAS_ANALOGUE_IMU
-  static DigitalIMU digitalIMU;
-  p_imu = &digitalIMU;
-#elif HAS_DIGITAL_IMU
-  static AnalogIMU analogueIMU;
-  p_imu = &analogueIMU;
-#else
-#warning "No IMU selected"
-#endif
-#endif
-  return p_imu;
+  if constexpr (CurrentBoard.hasImu) {
+    if constexpr (CurrentBoard.hasAnalogImu) {
+      static AnalogIMU analogIMU;
+      return &analogIMU;
+    } else if constexpr (CurrentBoard.hasDigitalImu) {
+      static DigitalIMU digitalIMU;
+      return &digitalIMU;
+    }
+  }
+  return nullptr;
 }
 
 /***
